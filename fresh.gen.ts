@@ -25,7 +25,6 @@ import * as $appointments_index from "./routes/appointments/index.tsx";
 import * as $appointments_new from "./routes/appointments/new.tsx";
 import * as $dashboard_index from "./routes/dashboard/index.tsx";
 import * as $dashboard_profiles from "./routes/dashboard/profiles.tsx";
-import * as $greet_name_ from "./routes/greet/[name].tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login from "./routes/login.tsx";
 import * as $AppointmentCalendar from "./islands/AppointmentCalendar.tsx";
@@ -62,7 +61,6 @@ const manifest = {
     "./routes/appointments/new.tsx": $appointments_new,
     "./routes/dashboard/index.tsx": $dashboard_index,
     "./routes/dashboard/profiles.tsx": $dashboard_profiles,
-    "./routes/greet/[name].tsx": $greet_name_,
     "./routes/index.tsx": $index,
     "./routes/login.tsx": $login,
   },
