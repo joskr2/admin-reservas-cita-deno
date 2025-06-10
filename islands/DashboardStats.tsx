@@ -17,7 +17,13 @@ export default function DashboardStats({
         title="Usuarios Totales"
         value={totalUsers}
         icon={
-          <img src="/icons/users.svg" alt="Usuarios" width={24} height={24} />
+          <img
+            src="/icons/users.svg"
+            alt="Usuarios"
+            width={24}
+            height={24}
+            className="fill-current text-blue-600 dark:text-blue-300"
+          />
         }
         colorClass="bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300"
       />
@@ -30,6 +36,7 @@ export default function DashboardStats({
             alt="Psicólogos"
             width={24}
             height={24}
+            className="fill-current text-green-600 dark:text-green-300"
           />
         }
         colorClass="bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-300"
@@ -38,7 +45,13 @@ export default function DashboardStats({
         title="Citas Agendadas"
         value={totalAppointments}
         icon={
-          <img src="/icons/calendar.svg" alt="Citas" width={24} height={24} />
+          <img
+            src="/icons/calendar.svg"
+            alt="Citas"
+            width={24}
+            height={24}
+            className="fill-current text-purple-600 dark:text-purple-300"
+          />
         }
         colorClass="bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-300"
       />
