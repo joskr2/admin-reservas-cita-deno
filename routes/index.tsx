@@ -1,6 +1,5 @@
 import Header from "../components/layout/Header.tsx";
 import Footer from "../components/layout/Footer.tsx";
-import { LuLogIn } from "@preact-icons/lu";
 
 export default function Home() {
   return (
@@ -26,9 +25,13 @@ export default function Home() {
                 href="/login"
                 class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10 transition duration-150 ease-in-out"
               >
-                <span class="mr-3">
-                  <LuLogIn size={22} />
-                </span>
+                <img
+                  src="/icons/login.svg"
+                  alt="Acceder"
+                  width="20"
+                  height="20"
+                  class="mr-3"
+                />
                 Acceder al sistema
               </a>
             </div>

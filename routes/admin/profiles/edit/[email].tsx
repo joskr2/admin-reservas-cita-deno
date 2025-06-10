@@ -5,7 +5,6 @@ import { Button } from "../../../../components/ui/Button.tsx";
 import { Input } from "../../../../components/ui/Input.tsx";
 import { Select } from "../../../../components/ui/Select.tsx";
 
-import { LuUserCog } from "@preact-icons/lu";
 import type { AppState } from "../../../_middleware.ts";
 
 interface Profile {
@@ -60,7 +59,10 @@ export const handler: Handlers<Data, AppState> = {
       const userEntry = await kv.get<Profile>(["users", email]);
       kv.close();
       if (!userEntry.value) {
-        return ctx.render({ profile: { email, role: "psychologist" }, error: "Rol no válido." });
+        return ctx.render({
+          profile: { email, role: "psychologist" },
+          error: "Rol no válido.",
+        });
       }
       return ctx.render({ profile: userEntry.value, error: "Rol no válido." });
     }
@@ -134,9 +136,13 @@ export default function EditProfilePage({ data }: PageProps<Data>) {
         <div class="mx-auto max-w-2xl py-12 px-4 sm:px-6 lg:px-8">
           <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8">
             <div class="flex items-center gap-4 mb-6">
-              <span class="text-indigo-600 dark:text-indigo-400">
-                <LuUserCog size={24} />
-              </span>
+              <img
+                src="/icons/user-cog.svg"
+                alt="Editar perfil"
+                width="32"
+                height="32"
+                class="text-indigo-600 dark:text-indigo-400"
+              />
               <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
                   Editar Perfil

@@ -1,7 +1,5 @@
 import { useEffect } from "preact/hooks";
 import { signal } from "@preact/signals";
-import { LuMoon } from "@preact-icons/lu";
-import { LuSun } from "@preact-icons/lu";
 
 // Signal to hold the current theme state. Default to 'light'.
 const theme = signal<"light" | "dark">("light");
@@ -55,7 +53,11 @@ export default function ThemeToggle() {
       aria-label="Toggle theme"
     >
       {/* Conditionally render the Sun or Moon icon based on the current theme */}
-      {theme.value === "light" ? <LuMoon size={24} /> : <LuSun size={24} />}
+      {theme.value === "light" ? (
+        <img src="/icons/moon.svg" alt="Modo oscuro" width="24" height="24" />
+      ) : (
+        <img src="/icons/sun.svg" alt="Modo claro" width="24" height="24" />
+      )}
     </button>
   );
 }

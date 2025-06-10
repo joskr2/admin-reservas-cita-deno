@@ -3,15 +3,6 @@ import Header from "../../components/layout/Header.tsx";
 import Footer from "../../components/layout/Footer.tsx";
 import type { AppState } from "../_middleware.ts";
 import { Button } from "../../components/ui/Button.tsx";
-import {
-  LuCalendar,
-  LuClock,
-  LuUser,
-  LuHash,
-  LuCheck,
-  LuCircle,
-  LuArrowLeft,
-} from "@preact-icons/lu";
 
 interface Appointment {
   id: string;
@@ -139,7 +130,12 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
               href="/appointments"
               class="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             >
-              <LuArrowLeft size={22} />
+              <img
+                src="/icons/arrow-left.svg"
+                alt="Volver"
+                width="16"
+                height="16"
+              />
               Volver a la lista de citas
             </a>
           </div>
@@ -166,9 +162,13 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
             </div>
             <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
               <div class="flex items-center gap-4">
-                <span class="text-gray-400">
-                  <LuUser size={24} />
-                </span>
+                <img
+                  src="/icons/user.svg"
+                  alt="Paciente"
+                  width="24"
+                  height="24"
+                  class="text-gray-400"
+                />
                 <dl>
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
                     Paciente
@@ -179,7 +179,13 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
                 </dl>
               </div>
               <div class="flex items-center gap-4">
-                <LuUser size={24} class=" text-gray-400" />
+                <img
+                  src="/icons/user.svg"
+                  alt="Psicólogo"
+                  width="24"
+                  height="24"
+                  class="text-gray-400"
+                />
                 <dl>
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
                     Psicólogo
@@ -190,7 +196,13 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
                 </dl>
               </div>
               <div class="flex items-center gap-4">
-                <LuCalendar size={24} class=" text-gray-400" />
+                <img
+                  src="/icons/calendar.svg"
+                  alt="Fecha"
+                  width="24"
+                  height="24"
+                  class="text-gray-400"
+                />
                 <dl>
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
                     Fecha
@@ -204,7 +216,13 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
                 </dl>
               </div>
               <div class="flex items-center gap-4">
-                <LuClock size={24} class=" text-gray-400" />
+                <img
+                  src="/icons/clock.svg"
+                  alt="Hora"
+                  width="24"
+                  height="24"
+                  class="text-gray-400"
+                />
                 <dl>
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
                     Hora
@@ -215,7 +233,13 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
                 </dl>
               </div>
               <div class="flex items-center gap-4">
-                <LuHash size={24} class=" text-gray-400" />
+                <img
+                  src="/icons/hash.svg"
+                  alt="ID"
+                  width="24"
+                  height="24"
+                  class="text-gray-400"
+                />
                 <dl>
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
                     ID de Cita
@@ -241,7 +265,13 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
                     value="cancel"
                     variant="danger"
                   >
-                    <LuCircle size={22} class=" mr-2" />
+                    <img
+                      src="/icons/circle.svg"
+                      alt="Cancelar"
+                      width="20"
+                      height="20"
+                      class="mr-2"
+                    />
                     Cancelar Cita
                   </Button>
                   <Button
@@ -250,7 +280,13 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
                     value="complete"
                     variant="primary"
                   >
-                    <LuCheck size={22} class=" mr-2" />
+                    <img
+                      src="/icons/check.svg"
+                      alt="Confirmar"
+                      width="20"
+                      height="20"
+                      class="mr-2"
+                    />
                     Marcar como Completada
                   </Button>
                 </form>

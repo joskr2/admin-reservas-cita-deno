@@ -4,8 +4,6 @@ import Header from "../../components/layout/Header.tsx";
 import Footer from "../../components/layout/Footer.tsx";
 import DashboardStats from "../../islands/DashboardStats.tsx";
 
-import { LuUserPlus, LuLogOut, LuActivity } from "@preact-icons/lu";
-
 // Data that the handler calculates and passes to the component
 interface DashboardData {
   totalUsers: number;
@@ -88,7 +86,13 @@ export default function DashboardPage(
                 href="/api/auth/logout"
                 class="inline-flex items-center rounded-md bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:ring-offset-gray-800"
               >
-                <LuLogOut size={22} class="-ml-1 mr-2" />
+                <img
+                  src="/icons/logout.svg"
+                  alt="Cerrar sesión"
+                  width="20"
+                  height="20"
+                  class="mr-2"
+                />
                 Cerrar Sesión
               </a>
             </div>
@@ -119,7 +123,12 @@ export default function DashboardPage(
               {isSuperAdmin && (
                 <li class="col-span-1 flex rounded-md shadow-sm">
                   <div class="flex-shrink-0 flex items-center justify-center w-16 bg-indigo-600 text-white text-sm font-medium rounded-l-md">
-                    <LuUserPlus size={24} />
+                    <img
+                      src="/icons/user-plus.svg"
+                      alt="Gestionar Perfiles"
+                      width="24"
+                      height="24"
+                    />
                   </div>
                   <div class="flex flex-1 items-center justify-between truncate rounded-r-md border-b border-r border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                     <div class="flex-1 truncate px-4 py-2 text-sm">
@@ -138,7 +147,12 @@ export default function DashboardPage(
               )}
               <li class="col-span-1 flex rounded-md shadow-sm">
                 <div class="flex-shrink-0 flex items-center justify-center w-16 bg-purple-600 text-white text-sm font-medium rounded-l-md">
-                  <LuActivity size={24} />
+                  <img
+                    src="/icons/activity.svg"
+                    alt="Ver Citas"
+                    width="24"
+                    height="24"
+                  />
                 </div>
                 <div class="flex flex-1 items-center justify-between truncate rounded-r-md border-b border-r border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
                   <div class="flex-1 truncate px-4 py-2 text-sm">

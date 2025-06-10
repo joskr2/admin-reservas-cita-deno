@@ -3,7 +3,6 @@ import Header from "../../components/layout/Header.tsx";
 import Footer from "../../components/layout/Footer.tsx";
 import type { AppState } from "../_middleware.ts";
 
-import { LuCalendarPlus } from "@preact-icons/lu";
 import { Input } from "../../components/ui/Input.tsx";
 import { Select } from "../../components/ui/Select.tsx";
 import { Button } from "../../components/ui/Button.tsx";
@@ -241,9 +240,13 @@ export default function NewAppointmentPage({
                   Cancelar
                 </a>
                 <Button type="submit">
-                  <span class="-ml-1 mr-2">
-                    <LuCalendarPlus size={22} />
-                  </span>
+                  <img
+                    src="/icons/calendar-plus.svg"
+                    alt="Agendar"
+                    width="20"
+                    height="20"
+                    class="mr-2"
+                  />
                   Agendar Cita
                 </Button>
               </div>

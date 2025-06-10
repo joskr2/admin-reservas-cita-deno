@@ -3,7 +3,6 @@ import type { Handlers, PageProps } from "$fresh/server.ts";
 import { setCookie } from "$std/http/cookie.ts";
 import { verify } from "@felix/bcrypt";
 
-import { LuLock, LuLogIn, LuMail } from "@preact-icons/lu";
 import Header from "../components/layout/Header.tsx";
 import { Input } from "../components/ui/Input.tsx";
 import { Button } from "../components/ui/Button.tsx";
@@ -101,9 +100,13 @@ export default function LoginPage({ data }: PageProps<Data>) {
             )}
 
             <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                <LuMail size={22} />
-              </span>
+              <img
+                src="/icons/mail.svg"
+                alt="Email"
+                width="20"
+                height="20"
+                class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
               <Input
                 type="email"
                 name="email"
@@ -114,9 +117,13 @@ export default function LoginPage({ data }: PageProps<Data>) {
             </div>
 
             <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                <LuLock size={22} />
-              </span>
+              <img
+                src="/icons/lock.svg"
+                alt="Contraseña"
+                width="20"
+                height="20"
+                class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
               <Input
                 type="password"
                 name="password"
@@ -128,9 +135,13 @@ export default function LoginPage({ data }: PageProps<Data>) {
 
             <div>
               <Button type="submit" class="w-full flex justify-center">
-                <span class="mr-2">
-                  <LuLogIn size={22} />
-                </span>
+                <img
+                  src="/icons/login.svg"
+                  alt="Ingresar"
+                  width="20"
+                  height="20"
+                  class="mr-2"
+                />
                 Ingresar
               </Button>
             </div>

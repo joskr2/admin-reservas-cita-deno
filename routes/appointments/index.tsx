@@ -3,12 +3,6 @@ import Header from "../../components/layout/Header.tsx";
 import Footer from "../../components/layout/Footer.tsx";
 import type { AppState } from "../_middleware.ts";
 
-import {
-  LuCalendarPlus,
-  LuClock,
-  LuCalendar as CalendarIcon,
-} from "@preact-icons/lu";
-
 // Define the shape of an appointment record
 interface Appointment {
   id: string;
@@ -100,9 +94,13 @@ export default function AppointmentsPage(props: PageProps<Data, AppState>) {
                 href="/appointments/new"
                 class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:ring-offset-gray-800"
               >
-                <span class="-ml-1 mr-2">
-                  <LuCalendarPlus size={22} />
-                </span>
+                <img
+                  src="/icons/calendar-plus.svg"
+                  alt="Agendar"
+                  width="20"
+                  height="20"
+                  class="mr-2"
+                />
                 Agendar Nueva Cita
               </a>
             </div>
@@ -112,7 +110,11 @@ export default function AppointmentsPage(props: PageProps<Data, AppState>) {
           <div class="mt-8">
             {appointments.length === 0 ? (
               <div class="text-center py-16 px-4 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
-                <CalendarIcon class="mx-auto h-12 w-12 text-gray-400" />
+                <img
+                  src="/icons/calendar.svg"
+                  alt="Sin citas"
+                  class="mx-auto h-12 w-12 text-gray-400"
+                />
                 <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">
                   No hay citas agendadas
                 </h3>
@@ -152,16 +154,26 @@ export default function AppointmentsPage(props: PageProps<Data, AppState>) {
                         )}
                         <div class="mt-2 space-y-1 text-sm text-gray-500 dark:text-gray-400">
                           <p class="flex items-center gap-2">
-                            <CalendarIcon class="w-4 h-4 text-gray-400" />{" "}
+                            <img
+                              src="/icons/calendar.svg"
+                              alt="Fecha"
+                              width="16"
+                              height="16"
+                              class="text-gray-400"
+                            />
                             {new Date(appt.appointmentDate).toLocaleDateString(
                               "es-PE",
                               { timeZone: "UTC" }
                             )}
                           </p>
                           <p class="flex items-center gap-2">
-                            <span class="text-gray-400">
-                              <LuClock size={20} />
-                            </span>
+                            <img
+                              src="/icons/clock.svg"
+                              alt="Hora"
+                              width="16"
+                              height="16"
+                              class="text-gray-400"
+                            />
                             {appt.appointmentTime}
                           </p>
                         </div>

@@ -1,6 +1,5 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 
-import {  LuTrash2,LuFileWarning } from "@preact-icons/lu";
 import type { AppState } from "../../../_middleware.ts";
 import Header from "../../../../components/layout/Header.tsx";
 import { Button } from "../../../../components/ui/Button.tsx";
@@ -115,9 +114,13 @@ export default function DeleteProfilePage({ data }: PageProps<Data>) {
           <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8">
             <div class="text-center">
               <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50">
-                <span class="text-red-600 dark:text-red-400">
-                  <LuFileWarning size={24} aria-hidden="true" />
-                </span>
+                <img
+                  src="/icons/file-warning.svg"
+                  alt="Advertencia"
+                  width="24"
+                  height="24"
+                  class="text-red-600 dark:text-red-400"
+                />
               </div>
               <h1 class="mt-4 text-2xl font-bold text-gray-900 dark:text-white">
                 Eliminar Perfil
@@ -167,9 +170,13 @@ export default function DeleteProfilePage({ data }: PageProps<Data>) {
                     Cancelar
                   </a>
                   <Button type="submit" variant="danger">
-                    <span class="-ml-1 mr-2">
-                      <LuTrash2 size={24} />
-                    </span>
+                    <img
+                      src="/icons/trash-2.svg"
+                      alt="Eliminar"
+                      width="20"
+                      height="20"
+                      class="mr-2"
+                    />
                     Sí, eliminar perfil
                   </Button>
                 </form>
