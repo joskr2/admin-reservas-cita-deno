@@ -37,7 +37,7 @@ export default function Header({
   const isDashboardPage = currentPath === "/dashboard";
   const isAppointmentsPage = currentPath === "/appointments";
   const isNewAppointmentPage = currentPath === "/appointments/new";
-  const isProfilesPage = currentPath.startsWith("/admin/profiles");
+  const isProfilesPage = currentPath.startsWith("/profiles");
 
   // Items de navegación
   const navigationItems = [
@@ -102,7 +102,7 @@ export default function Header({
       showWhen: "authenticated" as const,
     },
     {
-      href: "/admin/profiles",
+      href: "/profiles",
       label: "Usuarios",
       icon: () => (
         <img

@@ -112,7 +112,7 @@ export default function DashboardPage(
               {/* Gestionar Perfiles - Solo superadmin */}
               {isSuperAdmin && (
                 <a
-                  href="/admin/profiles"
+                  href="/profiles"
                   class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white shadow-xl transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/25 hover:-translate-y-1"
                 >
                   <div class="flex items-center gap-4">
