@@ -115,10 +115,9 @@ export default function DeleteProfilePage({ data }: PageProps<Data>) {
           <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8">
             <div class="text-center">
               <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50">
-                <LuFileWarning
-                  class="h-6 w-6 text-red-600 dark:text-red-400"
-                  aria-hidden="true"
-                />
+                <span class="text-red-600 dark:text-red-400">
+                  <LuFileWarning size={24} aria-hidden="true" />
+                </span>
               </div>
               <h1 class="mt-4 text-2xl font-bold text-gray-900 dark:text-white">
                 Eliminar Perfil
@@ -168,7 +167,9 @@ export default function DeleteProfilePage({ data }: PageProps<Data>) {
                     Cancelar
                   </a>
                   <Button type="submit" variant="danger">
-                    <LuTrash2 class="-ml-1 mr-2 h-5 w-5" />
+                    <span class="-ml-1 mr-2">
+                      <LuTrash2 size={24} />
+                    </span>
                     Sí, eliminar perfil
                   </Button>
                 </form>

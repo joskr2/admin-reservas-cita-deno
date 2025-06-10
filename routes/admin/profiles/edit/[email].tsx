@@ -134,7 +134,9 @@ export default function EditProfilePage({ data }: PageProps<Data>) {
         <div class="mx-auto max-w-2xl py-12 px-4 sm:px-6 lg:px-8">
           <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8">
             <div class="flex items-center gap-4 mb-6">
-              <LuUserCog class="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+              <span class="text-indigo-600 dark:text-indigo-400">
+                <LuUserCog size={24} />
+              </span>
               <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
                   Editar Perfil

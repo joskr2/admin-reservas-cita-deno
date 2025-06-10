@@ -55,11 +55,7 @@ export default function ThemeToggle() {
       aria-label="Toggle theme"
     >
       {/* Conditionally render the Sun or Moon icon based on the current theme */}
-      {theme.value === "light" ? (
-        <LuMoon class="h-6 w-6" />
-      ) : (
-        <LuSun class="h-6 w-6" />
-      )}
+      {theme.value === "light" ? <LuMoon size={24} /> : <LuSun size={24} />}
     </button>
   );
 }

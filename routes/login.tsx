@@ -9,8 +9,6 @@ import { Input } from "../components/ui/Input.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import Footer from "../components/layout/Footer.tsx";
 
-
-
 // Interface for the data passed from the handler to the component
 interface Data {
   error?: string;
@@ -103,10 +101,12 @@ export default function LoginPage({ data }: PageProps<Data>) {
             )}
 
             <div class="relative">
-              <LuMail class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <LuMail size={22} />
+              </span>
               <Input
                 type="email"
-                name="email" // Use name attribute for form data
+                name="email"
                 placeholder="Correo electrónico"
                 required
                 class="pl-10"
@@ -114,10 +114,12 @@ export default function LoginPage({ data }: PageProps<Data>) {
             </div>
 
             <div class="relative">
-              <LuLock class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <LuLock size={22} />
+              </span>
               <Input
                 type="password"
-                name="password" // Use name attribute for form data
+                name="password"
                 placeholder="Contraseña"
                 required
                 class="pl-10"
@@ -126,7 +128,9 @@ export default function LoginPage({ data }: PageProps<Data>) {
 
             <div>
               <Button type="submit" class="w-full flex justify-center">
-                <LuLogIn class="mr-2 h-5 w-5" />
+                <span class="mr-2">
+                  <LuLogIn size={22} />
+                </span>
                 Ingresar
               </Button>
             </div>

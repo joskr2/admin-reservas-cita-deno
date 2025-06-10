@@ -26,7 +26,9 @@ export default function Home() {
                 href="/login"
                 class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10 transition duration-150 ease-in-out"
               >
-                <LuLogIn class="w-5 h-5 mr-3" />
+                <span class="mr-3">
+                  <LuLogIn size={22} />
+                </span>
                 Acceder al sistema
               </a>
             </div>

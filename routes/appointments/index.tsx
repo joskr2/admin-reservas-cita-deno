@@ -100,7 +100,9 @@ export default function AppointmentsPage(props: PageProps<Data, AppState>) {
                 href="/appointments/new"
                 class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:ring-offset-gray-800"
               >
-                <LuCalendarPlus class="-ml-1 mr-2 h-5 w-5" />
+                <span class="-ml-1 mr-2">
+                  <LuCalendarPlus size={22} />
+                </span>
                 Agendar Nueva Cita
               </a>
             </div>
@@ -119,9 +121,7 @@ export default function AppointmentsPage(props: PageProps<Data, AppState>) {
                 </p>
               </div>
             ) : (
-              <ul
-                class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
-              >
+              <ul class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {appointments.map((appt) => (
                   <li
                     key={appt.id}
@@ -159,7 +159,9 @@ export default function AppointmentsPage(props: PageProps<Data, AppState>) {
                             )}
                           </p>
                           <p class="flex items-center gap-2">
-                            <LuClock class="w-4 h-4 text-gray-400" />{" "}
+                            <span class="text-gray-400">
+                              <LuClock size={20} />
+                            </span>
                             {appt.appointmentTime}
                           </p>
                         </div>

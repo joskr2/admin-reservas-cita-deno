@@ -69,7 +69,9 @@ export default function ProfilesPage({ data }: PageProps<Data>) {
                 href="/profiles/new" // This will be the route for the creation form
                 class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:ring-offset-gray-800"
               >
-                <LuUserPlus class="-ml-1 mr-2 h-5 w-5" />
+                <span class="ml-1 mr-2">
+                  <LuUserPlus size={22} />
+                </span>
                 Crear Nuevo Perfil
               </a>
             </div>
@@ -137,7 +139,9 @@ export default function ProfilesPage({ data }: PageProps<Data>) {
                               )}`}
                               class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-200"
                             >
-                              <LuFileDigit class="w-5 h-5" />
+                              <span>
+                                <LuFileDigit size={22} />
+                              </span>
                               <span class="sr-only">, {profile.email}</span>
                             </a>
                             <a
@@ -146,7 +150,9 @@ export default function ProfilesPage({ data }: PageProps<Data>) {
                               )}`}
                               class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200"
                             >
-                              <LuTrash2 class="w-5 h-5" />
+                              <span>
+                                <LuTrash2 size={22} />
+                              </span>
                               <span class="sr-only">, {profile.email}</span>
                             </a>
                           </div>
