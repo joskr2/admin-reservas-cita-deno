@@ -22,7 +22,7 @@ export default function DashboardStats({
             alt="Usuarios"
             width={24}
             height={24}
-            className="fill-current text-blue-600 dark:text-blue-300"
+            class="inline-block"
           />
         }
         colorClass="bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-300"
@@ -36,7 +36,7 @@ export default function DashboardStats({
             alt="Psicólogos"
             width={24}
             height={24}
-            className="fill-current text-green-600 dark:text-green-300"
+            class="inline-block"
           />
         }
         colorClass="bg-green-100 text-green-600 dark:bg-green-900/50 dark:text-green-300"
@@ -50,7 +50,7 @@ export default function DashboardStats({
             alt="Citas"
             width={24}
             height={24}
-            className="fill-current text-purple-600 dark:text-purple-300"
+            class="inline-block"
           />
         }
         colorClass="bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-300"

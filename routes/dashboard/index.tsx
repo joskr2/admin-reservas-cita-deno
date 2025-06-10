@@ -1,6 +1,6 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import type { AppState } from "../_middleware.ts";
-import Header from "../../components/layout/Header.tsx";
+import Header from "../../islands/Header.tsx";
 import Footer from "../../components/layout/Footer.tsx";
 import DashboardStats from "../../islands/DashboardStats.tsx";
 
@@ -60,118 +60,141 @@ export default function DashboardPage(
   const { user } = props.state;
   const { totalUsers, totalPsychologists, totalAppointments } = props.data;
   const isSuperAdmin = user?.role === "superadmin";
+  const currentPath = "/dashboard";
+
+  // Ensure user.role is "superadmin" or "psychologist" for Header
+  const headerUser =
+    user && (user.role === "superadmin" || user.role === "psychologist")
+      ? { email: user.email, role: user.role as "superadmin" | "psychologist" }
+      : null;
 
   return (
     <div class="flex flex-col min-h-screen">
-      <Header />
+      <Header currentPath={currentPath} user={headerUser} title="Dashboard" />
 
       <main class="flex-grow bg-gray-50 dark:bg-gray-900">
         <div class="mx-auto max-w-7xl py-12 px-4 sm:px-6 lg:px-8">
-          {/* Dashboard Header */}
-          <div class="pb-8 border-b border-gray-200 dark:border-gray-700 sm:flex sm:items-center sm:justify-between">
-            <div>
-              <h1 class="text-3xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white">
-                Dashboard
-              </h1>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Bienvenido de vuelta,{" "}
-                <span class="font-medium text-indigo-600 dark:text-indigo-400">
-                  {user?.email}
-                </span>
-                !
-              </p>
-            </div>
-            <div class="mt-4 flex sm:mt-0 sm:ml-4">
-              <a
-                href="/api/auth/logout"
-                class="inline-flex items-center rounded-md bg-white dark:bg-gray-700 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:ring-offset-gray-800"
-              >
-                <img
-                  src="/icons/logout.svg"
-                  alt="Cerrar sesión"
-                  width="20"
-                  height="20"
-                  class="mr-2"
-                />
-                Cerrar Sesión
-              </a>
-            </div>
+          {/* Dashboard Welcome */}
+          <div class="pb-8">
+            <h1 class="text-3xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white">
+              Panel de Control
+            </h1>
+            <p class="mt-2 text-lg text-gray-600 dark:text-gray-400">
+              Bienvenido de vuelta,{" "}
+              <span class="font-medium text-indigo-600 dark:text-indigo-400">
+                {user?.email}
+              </span>
+              ! Aquí tienes un resumen de tu actividad.
+            </p>
           </div>
 
           {/* Stats Cards Grid - Only shown to superadmins */}
           {isSuperAdmin && (
-            <div class="mt-10">
-              <h2 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-                Estadísticas del Sistema
+            <div class="mb-10">
+              <h2 class="text-xl font-semibold leading-6 text-gray-900 dark:text-white mb-6">
+                📊 Estadísticas del Sistema
               </h2>
-              <div class="mt-4">
-                <DashboardStats
-                  totalUsers={totalUsers}
-                  totalPsychologists={totalPsychologists}
-                  totalAppointments={totalAppointments}
-                />
-              </div>
+              <DashboardStats
+                totalUsers={totalUsers}
+                totalPsychologists={totalPsychologists}
+                totalAppointments={totalAppointments}
+              />
             </div>
           )}
 
-          {/* Main Actions Grid */}
-          <div class="mt-10">
-            <h2 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
-              Acciones Principales
+          {/* Quick Actions Grid */}
+          <div class="space-y-6">
+            <h2 class="text-xl font-semibold leading-6 text-gray-900 dark:text-white">
+              🚀 Acciones Rápidas
             </h2>
-            <ul class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {/* Gestionar Perfiles - Solo superadmin */}
               {isSuperAdmin && (
-                <li class="col-span-1 flex rounded-md shadow-sm">
-                  <div class="flex-shrink-0 flex items-center justify-center w-16 bg-indigo-600 text-white text-sm font-medium rounded-l-md">
-                    <img
-                      src="/icons/user-plus.svg"
-                      alt="Gestionar Perfiles"
-                      width="24"
-                      height="24"
-                    />
-                  </div>
-                  <div class="flex flex-1 items-center justify-between truncate rounded-r-md border-b border-r border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                    <div class="flex-1 truncate px-4 py-2 text-sm">
-                      <a
-                        href="/admin/profiles"
-                        class="font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300"
-                      >
-                        Gestionar Perfiles
-                      </a>
-                      <p class="text-gray-500 dark:text-gray-400">
-                        Administra los usuarios del sistema.
+                <a
+                  href="/admin/profiles"
+                  class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 p-6 text-white shadow-xl transition-all duration-300 hover:shadow-2xl hover:shadow-indigo-500/25 hover:-translate-y-1"
+                >
+                  <div class="flex items-center gap-4">
+                    <div class="rounded-xl bg-white/20 p-3 backdrop-blur-sm">
+                      <img
+                        src="/icons/user-plus.svg"
+                        alt="Usuarios"
+                        width={24}
+                        height={24}
+                      />
+                    </div>
+                    <div>
+                      <h3 class="text-lg font-semibold">Gestionar Usuarios</h3>
+                      <p class="text-indigo-100">
+                        Administra perfiles del sistema
                       </p>
                     </div>
                   </div>
-                </li>
+                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                </a>
               )}
-              <li class="col-span-1 flex rounded-md shadow-sm">
-                <div class="flex-shrink-0 flex items-center justify-center w-16 bg-purple-600 text-white text-sm font-medium rounded-l-md">
-                  <img
-                    src="/icons/activity.svg"
-                    alt="Ver Citas"
-                    width="24"
-                    height="24"
-                  />
-                </div>
-                <div class="flex flex-1 items-center justify-between truncate rounded-r-md border-b border-r border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
-                  <div class="flex-1 truncate px-4 py-2 text-sm">
-                    <a
-                      href="/appointments"
-                      class="font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300"
-                    >
-                      Ver Citas
-                    </a>
-                    <p class="text-gray-500 dark:text-gray-400">
-                      Revisa y administra las citas.
-                    </p>
+
+              {/* Ver Citas */}
+              <a
+                href="/appointments"
+                class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500 to-pink-600 p-6 text-white shadow-xl transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/25 hover:-translate-y-1"
+              >
+                <div class="flex items-center gap-4">
+                  <div class="rounded-xl bg-white/20 p-3 backdrop-blur-sm">
+                    <img
+                      src="/icons/activity.svg"
+                      alt="Ver Citas"
+                      width={24}
+                      height={24}
+                    />
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-semibold">Ver Citas</h3>
+                    <p class="text-purple-100">Revisa y administra citas</p>
                   </div>
                 </div>
-              </li>
-            </ul>
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+              </a>
+
+              {/* Programar Nueva Cita */}
+              <a
+                href="/appointments/new"
+                class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 p-6 text-white shadow-xl transition-all duration-300 hover:shadow-2xl hover:shadow-emerald-500/25 hover:-translate-y-1"
+              >
+                <div class="flex items-center gap-4">
+                  <div class="rounded-xl bg-white/20 p-3 backdrop-blur-sm">
+                    <img
+                      src="/icons/activity.svg"
+                      alt="Nueva Cita"
+                      width={24}
+                      height={24}
+                    />
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-semibold">Nueva Cita</h3>
+                    <p class="text-emerald-100">Agenda una nueva cita</p>
+                  </div>
+                </div>
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+              </a>
+            </div>
+          </div>
+
+          {/* Recent Activity Section */}
+          <div class="mt-10">
+            <h2 class="text-xl font-semibold leading-6 text-gray-900 dark:text-white mb-6">
+              🕒 Actividad Reciente
+            </h2>
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+              <p class="text-gray-500 dark:text-gray-400 text-center py-8">
+                Próximamente: Historial de actividad reciente
+              </p>
+            </div>
           </div>
         </div>
       </main>
+
       <Footer />
     </div>
   );

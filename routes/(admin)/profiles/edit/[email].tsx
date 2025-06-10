@@ -1,6 +1,6 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import Footer from "../../../../components/layout/Footer.tsx";
-import Header from "../../../../components/layout/Header.tsx";
+import Header from "../../../../islands/Header.tsx";
 import { Button } from "../../../../components/ui/Button.tsx";
 import { Input } from "../../../../components/ui/Input.tsx";
 import { Select } from "../../../../components/ui/Select.tsx";

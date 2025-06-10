@@ -1,5 +1,5 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
-import Header from "../../components/layout/Header.tsx";
+import Header from "../../islands/Header.tsx";
 import Footer from "../../components/layout/Footer.tsx";
 import type { AppState } from "../_middleware.ts";
 

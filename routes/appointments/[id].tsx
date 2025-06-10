@@ -1,5 +1,5 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
-import Header from "../../components/layout/Header.tsx";
+import Header from "../../islands/Header.tsx";
 import Footer from "../../components/layout/Footer.tsx";
 import type { AppState } from "../_middleware.ts";
 import { Button } from "../../components/ui/Button.tsx";
@@ -126,6 +126,7 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
       <main class="flex-grow bg-gray-50 dark:bg-gray-900">
         <div class="mx-auto max-w-4xl py-12 px-4 sm:px-6 lg:px-8">
           <div class="mb-8">
+            {/* Enlace volver */}
             <a
               href="/appointments"
               class="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
@@ -133,8 +134,8 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
               <img
                 src="/icons/arrow-left.svg"
                 alt="Volver"
-                width="16"
-                height="16"
+                width={16}
+                height={16}
               />
               Volver a la lista de citas
             </a>
@@ -161,12 +162,13 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
               </div>
             </div>
             <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
+              {/* Paciente */}
               <div class="flex items-center gap-4">
                 <img
                   src="/icons/user.svg"
                   alt="Paciente"
-                  width="24"
-                  height="24"
+                  width={24}
+                  height={24}
                   class="text-gray-400"
                 />
                 <dl>
@@ -178,12 +180,13 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
                   </dd>
                 </dl>
               </div>
+              {/* Psicólogo */}
               <div class="flex items-center gap-4">
                 <img
                   src="/icons/user.svg"
                   alt="Psicólogo"
-                  width="24"
-                  height="24"
+                  width={24}
+                  height={24}
                   class="text-gray-400"
                 />
                 <dl>
@@ -195,12 +198,13 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
                   </dd>
                 </dl>
               </div>
+              {/* Fecha */}
               <div class="flex items-center gap-4">
                 <img
                   src="/icons/calendar.svg"
                   alt="Fecha"
-                  width="24"
-                  height="24"
+                  width={24}
+                  height={24}
                   class="text-gray-400"
                 />
                 <dl>
@@ -215,12 +219,13 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
                   </dd>
                 </dl>
               </div>
+              {/* Hora */}
               <div class="flex items-center gap-4">
                 <img
                   src="/icons/clock.svg"
                   alt="Hora"
-                  width="24"
-                  height="24"
+                  width={24}
+                  height={24}
                   class="text-gray-400"
                 />
                 <dl>
@@ -232,12 +237,13 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
                   </dd>
                 </dl>
               </div>
+              {/* ID de Cita */}
               <div class="flex items-center gap-4">
                 <img
                   src="/icons/hash.svg"
-                  alt="ID"
-                  width="24"
-                  height="24"
+                  alt="ID de Cita"
+                  width={24}
+                  height={24}
                   class="text-gray-400"
                 />
                 <dl>
@@ -259,6 +265,7 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
                   <p class="text-sm text-gray-600 dark:text-gray-300">
                     Acciones disponibles:
                   </p>
+                  {/* Botón Cancelar */}
                   <Button
                     type="submit"
                     name="_action"
@@ -268,12 +275,13 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
                     <img
                       src="/icons/circle.svg"
                       alt="Cancelar"
-                      width="20"
-                      height="20"
+                      width={20}
+                      height={20}
                       class="mr-2"
                     />
                     Cancelar Cita
                   </Button>
+                  {/* Botón Completar */}
                   <Button
                     type="submit"
                     name="_action"
@@ -282,9 +290,9 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
                   >
                     <img
                       src="/icons/check.svg"
-                      alt="Confirmar"
-                      width="20"
-                      height="20"
+                      alt="Completada"
+                      width={20}
+                      height={20}
                       class="mr-2"
                     />
                     Marcar como Completada

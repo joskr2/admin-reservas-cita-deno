@@ -1,6 +1,5 @@
 import type { ComponentChildren } from "preact";
 import { useEffect } from "preact/hooks";
-import { LuX } from "@preact-icons/lu";
 
 interface ModalProps {
   isOpen: boolean;
@@ -76,7 +75,12 @@ export default function Modal({
                 class="rounded-md text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               >
                 <span>
-                  <LuX size={24} />
+                  <img
+                    src="/icons/circle.svg"
+                    alt="Cerrar"
+                    width={24}
+                    height={24}
+                  />
                 </span>
                 <span class="sr-only">Close modal</span>
               </button>

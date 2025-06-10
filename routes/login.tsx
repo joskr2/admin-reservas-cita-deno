@@ -3,10 +3,10 @@ import type { Handlers, PageProps } from "$fresh/server.ts";
 import { setCookie } from "$std/http/cookie.ts";
 import { verify } from "@felix/bcrypt";
 
-import Header from "../components/layout/Header.tsx";
 import { Input } from "../components/ui/Input.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import Footer from "../components/layout/Footer.tsx";
+import Header from "../islands/Header.tsx";
 
 // Interface for the data passed from the handler to the component
 interface Data {
@@ -102,10 +102,10 @@ export default function LoginPage({ data }: PageProps<Data>) {
             <div class="relative">
               <img
                 src="/icons/mail.svg"
-                alt="Email"
-                width="20"
-                height="20"
-                class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                alt="Correo"
+                width={20}
+                height={20}
+                class="text-white"
               />
               <Input
                 type="email"
@@ -120,9 +120,9 @@ export default function LoginPage({ data }: PageProps<Data>) {
               <img
                 src="/icons/lock.svg"
                 alt="Contraseña"
-                width="20"
-                height="20"
-                class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+                width={20}
+                height={20}
+                class="text-white"
               />
               <Input
                 type="password"
@@ -138,9 +138,9 @@ export default function LoginPage({ data }: PageProps<Data>) {
                 <img
                   src="/icons/login.svg"
                   alt="Ingresar"
-                  width="20"
-                  height="20"
-                  class="mr-2"
+                  width={20}
+                  height={20}
+                  class="text-white"
                 />
                 Ingresar
               </Button>

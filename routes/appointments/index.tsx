@@ -1,5 +1,5 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
-import Header from "../../components/layout/Header.tsx";
+import Header from "../../islands/Header.tsx";
 import Footer from "../../components/layout/Footer.tsx";
 import type { AppState } from "../_middleware.ts";
 
@@ -99,7 +99,7 @@ export default function AppointmentsPage(props: PageProps<Data, AppState>) {
                   alt="Agendar"
                   width="20"
                   height="20"
-                  class="mr-2"
+                  class="mr-2 text-white"
                 />
                 Agendar Nueva Cita
               </a>

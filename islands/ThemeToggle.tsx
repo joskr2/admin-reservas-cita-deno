@@ -53,9 +53,9 @@ export default function ThemeToggle() {
     >
       {/* El componente se re-renderiza automáticamente cuando theme.value cambia */}
       {theme.value === "light" ? (
-        <img src="/icons/moon.svg" alt="Modo oscuro" width="24" height="24" />
+        <img src="/icons/moon.svg" alt="Modo claro" width={24} height={24} />
       ) : (
-        <img src="/icons/sun.svg" alt="Modo claro" width="24" height="24" />
+        <img src="/icons/sun.svg" alt="Modo oscuro" width={24} height={24} />
       )}
     </button>
   );
