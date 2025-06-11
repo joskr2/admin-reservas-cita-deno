@@ -31,7 +31,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       // Si es psicólogo, solo puede crear citas para sí mismo
       if (ctx.state.user?.role === "psychologist") {
         psychologists = psychologists.filter(
-          (psychologist) => psychologist.email === ctx.state.user?.email,
+          (psychologist) => psychologist.email === ctx.state.user?.email
         );
       }
 
@@ -71,7 +71,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
           .sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email));
 
         psychologists = psychologists.filter(
-          (psychologist) => psychologist.email === ctx.state.user?.email,
+          (psychologist) => psychologist.email === ctx.state.user?.email
         );
 
         const rooms = await getAllRooms();
@@ -105,7 +105,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         // Si es psicólogo, solo puede crear citas para sí mismo
         if (ctx.state.user?.role === "psychologist") {
           psychologists = psychologists.filter(
-            (psychologist) => psychologist.email === ctx.state.user?.email,
+            (psychologist) => psychologist.email === ctx.state.user?.email
           );
         }
 
@@ -126,7 +126,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     // Verificar disponibilidad de la sala
     const availableRooms = await getAvailableRooms(
       appointmentDate,
-      appointmentTime,
+      appointmentTime
     );
     const isRoomAvailable = availableRooms.some((room) => room.id === roomId);
 
@@ -140,7 +140,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
         if (ctx.state.user?.role === "psychologist") {
           psychologists = psychologists.filter(
-            (psychologist) => psychologist.email === ctx.state.user?.email,
+            (psychologist) => psychologist.email === ctx.state.user?.email
           );
         }
 
@@ -194,7 +194,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
         if (ctx.state.user?.role === "psychologist") {
           psychologists = psychologists.filter(
-            (psychologist) => psychologist.email === ctx.state.user?.email,
+            (psychologist) => psychologist.email === ctx.state.user?.email
           );
         }
 
@@ -324,9 +324,11 @@ export default function NewAppointmentPage({
                       name="psychologistEmail"
                       required
                       disabled={currentUserRole === "psychologist"}
-                      value={currentUserRole === "psychologist"
-                        ? currentUserEmail
-                        : ""}
+                      value={
+                        currentUserRole === "psychologist"
+                          ? currentUserEmail
+                          : ""
+                      }
                     >
                       {currentUserRole === "superadmin" && (
                         <option value="">Seleccione un psicólogo</option>
@@ -335,8 +337,10 @@ export default function NewAppointmentPage({
                         <option
                           key={psychologist.email}
                           value={psychologist.email}
-                          selected={currentUserRole === "psychologist" &&
-                            psychologist.email === currentUserEmail}
+                          selected={
+                            currentUserRole === "psychologist" &&
+                            psychologist.email === currentUserEmail
+                          }
                         >
                           {psychologist.name || psychologist.email}
                         </option>

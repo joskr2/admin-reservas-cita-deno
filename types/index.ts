@@ -51,6 +51,14 @@ export type AppointmentStatus =
   | "completed"
   | "cancelled";
 
+// Nuevo: Historial de cambios de estado
+export interface AppointmentStatusHistory {
+  status: AppointmentStatus;
+  changedAt: string; // ISO string
+  changedBy?: string; // Email del usuario que hizo el cambio
+  notes?: string; // Notas del cambio
+}
+
 export interface Appointment {
   id: string;
   psychologistEmail: string;
@@ -60,6 +68,7 @@ export interface Appointment {
   appointmentTime: string; // HH:MM
   roomId: RoomId; // Sala de atención asignada
   status: AppointmentStatus;
+  statusHistory?: AppointmentStatusHistory[]; // Historial de cambios
   createdAt: string;
   updatedAt?: string;
   notes?: string;
@@ -128,7 +137,7 @@ export type KVAppointmentKey = ["appointments", string];
 export type KVAppointmentByPsychologistKey = [
   "appointments_by_psychologist",
   string,
-  string,
+  string
 ];
 export type KVSessionKey = ["sessions", string];
 export type KVRoomKey = ["rooms", RoomId];
@@ -160,4 +169,15 @@ export interface IconProps {
   name: string;
   size?: number;
   className?: string;
+}
+
+// Nuevo: Filtros de búsqueda para citas
+export interface AppointmentFilters {
+  psychologistEmail?: string;
+  patientName?: string;
+  appointmentId?: string; // Solo para superadmin
+  status?: AppointmentStatus;
+  dateFrom?: string;
+  dateTo?: string;
+  roomId?: RoomId;
 }

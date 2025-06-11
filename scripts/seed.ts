@@ -88,194 +88,267 @@ const roomsToSeed: Room[] = [
 ];
 
 // Define sample appointments to be seeded
-const appointmentsToSeed = [
+const appointmentsToSeed: Appointment[] = [
   {
-    id: crypto.randomUUID(),
-    patientName: "María González",
+    id: "apt-001-2024-12-15",
     psychologistEmail: "psicologo1@horizonte.com",
     psychologistName: "Dr. Carlos Mendoza",
-    appointmentDate: "2024-12-20",
-    appointmentTime: "10:00",
+    patientName: "María González",
+    appointmentDate: "2024-12-15",
+    appointmentTime: "09:00",
     roomId: "A" as RoomId,
-    status: "pending" as AppointmentStatus,
+    status: "scheduled" as AppointmentStatus,
+    statusHistory: [
+      {
+        status: "pending" as AppointmentStatus,
+        changedAt: "2024-12-01T08:00:00.000Z",
+        notes: "Cita creada por el sistema",
+      },
+      {
+        status: "scheduled" as AppointmentStatus,
+        changedAt: "2024-12-02T10:30:00.000Z",
+        changedBy: "psicologo1@horizonte.com",
+        notes: "Cita confirmada por el Dr. Carlos Mendoza",
+      },
+    ],
+    createdAt: "2024-12-01T08:00:00.000Z",
+    updatedAt: "2024-12-02T10:30:00.000Z",
     notes: "Primera consulta - evaluación inicial",
   },
   {
-    id: crypto.randomUUID(),
-    patientName: "Juan Pérez",
+    id: "apt-002-2024-12-15",
     psychologistEmail: "psicologo2@horizonte.com",
     psychologistName: "Dra. Laura Jiménez",
-    appointmentDate: "2024-12-21",
-    appointmentTime: "14:30",
+    patientName: "Carlos Rodríguez",
+    appointmentDate: "2024-12-15",
+    appointmentTime: "10:30",
     roomId: "B" as RoomId,
-    status: "scheduled" as AppointmentStatus,
-    notes: "Seguimiento de terapia cognitiva",
+    status: "in_progress" as AppointmentStatus,
+    statusHistory: [
+      {
+        status: "pending" as AppointmentStatus,
+        changedAt: "2024-12-01T09:15:00.000Z",
+        notes: "Cita creada por el sistema",
+      },
+      {
+        status: "scheduled" as AppointmentStatus,
+        changedAt: "2024-12-02T14:20:00.000Z",
+        changedBy: "psicologo2@horizonte.com",
+        notes: "Cita programada por la Dra. Laura Jiménez",
+      },
+      {
+        status: "in_progress" as AppointmentStatus,
+        changedAt: "2024-12-15T10:30:00.000Z",
+        changedBy: "psicologo2@horizonte.com",
+        notes: "Sesión iniciada - terapia cognitivo-conductual",
+      },
+    ],
+    createdAt: "2024-12-01T09:15:00.000Z",
+    updatedAt: "2024-12-15T10:30:00.000Z",
+    notes: "Seguimiento de ansiedad - sesión 3",
   },
   {
-    id: crypto.randomUUID(),
-    patientName: "Ana Rodríguez",
+    id: "apt-003-2024-12-16",
     psychologistEmail: "psicologo1@horizonte.com",
     psychologistName: "Dr. Carlos Mendoza",
-    appointmentDate: "2024-12-22",
-    appointmentTime: "09:00",
+    patientName: "Ana Martínez",
+    appointmentDate: "2024-12-16",
+    appointmentTime: "14:00",
     roomId: "C" as RoomId,
-    status: "scheduled" as AppointmentStatus,
-    notes: "Sesión de terapia familiar",
+    status: "completed" as AppointmentStatus,
+    statusHistory: [
+      {
+        status: "pending" as AppointmentStatus,
+        changedAt: "2024-11-28T16:45:00.000Z",
+        notes: "Cita creada por el sistema",
+      },
+      {
+        status: "scheduled" as AppointmentStatus,
+        changedAt: "2024-11-29T11:00:00.000Z",
+        changedBy: "psicologo1@horizonte.com",
+        notes: "Cita confirmada para terapia familiar",
+      },
+      {
+        status: "in_progress" as AppointmentStatus,
+        changedAt: "2024-12-16T14:00:00.000Z",
+        changedBy: "psicologo1@horizonte.com",
+        notes: "Sesión iniciada - terapia familiar",
+      },
+      {
+        status: "completed" as AppointmentStatus,
+        changedAt: "2024-12-16T15:00:00.000Z",
+        changedBy: "psicologo1@horizonte.com",
+        notes: "Sesión completada exitosamente - excelente progreso",
+      },
+    ],
+    createdAt: "2024-11-28T16:45:00.000Z",
+    updatedAt: "2024-12-16T15:00:00.000Z",
+    notes: "Terapia familiar - resolución de conflictos",
   },
   {
-    id: crypto.randomUUID(),
-    patientName: "Carlos López",
+    id: "apt-004-2024-12-17",
     psychologistEmail: "psicologo2@horizonte.com",
     psychologistName: "Dra. Laura Jiménez",
-    appointmentDate: "2024-12-23",
-    appointmentTime: "16:00",
+    patientName: "Pedro Sánchez",
+    appointmentDate: "2024-12-17",
+    appointmentTime: "11:15",
+    roomId: "A" as RoomId,
+    status: "cancelled" as AppointmentStatus,
+    statusHistory: [
+      {
+        status: "pending" as AppointmentStatus,
+        changedAt: "2024-12-03T12:30:00.000Z",
+        notes: "Cita creada por el sistema",
+      },
+      {
+        status: "scheduled" as AppointmentStatus,
+        changedAt: "2024-12-04T09:45:00.000Z",
+        changedBy: "psicologo2@horizonte.com",
+        notes: "Cita programada para evaluación psicológica",
+      },
+      {
+        status: "cancelled" as AppointmentStatus,
+        changedAt: "2024-12-16T18:20:00.000Z",
+        changedBy: "psicologo2@horizonte.com",
+        notes: "Cancelada por emergencia familiar del paciente",
+      },
+    ],
+    createdAt: "2024-12-03T12:30:00.000Z",
+    updatedAt: "2024-12-16T18:20:00.000Z",
+    notes: "Evaluación psicológica - cancelada por motivos familiares",
+  },
+  {
+    id: "apt-005-2024-12-18",
+    psychologistEmail: "psicologo1@horizonte.com",
+    psychologistName: "Dr. Carlos Mendoza",
+    patientName: "Josué Patricio",
+    appointmentDate: "2024-12-18",
+    appointmentTime: "16:30",
     roomId: "D" as RoomId,
     status: "pending" as AppointmentStatus,
-    notes: "Evaluación psicológica",
+    statusHistory: [
+      {
+        status: "pending" as AppointmentStatus,
+        changedAt: "2024-12-10T13:15:00.000Z",
+        notes: "Cita creada - pendiente de confirmación",
+      },
+    ],
+    createdAt: "2024-12-10T13:15:00.000Z",
+    notes: "Consulta de seguimiento - manejo del estrés laboral",
   },
   {
-    id: crypto.randomUUID(),
-    patientName: "Sofia Martínez",
-    psychologistEmail: "psicologo1@horizonte.com",
-    psychologistName: "Dr. Carlos Mendoza",
-    appointmentDate: "2024-12-24",
-    appointmentTime: "11:30",
-    roomId: "E" as RoomId,
-    status: "pending" as AppointmentStatus,
-    notes: "Sesión de relajación y mindfulness",
-  },
-  {
-    id: crypto.randomUUID(),
-    patientName: "Roberto Silva",
+    id: "apt-006-2024-12-19",
     psychologistEmail: "psicologo2@horizonte.com",
     psychologistName: "Dra. Laura Jiménez",
-    appointmentDate: "2024-12-26",
-    appointmentTime: "15:00",
-    roomId: "A" as RoomId,
+    patientName: "Sofía López",
+    appointmentDate: "2024-12-19",
+    appointmentTime: "08:45",
+    roomId: "E" as RoomId,
     status: "scheduled" as AppointmentStatus,
-    notes: "Terapia cognitivo-conductual",
+    statusHistory: [
+      {
+        status: "pending" as AppointmentStatus,
+        changedAt: "2024-12-05T15:20:00.000Z",
+        notes: "Cita creada por el sistema",
+      },
+      {
+        status: "scheduled" as AppointmentStatus,
+        changedAt: "2024-12-06T10:10:00.000Z",
+        changedBy: "psicologo2@horizonte.com",
+        notes: "Cita confirmada para terapia de pareja",
+      },
+    ],
+    createdAt: "2024-12-05T15:20:00.000Z",
+    updatedAt: "2024-12-06T10:10:00.000Z",
+    notes: "Terapia de pareja - primera sesión",
   },
 ];
 
 async function seedDatabase() {
-  console.log("🌱 Starting database seeding...");
   const kv = await Deno.openKv();
 
-  // Seed rooms first
-  console.log("🏢 Seeding rooms...");
-  for (const room of roomsToSeed) {
-    // Check if the room already exists
-    const existingRoom = await kv.get(["rooms", room.id]);
-    if (existingRoom.value) {
-      console.log(`- Room '${room.id}' already exists. Skipping.`);
-      continue;
+  try {
+    console.log("🌱 Iniciando proceso de seed...");
+
+    // Clear existing data
+    console.log("🧹 Limpiando datos existentes...");
+
+    // Delete all existing users
+    const existingUsers = kv.list({ prefix: ["users"] });
+    for await (const entry of existingUsers) {
+      await kv.delete(entry.key);
     }
 
-    const result = await kv.set(["rooms", room.id], room);
-
-    if (result.ok) {
-      console.log(`✅ Room '${room.id} - ${room.name}' created successfully!`);
-    } else {
-      console.error(`❌ Failed to create room '${room.id}'.`);
-    }
-  }
-
-  // Seed users
-  console.log("👥 Seeding users...");
-  for (const userData of usersToSeed) {
-    const { email, password, role, name } = userData;
-
-    // Check if the user already exists to prevent overwriting
-    const existingUser = await kv.get(["users", email]);
-    if (existingUser.value) {
-      console.log(`- User '${email}' already exists. Skipping.`);
-      continue;
+    // Delete all existing sessions
+    const existingSessions = kv.list({ prefix: ["sessions"] });
+    for await (const entry of existingSessions) {
+      await kv.delete(entry.key);
     }
 
-    // Hash the password securely
-    const passwordHash = await hash(password);
-
-    const userRecord = {
-      email: email,
-      passwordHash: passwordHash,
-      role: role,
-      name: name,
-      createdAt: new Date().toISOString(),
-      isActive: true,
-    };
-
-    // Atomically set the user and index it by role
-    const result = await kv
-      .atomic()
-      .set(["users", email], userRecord)
-      .set(["users_by_role", role, email], email) // Guardar solo el email en el índice
-      .commit();
-
-    if (result.ok) {
-      console.log(`✅ User '${email}' (${role}) created successfully!`);
-    } else {
-      console.error(`❌ Failed to create user '${email}'.`);
+    // Delete all existing appointments
+    const existingAppointments = kv.list({ prefix: ["appointments"] });
+    for await (const entry of existingAppointments) {
+      await kv.delete(entry.key);
     }
-  }
 
-  // Seed appointments
-  console.log("📅 Seeding appointments...");
-  for (const appointmentData of appointmentsToSeed) {
-    // Check if the appointment already exists
-    const existingAppointment = await kv.get([
-      "appointments",
-      appointmentData.id,
-    ]);
-    if (existingAppointment.value) {
+    // Delete all existing rooms
+    const existingRooms = kv.list({ prefix: ["rooms"] });
+    for await (const entry of existingRooms) {
+      await kv.delete(entry.key);
+    }
+
+    // Seed users
+    console.log("👥 Creando usuarios...");
+    for (const user of usersToSeed) {
+      const passwordHash = await hash(user.password);
+      const userData = {
+        email: user.email,
+        passwordHash,
+        role: user.role,
+        name: user.name,
+        createdAt: new Date().toISOString(),
+        isActive: true,
+      };
+
+      await kv.set(["users", user.email], userData);
+      console.log(`   ✅ Usuario creado: ${user.name} (${user.email})`);
+    }
+
+    // Seed rooms
+    console.log("🏠 Creando salas...");
+    for (const room of roomsToSeed) {
+      await kv.set(["rooms", room.id], room);
+      console.log(`   ✅ Sala creada: ${room.name}`);
+    }
+
+    // Seed appointments
+    console.log("📅 Creando citas...");
+    for (const appointment of appointmentsToSeed) {
+      await kv.set(["appointments", appointment.id], appointment);
       console.log(
-        `- Appointment for '${appointmentData.patientName}' already exists. Skipping.`,
-      );
-      continue;
-    }
-
-    const appointment: Appointment = {
-      ...appointmentData,
-      createdAt: new Date().toISOString(),
-    };
-
-    // Save the appointment with psychologist index
-    const result = await kv
-      .atomic()
-      .set(["appointments", appointment.id], appointment)
-      .set(
-        [
-          "appointments_by_psychologist",
-          appointment.psychologistEmail,
-          appointment.id,
-        ],
-        appointment.id,
-      )
-      .commit();
-
-    if (result.ok) {
-      console.log(
-        `✅ Appointment for '${appointment.patientName}' in room ${appointment.roomId} created successfully!`,
-      );
-    } else {
-      console.error(
-        `❌ Failed to create appointment for '${appointment.patientName}'.`,
+        `   ✅ Cita creada: ${appointment.patientName} - ${appointment.appointmentDate} ${appointment.appointmentTime}`
       );
     }
+
+    console.log("\n🎉 ¡Seed completado exitosamente!");
+    console.log("\n📊 Resumen:");
+    console.log(`   👥 Usuarios: ${usersToSeed.length}`);
+    console.log(`   🏠 Salas: ${roomsToSeed.length}`);
+    console.log(`   📅 Citas: ${appointmentsToSeed.length}`);
+
+    console.log("\n🔑 Credenciales de acceso:");
+    for (const user of usersToSeed) {
+      console.log(`   ${user.name}: ${user.email} / password123`);
+    }
+  } catch (error) {
+    console.error("❌ Error durante el seed:", error);
+    throw error;
+  } finally {
+    await kv.close();
   }
-
-  await kv.close();
-  console.log("🌱 Database seeding finished.");
-  console.log("\n📋 Summary:");
-  console.log(`- ${roomsToSeed.length} rooms available (A, B, C, D, E)`);
-  console.log(`- ${usersToSeed.length} users created`);
-  console.log(`- ${appointmentsToSeed.length} sample appointments created`);
-  console.log("\n🔑 Login credentials:");
-  console.log("- Superadmin: admin@horizonte.com / password123");
-  console.log("- Psicólogo 1: psicologo1@horizonte.com / password123");
-  console.log("- Psicólogo 2: psicologo2@horizonte.com / password123");
 }
 
-// This allows the script to be run directly from the command line
+// Execute seeding if this script is run directly
 if (import.meta.main) {
   await seedDatabase();
 }

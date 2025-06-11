@@ -39,6 +39,9 @@ import * as $patients_edit_id_ from "./routes/patients/edit/[id].tsx";
 import * as $patients_index from "./routes/patients/index.tsx";
 import * as $patients_new from "./routes/patients/new.tsx";
 import * as $AppointmentCalendar from "./islands/AppointmentCalendar.tsx";
+import * as $AppointmentDetailsDropdown from "./islands/AppointmentDetailsDropdown.tsx";
+import * as $AppointmentDetailsModal from "./islands/AppointmentDetailsModal.tsx";
+import * as $AppointmentFilters from "./islands/AppointmentFilters.tsx";
 import * as $AppointmentForm from "./islands/AppointmentForm.tsx";
 import * as $AppointmentFormValidator from "./islands/AppointmentFormValidator.tsx";
 import * as $AppointmentStatusSelector from "./islands/AppointmentStatusSelector.tsx";
@@ -92,6 +95,9 @@ const manifest = {
   },
   islands: {
     "./islands/AppointmentCalendar.tsx": $AppointmentCalendar,
+    "./islands/AppointmentDetailsDropdown.tsx": $AppointmentDetailsDropdown,
+    "./islands/AppointmentDetailsModal.tsx": $AppointmentDetailsModal,
+    "./islands/AppointmentFilters.tsx": $AppointmentFilters,
     "./islands/AppointmentForm.tsx": $AppointmentForm,
     "./islands/AppointmentFormValidator.tsx": $AppointmentFormValidator,
     "./islands/AppointmentStatusSelector.tsx": $AppointmentStatusSelector,

@@ -30,6 +30,7 @@ export function Icon({
     check: { light: "/icons/check.svg" },
     circle: { light: "/icons/circle.svg" },
     x: { light: "/icons/x.svg" },
+    edit: { light: "/icons/edit.svg", dark: "/icons/edit-dark.svg" },
     "trash-2": { light: "/icons/trash-2.svg" },
     "file-digit": { light: "/icons/file-digit.svg" },
     "file-warning": { light: "/icons/file-warning.svg" },
