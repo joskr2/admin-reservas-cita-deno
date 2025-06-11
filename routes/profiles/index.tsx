@@ -1,7 +1,7 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import { getAllUsers, getUsersByRole } from "../../lib/kv.ts";
-import { Button } from "../../components/ui/Button.tsx";
+
 import { Icon } from "../../components/ui/Icon.tsx";
 import { Badge } from "../../components/ui/Badge.tsx";
 import type { UserProfile, UserRole, AppState } from "../../types/index.ts";
@@ -202,14 +202,16 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                 </p>
               </div>
               {currentUser.role === "superadmin" && (
-                <Button
-                  variant="primary"
-                  class="flex items-center gap-2 px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-200"
-                  onClick={() => (globalThis.location.href = "/profiles/new")}
+                <a
+                  href="/profiles/new"
+                  class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  <Icon name="user-plus" className="h-5 w-5" />
+                  <Icon
+                    name="user-plus"
+                    className="h-5 w-5 text-white filter brightness-0 invert"
+                  />
                   Nuevo Usuario
-                </Button>
+                </a>
               )}
             </div>
           </div>
@@ -326,14 +328,16 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                     } que coincidan con los filtros aplicados.`}
               </p>
               {currentUser.role === "superadmin" && (
-                <Button
-                  variant="primary"
-                  onClick={() => (globalThis.location.href = "/profiles/new")}
-                  class="inline-flex items-center gap-2"
+                <a
+                  href="/profiles/new"
+                  class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
-                  <Icon name="user-plus" className="h-5 w-5" />
+                  <Icon
+                    name="user-plus"
+                    className="h-5 w-5 text-white filter brightness-0 invert"
+                  />
                   Crear Primer Usuario
-                </Button>
+                </a>
               )}
             </div>
           ) : (

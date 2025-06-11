@@ -1,7 +1,6 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import { getAllUsers, getUsersByRole } from "../../../lib/kv.ts";
-import { Button } from "../../../components/ui/Button.tsx";
 import { Icon } from "../../../components/ui/Icon.tsx";
 import { Badge } from "../../../components/ui/Badge.tsx";
 import type { UserProfile, UserRole } from "../../../types/index.ts";
@@ -157,14 +156,16 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                   Administra y supervisa todos los usuarios del sistema
                 </p>
               </div>
-              <Button
-                variant="primary"
-                class="flex items-center gap-2 px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-200"
-                onClick={() => (globalThis.location.href = "/profiles/new")}
+              <a
+                href="/profiles/new"
+                class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                <Icon name="user-plus" className="h-5 w-5" />
+                <Icon
+                  name="user-plus"
+                  className="h-5 w-5 text-white filter brightness-0 invert"
+                />
                 Nuevo Usuario
-              </Button>
+              </a>
             </div>
           </div>
 
@@ -195,21 +196,32 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <Icon name="user" className="h-4 w-4 text-gray-400" />
                     </div>
-                    <input
-                      type="text"
-                      placeholder="Nombre o email..."
-                      value={filters.search || ""}
-                      onInput={(e) => {
-                        const value = (e.target as HTMLInputElement).value;
-                        const url = buildUrl({
-                          ...filters,
-                          search: value || undefined,
-                          page: 1,
-                        });
-                        globalThis.location.href = url;
-                      }}
-                      class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                    />
+                    <form method="GET">
+                      <input
+                        type="hidden"
+                        name="role"
+                        value={filters.role || ""}
+                      />
+                      <input
+                        type="hidden"
+                        name="status"
+                        value={filters.status || ""}
+                      />
+                      <input
+                        type="text"
+                        name="search"
+                        placeholder="Nombre o email..."
+                        value={filters.search || ""}
+                        class="block w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                      />
+                      <button
+                        type="submit"
+                        title="Buscar"
+                        class="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-blue-600"
+                      >
+                        <Icon name="eye" className="h-4 w-4" />
+                      </button>
+                    </form>
                   </div>
                 </div>
 
@@ -219,25 +231,32 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                     <Icon name="shield" className="h-4 w-4 text-gray-500" />
                     <span>Rol</span>
                   </label>
-                  <select
-                    value={filters.role || ""}
-                    onChange={(e) => {
-                      const value = (e.target as HTMLSelectElement).value;
-                      const url = buildUrl({
-                        ...filters,
-                        role: value || undefined,
-                        page: 1,
-                      });
-                      globalThis.location.href = url;
-                    }}
-                    title="Filtrar por rol de usuario"
-                    aria-label="Filtrar por rol de usuario"
-                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                  >
-                    <option value="">Todos los roles</option>
-                    <option value="psychologist">👨‍⚕️ Psicólogos</option>
-                    <option value="superadmin">👑 Administradores</option>
-                  </select>
+                  <form method="GET">
+                    <input
+                      type="hidden"
+                      name="search"
+                      value={filters.search || ""}
+                    />
+                    <input
+                      type="hidden"
+                      name="status"
+                      value={filters.status || ""}
+                    />
+                    <select
+                      name="role"
+                      value={filters.role || ""}
+                      title="Filtrar por rol de usuario"
+                      aria-label="Filtrar por rol de usuario"
+                      class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                    >
+                      <option value="">Todos los roles</option>
+                      <option value="psychologist">👨‍⚕️ Psicólogos</option>
+                      <option value="superadmin">👑 Administradores</option>
+                    </select>
+                    <button type="submit" class="sr-only">
+                      Filtrar
+                    </button>
+                  </form>
                 </div>
 
                 {/* Filtro por estado */}
@@ -246,25 +265,32 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                     <Icon name="activity" className="h-4 w-4 text-gray-500" />
                     <span>Estado</span>
                   </label>
-                  <select
-                    value={filters.status || ""}
-                    onChange={(e) => {
-                      const value = (e.target as HTMLSelectElement).value;
-                      const url = buildUrl({
-                        ...filters,
-                        status: value || undefined,
-                        page: 1,
-                      });
-                      globalThis.location.href = url;
-                    }}
-                    title="Filtrar por estado de usuario"
-                    aria-label="Filtrar por estado de usuario"
-                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                  >
-                    <option value="">Todos los estados</option>
-                    <option value="active">✅ Activos</option>
-                    <option value="inactive">❌ Inactivos</option>
-                  </select>
+                  <form method="GET">
+                    <input
+                      type="hidden"
+                      name="search"
+                      value={filters.search || ""}
+                    />
+                    <input
+                      type="hidden"
+                      name="role"
+                      value={filters.role || ""}
+                    />
+                    <select
+                      name="status"
+                      value={filters.status || ""}
+                      title="Filtrar por estado de usuario"
+                      aria-label="Filtrar por estado de usuario"
+                      class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                    >
+                      <option value="">Todos los estados</option>
+                      <option value="active">✅ Activos</option>
+                      <option value="inactive">❌ Inactivos</option>
+                    </select>
+                    <button type="submit" class="sr-only">
+                      Filtrar
+                    </button>
+                  </form>
                 </div>
               </div>
 
@@ -285,15 +311,13 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                           .join(", ")}
                       </span>
                     </div>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => (globalThis.location.href = "/profiles")}
-                      class="inline-flex items-center gap-1"
+                    <a
+                      href="/profiles"
+                      class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-md transition-colors"
                     >
                       <Icon name="x" className="h-3 w-3" />
                       Limpiar Filtros
-                    </Button>
+                    </a>
                   </div>
                 </div>
               )}
@@ -394,14 +418,16 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                   ? "Aún no hay usuarios registrados en el sistema."
                   : "No hay usuarios que coincidan con los filtros aplicados."}
               </p>
-              <Button
-                variant="primary"
-                onClick={() => (globalThis.location.href = "/profiles/new")}
-                class="inline-flex items-center gap-2"
+              <a
+                href="/profiles/new"
+                class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                <Icon name="user-plus" className="h-5 w-5" />
+                <Icon
+                  name="user-plus"
+                  className="h-5 w-5 text-white filter brightness-0 invert"
+                />
                 Crear Primer Usuario
-              </Button>
+              </a>
             </div>
           ) : (
             <>
@@ -483,40 +509,24 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                             )}
                           </td>
                           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() =>
-                                (globalThis.location.href = `/profiles/edit/${encodeURIComponent(
-                                  profile.email
-                                )}`)
-                              }
-                              class="inline-flex items-center gap-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+                            <a
+                              href={`/(admin)/profiles/edit/${encodeURIComponent(
+                                profile.email
+                              )}`}
+                              class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                             >
                               <Icon name="edit" className="h-3 w-3" />
                               Editar
-                            </Button>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              onClick={() => {
-                                if (
-                                  confirm(
-                                    `¿Estás seguro de que quieres eliminar el usuario ${
-                                      profile.name || profile.email
-                                    }?`
-                                  )
-                                ) {
-                                  globalThis.location.href = `/(admin)/profiles/delete/${encodeURIComponent(
-                                    profile.email
-                                  )}`;
-                                }
-                              }}
-                              class="inline-flex items-center gap-1"
+                            </a>
+                            <a
+                              href={`/(admin)/profiles/delete/${encodeURIComponent(
+                                profile.email
+                              )}`}
+                              class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                             >
                               <Icon name="trash-2" className="h-3 w-3" />
                               Eliminar
-                            </Button>
+                            </a>
                           </td>
                         </tr>
                       ))}
@@ -580,40 +590,24 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                     </div>
 
                     <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() =>
-                          (globalThis.location.href = `/(admin)/profiles/edit/${encodeURIComponent(
-                            profile.email
-                          )}`)
-                        }
-                        class="inline-flex items-center gap-1"
+                      <a
+                        href={`/(admin)/profiles/edit/${encodeURIComponent(
+                          profile.email
+                        )}`}
+                        class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                       >
                         <Icon name="edit" className="h-3 w-3" />
                         Editar
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => {
-                          if (
-                            confirm(
-                              `¿Estás seguro de que quieres eliminar el usuario ${
-                                profile.name || profile.email
-                              }?`
-                            )
-                          ) {
-                            globalThis.location.href = `/(admin)/profiles/delete/${encodeURIComponent(
-                              profile.email
-                            )}`;
-                          }
-                        }}
-                        class="inline-flex items-center gap-1"
+                      </a>
+                      <a
+                        href={`/(admin)/profiles/delete/${encodeURIComponent(
+                          profile.email
+                        )}`}
+                        class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                       >
                         <Icon name="trash-2" className="h-3 w-3" />
                         Eliminar
-                      </Button>
+                      </a>
                     </div>
                   </div>
                 ))}
