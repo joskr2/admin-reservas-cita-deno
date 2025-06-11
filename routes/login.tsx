@@ -44,15 +44,13 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         });
       }
 
-      // Verificar contraseña (en un caso real usarías bcrypt)
-      const encoder = new TextEncoder();
-      const data = encoder.encode(password + "salt");
-      const hash = await crypto.subtle.digest("SHA-256", data);
-      const hashedPassword = Array.from(new Uint8Array(hash))
-        .map((b) => b.toString(16).padStart(2, "0"))
-        .join("");
+      // Verificar contraseña con bcrypt
+      const { compare } = await import(
+        "https://deno.land/x/bcrypt@v0.4.1/mod.ts"
+      );
+      const isValidPassword = await compare(password, user.passwordHash);
 
-      if (hashedPassword !== user.passwordHash) {
+      if (!isValidPassword) {
         return ctx.render({
           error: "Credenciales inválidas",
         });
@@ -68,7 +66,9 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       const headers = new Headers();
       headers.set(
         "Set-Cookie",
-        `session=${sessionId}; HttpOnly; Path=/; Max-Age=${7 * 24 * 60 * 60}`
+        `auth_session=${sessionId}; HttpOnly; Path=/; Max-Age=${
+          7 * 24 * 60 * 60
+        }`
       );
       headers.set("Location", "/dashboard");
 

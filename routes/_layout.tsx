@@ -6,11 +6,12 @@ import Footer from "../components/layout/Footer.tsx";
 export default function Layout({
   Component,
   route,
+  state,
 }: PageProps<unknown, AppState>) {
-  const isPublicPage = route === "/" || route === "/login";
+  const isLoginPage = route === "/login";
 
-  // Para páginas públicas, usar layout mínimo
-  if (isPublicPage) {
+  // Solo la página de login usa layout mínimo
+  if (isLoginPage) {
     return (
       <div class="flex flex-col min-h-screen">
         <Component />
@@ -18,10 +19,10 @@ export default function Layout({
     );
   }
 
-  // Para páginas privadas, usar layout completo con Header y Footer
+  // Todas las demás páginas (incluyendo home) usan layout completo
   return (
     <div class="flex flex-col min-h-screen">
-      <Header />
+      <Header currentPath={route} user={state.user} />
       <main class="flex-grow bg-gray-50 dark:bg-gray-900">
         <Component />
       </main>
