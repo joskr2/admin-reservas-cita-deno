@@ -19,29 +19,29 @@ export default function Home({ state }: PageProps<unknown, AppState>) {
             </p>
 
             {state.user ? (
-              <div class="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
+              <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mt-10">
                 <a
                   href="/dashboard"
-                  class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
+                  class="inline-flex items-center px-8 py-4 text-base font-semibold rounded-xl text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                 >
-                  <Icon name="briefcase" className="h-5 w-5 mr-2" />
+                  <Icon name="briefcase" size={20} className="mr-3" />
                   Ir al Dashboard
                 </a>
                 <a
                   href="/appointments"
-                  class="inline-flex items-center px-8 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 md:py-4 md:text-lg md:px-10"
+                  class="inline-flex items-center px-8 py-4 text-base font-semibold rounded-xl text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 border-2 border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                 >
-                  <Icon name="calendar" className="h-5 w-5 mr-2" />
+                  <Icon name="calendar" size={20} className="mr-3" />
                   Ver Citas
                 </a>
               </div>
             ) : (
-              <div class="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
+              <div class="flex justify-center mt-10">
                 <a
                   href="/login"
-                  class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
+                  class="inline-flex items-center px-10 py-4 text-lg font-semibold rounded-xl text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
                 >
-                  <Icon name="login" className="h-5 w-5 mr-2" />
+                  <Icon name="login" size={24} className="mr-3" />
                   Iniciar Sesión
                 </a>
               </div>
@@ -65,102 +65,108 @@ export default function Home({ state }: PageProps<unknown, AppState>) {
 
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Feature 1 */}
-            <div class="text-center p-6 rounded-lg bg-gray-50 dark:bg-gray-800">
-              <div class="w-16 h-16 mx-auto mb-4 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center">
+            <div class="text-center p-8 rounded-xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 dark:border-gray-700">
+              <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <Icon
                   name="calendar-plus"
-                  className="h-8 w-8 text-indigo-600 dark:text-indigo-400"
+                  size={32}
+                  className="text-white filter brightness-0 invert"
                 />
               </div>
-              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 Gestión de Citas
               </h3>
-              <p class="text-gray-600 dark:text-gray-400">
+              <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
                 Programa, modifica y gestiona todas tus citas de manera sencilla
                 e intuitiva.
               </p>
             </div>
 
             {/* Feature 2 */}
-            <div class="text-center p-6 rounded-lg bg-gray-50 dark:bg-gray-800">
-              <div class="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+            <div class="text-center p-8 rounded-xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 dark:border-gray-700">
+              <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <Icon
                   name="users"
-                  className="h-8 w-8 text-green-600 dark:text-green-400"
+                  size={32}
+                  className="text-white filter brightness-0 invert"
                 />
               </div>
-              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 Gestión de Pacientes
               </h3>
-              <p class="text-gray-600 dark:text-gray-400">
+              <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
                 Mantén un registro completo de todos tus pacientes y su
                 historial.
               </p>
             </div>
 
             {/* Feature 3 */}
-            <div class="text-center p-6 rounded-lg bg-gray-50 dark:bg-gray-800">
-              <div class="w-16 h-16 mx-auto mb-4 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+            <div class="text-center p-8 rounded-xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 dark:border-gray-700">
+              <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <Icon
                   name="dashboard"
-                  className="h-8 w-8 text-purple-600 dark:text-purple-400"
+                  size={32}
+                  className="text-white filter brightness-0 invert"
                 />
               </div>
-              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 Reportes y Estadísticas
               </h3>
-              <p class="text-gray-600 dark:text-gray-400">
+              <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
                 Obtén insights valiosos sobre tu práctica con reportes
                 detallados.
               </p>
             </div>
 
             {/* Feature 4 */}
-            <div class="text-center p-6 rounded-lg bg-gray-50 dark:bg-gray-800">
-              <div class="w-16 h-16 mx-auto mb-4 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center">
+            <div class="text-center p-8 rounded-xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 dark:border-gray-700">
+              <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <Icon
                   name="shield"
-                  className="h-8 w-8 text-yellow-600 dark:text-yellow-400"
+                  size={32}
+                  className="text-white filter brightness-0 invert"
                 />
               </div>
-              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 Seguridad y Privacidad
               </h3>
-              <p class="text-gray-600 dark:text-gray-400">
+              <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
                 Protección total de datos con los más altos estándares de
                 seguridad.
               </p>
             </div>
 
             {/* Feature 5 */}
-            <div class="text-center p-6 rounded-lg bg-gray-50 dark:bg-gray-800">
-              <div class="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
+            <div class="text-center p-8 rounded-xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 dark:border-gray-700">
+              <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-red-500 to-rose-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <Icon
                   name="heart"
-                  className="h-8 w-8 text-red-600 dark:text-red-400"
+                  size={32}
+                  className="text-white filter brightness-0 invert"
                 />
               </div>
-              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 Enfoque Humano
               </h3>
-              <p class="text-gray-600 dark:text-gray-400">
+              <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
                 Diseñado pensando en la relación terapéutica y el bienestar del
                 paciente.
               </p>
             </div>
 
             {/* Feature 6 */}
-            <div class="text-center p-6 rounded-lg bg-gray-50 dark:bg-gray-800">
-              <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+            <div class="text-center p-8 rounded-xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-shadow duration-300 border border-gray-100 dark:border-gray-700">
+              <div class="w-20 h-20 mx-auto mb-6 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-2xl flex items-center justify-center shadow-lg">
                 <Icon
                   name="heart-handshake"
-                  className="h-8 w-8 text-blue-600 dark:text-blue-400"
+                  size={32}
+                  className="text-white filter brightness-0 invert"
                 />
               </div>
-              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                 Soporte Continuo
               </h3>
-              <p class="text-gray-600 dark:text-gray-400">
+              <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
                 Acompañamiento y soporte técnico para que te enfoques en lo
                 importante.
               </p>
@@ -183,9 +189,9 @@ export default function Home({ state }: PageProps<unknown, AppState>) {
           {!state.user && (
             <a
               href="/login"
-              class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
+              class="inline-flex items-center px-10 py-4 text-lg font-semibold rounded-xl text-indigo-600 bg-white hover:bg-gray-50 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
             >
-              <Icon name="login" className="h-5 w-5 mr-2" />
+              <Icon name="login" size={24} className="mr-3" />
               Comenzar Ahora
             </a>
           )}
