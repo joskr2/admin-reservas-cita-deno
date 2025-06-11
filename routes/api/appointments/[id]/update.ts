@@ -1,8 +1,8 @@
 import { type FreshContext } from "$fresh/server.ts";
 import {
-  type AppState,
-  type AppointmentStatus,
   type Appointment,
+  type AppointmentStatus,
+  type AppState,
 } from "../../../../types/index.ts";
 
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
@@ -14,7 +14,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
   if (!appointmentId) {
     return new Response(
       JSON.stringify({ success: false, error: "ID de cita requerido" }),
-      { status: 400, headers: { "Content-Type": "application/json" } }
+      { status: 400, headers: { "Content-Type": "application/json" } },
     );
   }
 
@@ -25,7 +25,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     if (!status) {
       return new Response(
         JSON.stringify({ success: false, error: "Estado requerido" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+        { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
 
@@ -40,7 +40,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     if (!validStatuses.includes(status)) {
       return new Response(
         JSON.stringify({ success: false, error: "Estado inválido" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+        { status: 400, headers: { "Content-Type": "application/json" } },
       );
     }
 
@@ -53,11 +53,25 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       if (!appointmentEntry.value) {
         return new Response(
           JSON.stringify({ success: false, error: "Cita no encontrada" }),
-          { status: 404, headers: { "Content-Type": "application/json" } }
+          { status: 404, headers: { "Content-Type": "application/json" } },
         );
       }
 
       const appointment = appointmentEntry.value as Appointment;
+
+      // Verificar permisos: psicólogos solo pueden actualizar sus propias citas
+      if (
+        ctx.state.user?.role === "psychologist" &&
+        appointment.psychologistEmail !== ctx.state.user.email
+      ) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: "No tienes permisos para actualizar esta cita",
+          }),
+          { status: 403, headers: { "Content-Type": "application/json" } },
+        );
+      }
 
       // Actualizar el estado
       const updatedAppointment = {
@@ -79,7 +93,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
             success: false,
             error: "Error al actualizar la cita",
           }),
-          { status: 500, headers: { "Content-Type": "application/json" } }
+          { status: 500, headers: { "Content-Type": "application/json" } },
         );
       }
 
@@ -89,7 +103,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
           message: "Estado actualizado correctamente",
           data: updatedAppointment,
         }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
+        { status: 200, headers: { "Content-Type": "application/json" } },
       );
     } finally {
       await kv.close();
@@ -98,7 +112,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     console.error("Error updating appointment:", error);
     return new Response(
       JSON.stringify({ success: false, error: "Error interno del servidor" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }
 }

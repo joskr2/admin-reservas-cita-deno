@@ -1,28 +1,20 @@
-import { type PageProps, type FreshContext } from "$fresh/server.ts";
+import { type FreshContext, type PageProps } from "$fresh/server.ts";
 import {
-  type AppState,
   type Appointment,
   type AppointmentStatus,
+  type AppState,
+  type Room,
 } from "../../types/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
-import { getAllAppointments } from "../../lib/kv.ts";
-
-export async function handler(req: Request, ctx: FreshContext<AppState>) {
-  const kv = await Deno.openKv();
-
-  try {
-    const appointments = await getAllAppointments();
-    return ctx.render({ appointments });
-  } finally {
-    await kv.close();
-  }
-}
+import { getAllAppointments, getAllRooms } from "../../lib/kv.ts";
+import AppointmentStatusSelector from "../../islands/AppointmentStatusSelector.tsx";
+import DeleteAppointmentButton from "../../islands/DeleteAppointmentButton.tsx";
 
 // Función para obtener el color del estado
 function getStatusColor(status: AppointmentStatus): string {
   switch (status) {
     case "pending":
-      return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
+      return "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200";
     case "scheduled":
       return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
     case "in_progress":
@@ -32,7 +24,7 @@ function getStatusColor(status: AppointmentStatus): string {
     case "cancelled":
       return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
     default:
-      return "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
+      return "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200";
   }
 }
 
@@ -54,7 +46,7 @@ function getStatusText(status: AppointmentStatus): string {
   }
 }
 
-// Función para obtener los estados siguientes posibles
+// Función para obtener los siguientes estados posibles
 function getNextStatuses(
   currentStatus: AppointmentStatus
 ): AppointmentStatus[] {
@@ -74,11 +66,52 @@ function getNextStatuses(
   }
 }
 
+// Función para formatear fecha
+function _formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("es-ES", {
+    weekday: "short",
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+// Función para formatear hora
+function _formatTime(timeString: string): string {
+  return timeString;
+}
+
+export async function handler(_req: Request, ctx: FreshContext<AppState>) {
+  const kv = await Deno.openKv();
+
+  try {
+    let appointments: Appointment[];
+    const rooms = await getAllRooms();
+
+    // Si es superadmin, puede ver todas las citas
+    if (ctx.state.user?.role === "superadmin") {
+      appointments = await getAllAppointments();
+    } else {
+      // Si es psicólogo, solo puede ver sus propias citas
+      appointments = await getAllAppointments();
+      appointments = appointments.filter(
+        (appointment) => appointment.psychologistEmail === ctx.state.user?.email
+      );
+    }
+
+    return ctx.render({ appointments, rooms });
+  } finally {
+    await kv.close();
+  }
+}
+
 export default function AppointmentsPage({
   data,
-}: PageProps<{ appointments: Appointment[] }, AppState>) {
-  const { appointments } = data;
+}: PageProps<{ appointments: Appointment[]; rooms: Room[] }, AppState>) {
+  const { appointments, rooms: _rooms } = data;
 
+  // Crear un mapa de salas para acceso rápido
   return (
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
       <main class="max-w-7xl mx-auto py-4 sm:py-6 px-4 sm:px-6 lg:px-8">
@@ -179,46 +212,15 @@ export default function AppointmentsPage({
                             {getStatusText(appointment.status)}
                           </span>
                           {getNextStatuses(appointment.status).length > 0 && (
-                            <div class="relative inline-block text-left">
-                              <select
-                                title="Cambiar estado de la cita"
-                                class="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300"
-                                onChange={(e) => {
-                                  const newStatus = (
-                                    e.target as HTMLSelectElement
-                                  ).value as AppointmentStatus;
-                                  if (
-                                    confirm(
-                                      `¿Cambiar estado a "${getStatusText(
-                                        newStatus
-                                      )}"?`
-                                    )
-                                  ) {
-                                    fetch(
-                                      `/api/appointments/${appointment.id}/update`,
-                                      {
-                                        method: "POST",
-                                        headers: {
-                                          "Content-Type": "application/json",
-                                        },
-                                        body: JSON.stringify({
-                                          status: newStatus,
-                                        }),
-                                      }
-                                    ).then(() => window.location.reload());
-                                  }
-                                }}
-                              >
-                                <option value="">Cambiar a...</option>
-                                {getNextStatuses(appointment.status).map(
-                                  (status) => (
-                                    <option key={status} value={status}>
-                                      {getStatusText(status)}
-                                    </option>
-                                  )
-                                )}
-                              </select>
-                            </div>
+                            <AppointmentStatusSelector
+                              appointmentId={appointment.id}
+                              currentStatus={appointment.status}
+                              availableStatuses={getNextStatuses(
+                                appointment.status
+                              )}
+                              getStatusText={getStatusText}
+                              getStatusColor={getStatusColor}
+                            />
                           )}
                         </div>
                       </td>
@@ -238,24 +240,12 @@ export default function AppointmentsPage({
                           >
                             <Icon name="user-cog" className="h-4 w-4" />
                           </a>
-                          <button
-                            title="Eliminar cita"
-                            class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors"
-                            onClick={() => {
-                              if (
-                                confirm(
-                                  "¿Estás seguro de que quieres eliminar esta cita?"
-                                )
-                              ) {
-                                fetch(
-                                  `/api/appointments/${appointment.id}/delete`,
-                                  { method: "DELETE" }
-                                ).then(() => window.location.reload());
-                              }
-                            }}
+                          <DeleteAppointmentButton
+                            appointmentId={appointment.id}
+                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors"
                           >
                             <Icon name="trash-2" className="h-4 w-4" />
-                          </button>
+                          </DeleteAppointmentButton>
                         </div>
                       </td>
                     </tr>
@@ -338,36 +328,13 @@ export default function AppointmentsPage({
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Cambiar estado:
                       </label>
-                      <select
-                        title="Cambiar estado de la cita"
-                        class="w-full text-sm border border-gray-300 dark:border-gray-600 rounded-md px-3 py-2 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        onChange={(e) => {
-                          const newStatus = (e.target as HTMLSelectElement)
-                            .value as AppointmentStatus;
-                          if (
-                            newStatus &&
-                            confirm(
-                              `¿Cambiar estado a "${getStatusText(newStatus)}"?`
-                            )
-                          ) {
-                            fetch(
-                              `/api/appointments/${appointment.id}/update`,
-                              {
-                                method: "POST",
-                                headers: { "Content-Type": "application/json" },
-                                body: JSON.stringify({ status: newStatus }),
-                              }
-                            ).then(() => window.location.reload());
-                          }
-                        }}
-                      >
-                        <option value="">Seleccionar nuevo estado...</option>
-                        {getNextStatuses(appointment.status).map((status) => (
-                          <option key={status} value={status}>
-                            {getStatusText(status)}
-                          </option>
-                        ))}
-                      </select>
+                      <AppointmentStatusSelector
+                        appointmentId={appointment.id}
+                        currentStatus={appointment.status}
+                        availableStatuses={getNextStatuses(appointment.status)}
+                        getStatusText={getStatusText}
+                        getStatusColor={getStatusColor}
+                      />
                     </div>
                   )}
 
@@ -389,23 +356,13 @@ export default function AppointmentsPage({
                         Editar
                       </a>
                     </div>
-                    <button
-                      class="inline-flex items-center text-sm text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors"
-                      onClick={() => {
-                        if (
-                          confirm(
-                            "¿Estás seguro de que quieres eliminar esta cita?"
-                          )
-                        ) {
-                          fetch(`/api/appointments/${appointment.id}/delete`, {
-                            method: "DELETE",
-                          }).then(() => window.location.reload());
-                        }
-                      }}
+                    <DeleteAppointmentButton
+                      appointmentId={appointment.id}
+                      className="inline-flex items-center text-sm text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors"
                     >
                       <Icon name="trash-2" className="h-4 w-4 mr-1" />
                       Eliminar
-                    </button>
+                    </DeleteAppointmentButton>
                   </div>
                 </div>
               ))}

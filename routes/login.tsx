@@ -1,5 +1,5 @@
 /// <reference lib="deno.unstable" />
-import { type PageProps, type FreshContext } from "$fresh/server.ts";
+import { type FreshContext, type PageProps } from "$fresh/server.ts";
 import { type AppState } from "../types/index.ts";
 import { Icon } from "../components/ui/Icon.tsx";
 import { Button } from "../components/ui/Button.tsx";
@@ -64,7 +64,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         "Set-Cookie",
         `auth_session=${sessionId}; HttpOnly; Path=/; Max-Age=${
           7 * 24 * 60 * 60
-        }`
+        }`,
       );
       headers.set("Location", "/dashboard");
 

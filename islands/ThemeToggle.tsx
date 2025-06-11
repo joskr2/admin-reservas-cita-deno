@@ -1,5 +1,5 @@
 import { useEffect } from "preact/hooks";
-import { signal, effect } from "@preact/signals";
+import { effect, signal } from "@preact/signals";
 import { Icon } from "../components/ui/Icon.tsx";
 import type { Theme } from "../types/index.ts";
 
@@ -29,12 +29,12 @@ export default function ThemeToggle() {
     if (typeof window !== "undefined") {
       const storedTheme = localStorage.getItem("theme") as Theme | null;
       const prefersDark = globalThis.matchMedia(
-        "(prefers-color-scheme: dark)"
+        "(prefers-color-scheme: dark)",
       ).matches;
 
       // Establecer tema desde localStorage o preferencia del sistema
-      const initialTheme: Theme =
-        storedTheme || (prefersDark ? "dark" : "light");
+      const initialTheme: Theme = storedTheme ||
+        (prefersDark ? "dark" : "light");
       theme.value = initialTheme;
     }
   }, []);

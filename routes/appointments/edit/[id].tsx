@@ -1,10 +1,18 @@
-import { type PageProps, type FreshContext } from "$fresh/server.ts";
+import { type FreshContext, type PageProps } from "$fresh/server.ts";
 import {
-  type AppState,
   type Appointment,
+  type AppState,
+  type Room,
+  type RoomId,
   type UserProfile,
 } from "../../../types/index.ts";
 import { Icon } from "../../../components/ui/Icon.tsx";
+import {
+  getAllRooms,
+  getAllUsers,
+  getAvailableRooms,
+} from "../../../lib/kv.ts";
+import AppointmentFormValidator from "../../../islands/AppointmentFormValidator.tsx";
 
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
   const appointmentId = ctx.params.id;
@@ -25,16 +33,27 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
     const appointment = appointmentEntry.value as Appointment;
 
-    // Obtener lista de psicólogos
-    const psychologists: UserProfile[] = [];
-    const iter = kv.list({ prefix: ["users"] });
-
-    for await (const entry of iter) {
-      const user = entry.value as UserProfile;
-      if (user.role === "psychologist") {
-        psychologists.push(user);
-      }
+    // Verificar permisos: psicólogos solo pueden editar sus propias citas
+    if (
+      ctx.state.user?.role === "psychologist" &&
+      appointment.psychologistEmail !== ctx.state.user.email
+    ) {
+      return new Response("No tienes permisos para editar esta cita", {
+        status: 403,
+      });
     }
+
+    // Obtener lista de psicólogos
+    const users = await getAllUsers();
+    const psychologists = users.filter((user) => user.role === "psychologist");
+
+    // Si es psicólogo, solo mostrar su propio perfil
+    const filteredPsychologists = ctx.state.user?.role === "psychologist"
+      ? psychologists.filter((p) => p.email === ctx.state.user?.email)
+      : psychologists;
+
+    // Obtener todas las salas
+    const rooms = await getAllRooms();
 
     // Si es POST, procesar la actualización
     if (req.method === "POST") {
@@ -43,33 +62,76 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       const psychologistEmail = formData.get("psychologistEmail")?.toString();
       const appointmentDate = formData.get("appointmentDate")?.toString();
       const appointmentTime = formData.get("appointmentTime")?.toString();
+      const roomId = formData.get("roomId")?.toString() as RoomId;
       const notes = formData.get("notes")?.toString();
+
+      // Validación de permisos en POST: psicólogos solo pueden asignarse a sí mismos
+      if (
+        ctx.state.user?.role === "psychologist" &&
+        psychologistEmail !== ctx.state.user.email
+      ) {
+        return ctx.render({
+          appointment,
+          psychologists: filteredPsychologists,
+          rooms,
+          currentUserRole: ctx.state.user?.role,
+          currentUserEmail: ctx.state.user?.email,
+          error: "No tienes permisos para asignar citas a otros psicólogos",
+        });
+      }
 
       if (
         !patientName ||
         !psychologistEmail ||
         !appointmentDate ||
-        !appointmentTime
+        !appointmentTime ||
+        !roomId
       ) {
         return ctx.render({
           appointment,
-          psychologists,
+          psychologists: filteredPsychologists,
+          rooms,
+          currentUserRole: ctx.state.user?.role,
+          currentUserEmail: ctx.state.user?.email,
           error: "Todos los campos son requeridos",
+        });
+      }
+
+      // Verificar disponibilidad de la sala (excluyendo la cita actual)
+      const availableRooms = await getAvailableRooms(
+        appointmentDate,
+        appointmentTime,
+        appointmentId,
+      );
+      const isRoomAvailable = availableRooms.some((room) =>
+        room.id === roomId
+      ) ||
+        appointment.roomId === roomId;
+
+      if (!isRoomAvailable) {
+        return ctx.render({
+          appointment,
+          psychologists: filteredPsychologists,
+          rooms,
+          currentUserRole: ctx.state.user?.role,
+          currentUserEmail: ctx.state.user?.email,
+          error: "La sala seleccionada no está disponible en esa fecha y hora",
         });
       }
 
       // Buscar el nombre del psicólogo
       const psychologist = psychologists.find(
-        (p) => p.email === psychologistEmail
+        (p) => p.email === psychologistEmail,
       );
 
       const updatedAppointment: Appointment = {
         ...appointment,
         patientName,
         psychologistEmail,
-        psychologistName: psychologist?.name,
+        psychologistName: psychologist?.name || psychologist?.email,
         appointmentDate,
         appointmentTime,
+        roomId,
         notes,
         updatedAt: new Date().toISOString(),
       };
@@ -89,13 +151,22 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       } else {
         return ctx.render({
           appointment,
-          psychologists,
+          psychologists: filteredPsychologists,
+          rooms,
+          currentUserRole: ctx.state.user?.role,
+          currentUserEmail: ctx.state.user?.email,
           error: "Error al actualizar la cita",
         });
       }
     }
 
-    return ctx.render({ appointment, psychologists });
+    return ctx.render({
+      appointment,
+      psychologists: filteredPsychologists,
+      rooms,
+      currentUserRole: ctx.state.user?.role,
+      currentUserEmail: ctx.state.user?.email,
+    });
   } finally {
     await kv.close();
   }
@@ -107,201 +178,248 @@ export default function EditAppointmentPage({
   {
     appointment: Appointment;
     psychologists: UserProfile[];
+    rooms: Room[];
+    currentUserRole?: string;
+    currentUserEmail?: string;
     error?: string;
   },
   AppState
 >) {
-  const { appointment, psychologists, error } = data;
+  const {
+    appointment,
+    psychologists,
+    rooms,
+    currentUserRole,
+    currentUserEmail,
+    error,
+  } = data;
 
   return (
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <main class="max-w-3xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div class="mb-8">
-          <div class="flex items-center mb-4">
-            <a
-              href="/appointments"
-              class="inline-flex items-center text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
-            >
-              <Icon name="arrow-left" className="h-4 w-4 mr-2" />
-              Volver a Citas
-            </a>
-          </div>
-          <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-            Editar Cita
-          </h1>
-          <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Modifica los detalles de la cita programada.
-          </p>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-4">
-            <div class="flex">
-              <Icon name="x" className="h-5 w-5 text-red-400 mr-2" />
-              <p class="text-sm text-red-800 dark:text-red-200">{error}</p>
+      <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="px-4 py-6 sm:px-0">
+          <div class="mb-8">
+            <div class="flex items-center justify-between">
+              <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                  Editar Cita
+                </h1>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  Modifica la información de la cita
+                </p>
+              </div>
+              <a
+                href="/appointments"
+                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <Icon name="arrow-left" className="h-4 w-4 mr-2" />
+                Volver a Citas
+              </a>
             </div>
           </div>
-        )}
 
-        {/* Form */}
-        <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg">
-          <form method="POST" class="p-6 space-y-6">
-            {/* Nombre del Paciente */}
-            <div>
-              <label
-                htmlFor="patientName"
-                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                Nombre del Paciente
-              </label>
-              <input
-                type="text"
-                id="patientName"
-                name="patientName"
-                value={appointment.patientName}
-                required
-                class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                placeholder="Ingresa el nombre completo del paciente"
-              />
-            </div>
-
-            {/* Psicólogo */}
-            <div>
-              <label
-                htmlFor="psychologistEmail"
-                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                Psicólogo Asignado
-              </label>
-              <select
-                id="psychologistEmail"
-                name="psychologistEmail"
-                required
-                class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-              >
-                <option value="">Selecciona un psicólogo</option>
-                {psychologists.map((psychologist) => (
-                  <option
-                    key={psychologist.email}
-                    value={psychologist.email}
-                    selected={
-                      psychologist.email === appointment.psychologistEmail
-                    }
-                  >
-                    {psychologist.name || psychologist.email}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Fecha y Hora */}
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="appointmentDate"
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Fecha de la Cita
-                </label>
-                <input
-                  type="date"
-                  id="appointmentDate"
-                  name="appointmentDate"
-                  value={appointment.appointmentDate}
-                  required
-                  class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="appointmentTime"
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Hora de la Cita
-                </label>
-                <input
-                  type="time"
-                  id="appointmentTime"
-                  name="appointmentTime"
-                  value={appointment.appointmentTime}
-                  required
-                  class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                />
+          {error && (
+            <div class="mb-6 rounded-md bg-red-50 dark:bg-red-900/50 p-4">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <Icon name="file-warning" className="h-5 w-5 text-red-400" />
+                </div>
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+                    Error en el formulario
+                  </h3>
+                  <div class="mt-2 text-sm text-red-700 dark:text-red-300">
+                    {error}
+                  </div>
+                </div>
               </div>
             </div>
+          )}
 
-            {/* Notas */}
-            <div>
-              <label
-                htmlFor="notes"
-                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-              >
-                Notas (Opcional)
-              </label>
-              <textarea
-                id="notes"
-                name="notes"
-                rows={3}
-                value={appointment.notes || ""}
-                class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                placeholder="Agrega notas adicionales sobre la cita..."
-              />
-            </div>
-
-            {/* Estado Actual */}
-            <div class="bg-gray-50 dark:bg-gray-700 rounded-md p-4">
-              <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Estado Actual
-              </h3>
-              <span
-                class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                  appointment.status === "pending"
-                    ? "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200"
-                    : appointment.status === "scheduled"
-                    ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                    : appointment.status === "in_progress"
-                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-                    : appointment.status === "completed"
-                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                    : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                }`}
-              >
-                {appointment.status === "pending"
-                  ? "Pendiente"
-                  : appointment.status === "scheduled"
-                  ? "Programada"
-                  : appointment.status === "in_progress"
-                  ? "En Curso"
-                  : appointment.status === "completed"
-                  ? "Finalizada"
-                  : "Cancelada"}
-              </span>
-              <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                Para cambiar el estado, ve a la lista de citas.
+          <div class="bg-white dark:bg-gray-800 shadow-sm rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 class="text-lg font-medium text-gray-900 dark:text-white">
+                Información de la Cita
+              </h2>
+              <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                Estado actual:{" "}
+                <span class="font-medium">{appointment.status}</span>
               </p>
             </div>
 
-            {/* Botones */}
-            <div class="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <button
-                type="submit"
-                class="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-              >
-                <Icon name="check" className="h-4 w-4 mr-2" />
-                Guardar Cambios
-              </button>
+            <AppointmentFormValidator
+              currentUserRole={currentUserRole || ""}
+              currentUserEmail={currentUserEmail || ""}
+              action=""
+              method="POST"
+            >
+              <div class="p-6 space-y-6">
+                {/* Nombre del Paciente */}
+                <div>
+                  <label
+                    htmlFor="patientName"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    <Icon name="user" className="h-4 w-4 inline mr-2" />
+                    Nombre del Paciente
+                  </label>
+                  <input
+                    type="text"
+                    id="patientName"
+                    name="patientName"
+                    value={appointment.patientName}
+                    required
+                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                    placeholder="Ingresa el nombre completo del paciente"
+                  />
+                </div>
 
-              <a
-                href="/appointments"
-                class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-              >
-                Cancelar
-              </a>
-            </div>
-          </form>
+                {/* Psicólogo */}
+                <div>
+                  <label
+                    htmlFor="psychologistEmail"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    <Icon name="user-cog" className="h-4 w-4 inline mr-2" />
+                    Psicólogo Asignado
+                  </label>
+                  <select
+                    id="psychologistEmail"
+                    name="psychologistEmail"
+                    required
+                    disabled={currentUserRole === "psychologist"}
+                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm disabled:bg-gray-100 disabled:text-gray-500 dark:disabled:bg-gray-600"
+                  >
+                    {currentUserRole === "superadmin" && (
+                      <option value="">Selecciona un psicólogo</option>
+                    )}
+                    {psychologists.map((psychologist) => (
+                      <option
+                        key={psychologist.email}
+                        value={psychologist.email}
+                        selected={psychologist.email ===
+                          appointment.psychologistEmail}
+                      >
+                        {psychologist.name || psychologist.email}
+                      </option>
+                    ))}
+                  </select>
+                  {currentUserRole === "psychologist" && (
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      Solo puedes editar tus propias citas
+                    </p>
+                  )}
+                </div>
+
+                {/* Fecha, Hora y Sala */}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <label
+                      htmlFor="appointmentDate"
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      <Icon name="calendar" className="h-4 w-4 inline mr-2" />
+                      Fecha
+                    </label>
+                    <input
+                      type="date"
+                      id="appointmentDate"
+                      name="appointmentDate"
+                      value={appointment.appointmentDate}
+                      required
+                      min={new Date().toISOString().split("T")[0]}
+                      class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="appointmentTime"
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      <Icon name="clock" className="h-4 w-4 inline mr-2" />
+                      Hora
+                    </label>
+                    <input
+                      type="time"
+                      id="appointmentTime"
+                      name="appointmentTime"
+                      value={appointment.appointmentTime}
+                      required
+                      class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="roomId"
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      <Icon name="briefcase" className="h-4 w-4 inline mr-2" />
+                      Sala de Atención
+                    </label>
+                    <select
+                      id="roomId"
+                      name="roomId"
+                      required
+                      class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                    >
+                      <option value="">Seleccione una sala</option>
+                      {rooms.map((room) => (
+                        <option
+                          key={room.id}
+                          value={room.id}
+                          selected={room.id === appointment.roomId}
+                          disabled={!room.isAvailable &&
+                            room.id !== appointment.roomId}
+                        >
+                          {room.name} {!room.isAvailable &&
+                            room.id !== appointment.roomId &&
+                            "(No disponible)"}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Notas */}
+                <div>
+                  <label
+                    htmlFor="notes"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    <Icon name="file-digit" className="h-4 w-4 inline mr-2" />
+                    Notas
+                  </label>
+                  <textarea
+                    id="notes"
+                    name="notes"
+                    rows={4}
+                    value={appointment.notes || ""}
+                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                    placeholder="Información adicional sobre la cita..."
+                  />
+                </div>
+
+                {/* Botones */}
+                <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <a
+                    href="/appointments"
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    Cancelar
+                  </a>
+                  <button
+                    type="submit"
+                    class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    <Icon name="check" className="h-4 w-4 mr-2" />
+                    Actualizar Cita
+                  </button>
+                </div>
+              </div>
+            </AppointmentFormValidator>
+          </div>
         </div>
       </main>
     </div>

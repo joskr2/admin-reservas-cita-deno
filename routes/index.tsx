@@ -18,34 +18,36 @@ export default function Home({ state }: PageProps<unknown, AppState>) {
               profesional.
             </p>
 
-            {state.user ? (
-              <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mt-10">
-                <a
-                  href="/dashboard"
-                  class="inline-flex items-center px-8 py-4 text-base font-semibold rounded-xl text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                >
-                  <Icon name="briefcase" size={20} className="mr-3" />
-                  Ir al Dashboard
-                </a>
-                <a
-                  href="/appointments"
-                  class="inline-flex items-center px-8 py-4 text-base font-semibold rounded-xl text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 border-2 border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                >
-                  <Icon name="calendar" size={20} className="mr-3" />
-                  Ver Citas
-                </a>
-              </div>
-            ) : (
-              <div class="flex justify-center mt-10">
-                <a
-                  href="/login"
-                  class="inline-flex items-center px-10 py-4 text-lg font-semibold rounded-xl text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                >
-                  <Icon name="login" size={24} className="mr-3" />
-                  Iniciar Sesión
-                </a>
-              </div>
-            )}
+            {state.user
+              ? (
+                <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mt-10">
+                  <a
+                    href="/dashboard"
+                    class="inline-flex items-center px-8 py-4 text-base font-semibold rounded-xl text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                  >
+                    <Icon name="briefcase" size={20} className="mr-3" />
+                    Ir al Dashboard
+                  </a>
+                  <a
+                    href="/appointments"
+                    class="inline-flex items-center px-8 py-4 text-base font-semibold rounded-xl text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 border-2 border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                  >
+                    <Icon name="calendar" size={20} className="mr-3" />
+                    Ver Citas
+                  </a>
+                </div>
+              )
+              : (
+                <div class="flex justify-center mt-10">
+                  <a
+                    href="/login"
+                    class="inline-flex items-center px-10 py-4 text-lg font-semibold rounded-xl text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                  >
+                    <Icon name="login" size={24} className="mr-3" />
+                    Iniciar Sesión
+                  </a>
+                </div>
+              )}
           </div>
         </div>
       </section>

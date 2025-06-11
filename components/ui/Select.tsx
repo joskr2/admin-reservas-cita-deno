@@ -1,4 +1,4 @@
-import type { JSX, ComponentChildren } from "preact";
+import type { ComponentChildren, JSX } from "preact";
 
 // Definir las props para el componente Select con tipos más específicos
 export interface SelectProps extends JSX.HTMLAttributes<HTMLSelectElement> {

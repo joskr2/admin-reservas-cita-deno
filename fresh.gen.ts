@@ -40,8 +40,11 @@ import * as $patients_index from "./routes/patients/index.tsx";
 import * as $patients_new from "./routes/patients/new.tsx";
 import * as $AppointmentCalendar from "./islands/AppointmentCalendar.tsx";
 import * as $AppointmentForm from "./islands/AppointmentForm.tsx";
+import * as $AppointmentFormValidator from "./islands/AppointmentFormValidator.tsx";
+import * as $AppointmentStatusSelector from "./islands/AppointmentStatusSelector.tsx";
 import * as $Counter from "./islands/Counter.tsx";
 import * as $DashboardStats from "./islands/DashboardStats.tsx";
+import * as $DeleteAppointmentButton from "./islands/DeleteAppointmentButton.tsx";
 import * as $Header from "./islands/Header.tsx";
 import * as $PatientSearchSelect from "./islands/PatientSearchSelect.tsx";
 import * as $ThemeToggle from "./islands/ThemeToggle.tsx";
@@ -90,8 +93,11 @@ const manifest = {
   islands: {
     "./islands/AppointmentCalendar.tsx": $AppointmentCalendar,
     "./islands/AppointmentForm.tsx": $AppointmentForm,
+    "./islands/AppointmentFormValidator.tsx": $AppointmentFormValidator,
+    "./islands/AppointmentStatusSelector.tsx": $AppointmentStatusSelector,
     "./islands/Counter.tsx": $Counter,
     "./islands/DashboardStats.tsx": $DashboardStats,
+    "./islands/DeleteAppointmentButton.tsx": $DeleteAppointmentButton,
     "./islands/Header.tsx": $Header,
     "./islands/PatientSearchSelect.tsx": $PatientSearchSelect,
     "./islands/ThemeToggle.tsx": $ThemeToggle,

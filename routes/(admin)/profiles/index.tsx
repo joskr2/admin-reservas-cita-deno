@@ -1,9 +1,9 @@
-import { type PageProps, type FreshContext } from "$fresh/server.ts";
+import { type FreshContext, type PageProps } from "$fresh/server.ts";
 import { type AppState, type UserProfile } from "../../../types/index.ts";
 import { Icon } from "../../../components/ui/Icon.tsx";
 import { getAllUsers } from "../../../lib/kv.ts";
 
-export async function handler(req: Request, ctx: FreshContext<AppState>) {
+export async function handler(_req: Request, ctx: FreshContext<AppState>) {
   const kv = await Deno.openKv();
 
   try {
@@ -88,93 +88,99 @@ export default function ProfilesPage({
                       </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                      {profiles.length === 0 ? (
-                        <tr>
-                          <td
-                            colSpan={5}
-                            class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400"
-                          >
-                            No hay usuarios registrados
-                          </td>
-                        </tr>
-                      ) : (
-                        profiles.map((profile) => (
-                          <tr
-                            key={profile.email}
-                            class="hover:bg-gray-50 dark:hover:bg-gray-800"
-                          >
-                            <td class="px-6 py-4 whitespace-nowrap">
-                              <div class="flex items-center">
-                                <Icon
-                                  name="user"
-                                  className="h-5 w-5 text-gray-400 mr-3"
-                                />
-                                <div>
-                                  <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                    {profile.name || profile.email}
-                                  </div>
-                                  {profile.name && (
-                                    <div class="text-sm text-gray-500 dark:text-gray-400">
-                                      {profile.email}
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                              <span
-                                class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                  profile.role === "superadmin"
-                                    ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
-                                    : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                                }`}
-                              >
-                                {profile.role === "superadmin"
-                                  ? "Administrador"
-                                  : "Psicólogo"}
-                              </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                              <span
-                                class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                  profile.isActive !== false
-                                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                                    : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                                }`}
-                              >
-                                {profile.isActive !== false
-                                  ? "Activo"
-                                  : "Inactivo"}
-                              </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                              {new Date(profile.createdAt).toLocaleDateString(
-                                "es-ES"
-                              )}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <a
-                                href={`/(admin)/profiles/edit/${encodeURIComponent(
-                                  profile.email
-                                )}`}
-                                class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-4"
-                                title="Editar perfil"
-                              >
-                                <Icon name="user-cog" className="h-4 w-4" />
-                              </a>
-                              <a
-                                href={`/(admin)/profiles/delete/${encodeURIComponent(
-                                  profile.email
-                                )}`}
-                                class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                                title="Eliminar perfil"
-                              >
-                                <Icon name="trash-2" className="h-4 w-4" />
-                              </a>
+                      {profiles.length === 0
+                        ? (
+                          <tr>
+                            <td
+                              colSpan={5}
+                              class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400"
+                            >
+                              No hay usuarios registrados
                             </td>
                           </tr>
-                        ))
-                      )}
+                        )
+                        : (
+                          profiles.map((profile) => (
+                            <tr
+                              key={profile.email}
+                              class="hover:bg-gray-50 dark:hover:bg-gray-800"
+                            >
+                              <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                  <Icon
+                                    name="user"
+                                    className="h-5 w-5 text-gray-400 mr-3"
+                                  />
+                                  <div>
+                                    <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                      {profile.name || profile.email}
+                                    </div>
+                                    {profile.name && (
+                                      <div class="text-sm text-gray-500 dark:text-gray-400">
+                                        {profile.email}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                              <td class="px-6 py-4 whitespace-nowrap">
+                                <span
+                                  class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                    profile.role === "superadmin"
+                                      ? "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+                                      : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                  }`}
+                                >
+                                  {profile.role === "superadmin"
+                                    ? "Administrador"
+                                    : "Psicólogo"}
+                                </span>
+                              </td>
+                              <td class="px-6 py-4 whitespace-nowrap">
+                                <span
+                                  class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                    profile.isActive !== false
+                                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                      : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                  }`}
+                                >
+                                  {profile.isActive !== false
+                                    ? "Activo"
+                                    : "Inactivo"}
+                                </span>
+                              </td>
+                              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                {new Date(profile.createdAt).toLocaleDateString(
+                                  "es-ES",
+                                )}
+                              </td>
+                              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <a
+                                  href={`/(admin)/profiles/edit/${
+                                    encodeURIComponent(
+                                      profile.email,
+                                    )
+                                  }`}
+                                  class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-4"
+                                  title="Editar perfil"
+                                >
+                                  <Icon name="user-cog" className="h-4 w-4" />
+                                </a>
+                                <a
+                                  href={`/(admin)/profiles/delete/${
+                                    encodeURIComponent(
+                                      profile.email,
+                                    )
+                                  }`}
+                                  class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                  title="Eliminar perfil"
+                                >
+                                  <Icon name="trash-2" className="h-4 w-4" />
+                                </a>
+                              </td>
+                            </tr>
+                          ))
+                        )}
                     </tbody>
                   </table>
                 </div>

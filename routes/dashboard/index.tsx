@@ -1,10 +1,10 @@
-import { type PageProps, type FreshContext } from "$fresh/server.ts";
+import { type FreshContext, type PageProps } from "$fresh/server.ts";
 import { type AppState, type DashboardData } from "../../types/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
 import DashboardStats from "../../islands/DashboardStats.tsx";
-import { getAllUsers, getAllAppointments } from "../../lib/kv.ts";
+import { getAllAppointments, getAllUsers } from "../../lib/kv.ts";
 
-export async function handler(req: Request, ctx: FreshContext<AppState>) {
+export async function handler(_req: Request, ctx: FreshContext<AppState>) {
   const kv = await Deno.openKv();
 
   try {
@@ -15,7 +15,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
     const totalUsers = users.length;
     const totalPsychologists = users.filter(
-      (user) => user.role === "psychologist"
+      (user) => user.role === "psychologist",
     ).length;
     const totalAppointments = appointments.length;
 

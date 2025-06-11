@@ -62,7 +62,9 @@ export default function Modal({
 
         {/* Modal panel */}
         <div
-          class={`relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:p-6 ${sizeClasses[size]}`}
+          class={`relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:p-6 ${
+            sizeClasses[size]
+          }`}
         >
           {title && (
             <div class="flex items-center justify-between mb-4">

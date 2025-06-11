@@ -1,7 +1,8 @@
-import { type PageProps, type FreshContext } from "$fresh/server.ts";
-import { type AppState, type Appointment } from "../../types/index.ts";
+import { type FreshContext, type PageProps } from "$fresh/server.ts";
+import { type Appointment, type AppState } from "../../types/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
 import { getAppointmentById } from "../../lib/kv.ts";
+import DeleteAppointmentButton from "../../islands/DeleteAppointmentButton.tsx";
 
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
   const url = new URL(req.url);
@@ -104,7 +105,7 @@ export default function AppointmentDetailPage({
                         year: "numeric",
                         month: "long",
                         day: "numeric",
-                      }
+                      },
                     )}
                   </p>
                 </div>
@@ -170,19 +171,13 @@ export default function AppointmentDetailPage({
 
             {/* Actions */}
             <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-3">
-              <button
-                onClick={() => {
-                  if (
-                    confirm("¿Estás seguro de que quieres eliminar esta cita?")
-                  ) {
-                    window.location.href = `/api/appointments/${appointment.id}/delete`;
-                  }
-                }}
-                class="inline-flex items-center px-4 py-2 border border-red-300 dark:border-red-600 rounded-md shadow-sm text-sm font-medium text-red-700 dark:text-red-300 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20"
+              <DeleteAppointmentButton
+                appointmentId={appointment.id}
+                className="inline-flex items-center px-4 py-2 border border-red-300 dark:border-red-600 rounded-md shadow-sm text-sm font-medium text-red-700 dark:text-red-300 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20"
               >
                 <Icon name="trash-2" className="h-4 w-4 mr-2" />
                 Eliminar Cita
-              </button>
+              </DeleteAppointmentButton>
             </div>
           </div>
         </div>

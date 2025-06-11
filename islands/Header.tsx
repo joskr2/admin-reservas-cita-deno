@@ -1,4 +1,4 @@
-import { useState, useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import ThemeToggle from "./ThemeToggle.tsx";
 import { Icon } from "../components/ui/Icon.tsx";
 import type { HeaderProps } from "../types/index.ts";
@@ -94,38 +94,40 @@ export default function Header({
         <div class="flex items-center justify-between h-16 sm:h-20">
           {/* Logo y navegación principal */}
           <div class="flex items-center gap-4 sm:gap-6">
-            {showBackButton ? (
-              <button
-                title="Volver"
-                type="button"
-                onClick={() => globalThis.history.back()}
-                class="p-2 hover:bg-blue-50 dark:hover:bg-blue-950/50 rounded-lg transition-colors"
-              >
-                <Icon
-                  name="arrow-left"
-                  size={20}
-                  className="text-gray-600 dark:text-gray-300"
-                />
-              </button>
-            ) : (
-              <a href="/" class="flex items-center gap-2 sm:gap-3">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
+            {showBackButton
+              ? (
+                <button
+                  title="Volver"
+                  type="button"
+                  onClick={() => globalThis.history.back()}
+                  class="p-2 hover:bg-blue-50 dark:hover:bg-blue-950/50 rounded-lg transition-colors"
+                >
                   <Icon
-                    name="heart-handshake"
-                    size={28}
-                    className="text-white filter brightness-0 invert"
+                    name="arrow-left"
+                    size={20}
+                    className="text-gray-600 dark:text-gray-300"
                   />
-                </div>
-                <div class="hidden sm:block">
-                  <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Horizonte
-                  </h1>
-                  <p class="text-xs text-gray-600 dark:text-gray-400">
-                    Sistema de Citas
-                  </p>
-                </div>
-              </a>
-            )}
+                </button>
+              )
+              : (
+                <a href="/" class="flex items-center gap-2 sm:gap-3">
+                  <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
+                    <Icon
+                      name="heart-handshake"
+                      size={28}
+                      className="text-white filter brightness-0 invert"
+                    />
+                  </div>
+                  <div class="hidden sm:block">
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      Horizonte
+                    </h1>
+                    <p class="text-xs text-gray-600 dark:text-gray-400">
+                      Sistema de Citas
+                    </p>
+                  </div>
+                </a>
+              )}
 
             {/* Título de página en mobile */}
             {(title || showBackButton) && (
@@ -153,11 +155,9 @@ export default function Header({
                     <Icon
                       name={item.icon}
                       size={16}
-                      className={
-                        item.active
-                          ? "text-blue-600 dark:text-blue-400"
-                          : "text-gray-600 dark:text-gray-300"
-                      }
+                      className={item.active
+                        ? "text-blue-600 dark:text-blue-400"
+                        : "text-gray-600 dark:text-gray-300"}
                     />
                     {item.label}
                   </a>
@@ -172,47 +172,49 @@ export default function Header({
             <ThemeToggle />
 
             {/* Usuario */}
-            {isAuthenticated ? (
-              <div class="hidden sm:flex items-center gap-3">
-                <div class="text-right">
-                  <span class="text-gray-700 dark:text-gray-300 text-sm">
-                    Bienvenido/a
-                  </span>
-                  {user?.role === "superadmin" && (
-                    <div class="flex items-center gap-1">
-                      <span class="text-xs bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400 px-2 py-0.5 rounded-full font-medium">
-                        ✨ Super Admin
-                      </span>
-                    </div>
-                  )}
+            {isAuthenticated
+              ? (
+                <div class="hidden sm:flex items-center gap-3">
+                  <div class="text-right">
+                    <span class="text-gray-700 dark:text-gray-300 text-sm">
+                      Bienvenido/a
+                    </span>
+                    {user?.role === "superadmin" && (
+                      <div class="flex items-center gap-1">
+                        <span class="text-xs bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400 px-2 py-0.5 rounded-full font-medium">
+                          ✨ Super Admin
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <a
+                    href="/api/auth/logout"
+                    class="inline-flex items-center h-10 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-blue-500/25"
+                  >
+                    <Icon
+                      name="logout"
+                      size={16}
+                      className="mr-2 text-white filter brightness-0 invert"
+                    />
+                    Salir
+                  </a>
                 </div>
-                <a
-                  href="/api/auth/logout"
-                  class="inline-flex items-center h-10 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-blue-500/25"
-                >
-                  <Icon
-                    name="logout"
-                    size={16}
-                    className="mr-2 text-white filter brightness-0 invert"
-                  />
-                  Salir
+              )
+              : (
+                <a href="/login">
+                  <button
+                    type="button"
+                    class="hidden sm:inline-flex items-center h-10 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-blue-500/25"
+                  >
+                    <Icon
+                      name="login"
+                      size={20}
+                      className="mr-3 text-white filter brightness-0 invert"
+                    />
+                    Inicio de sesión
+                  </button>
                 </a>
-              </div>
-            ) : (
-              <a href="/login">
-                <button
-                  type="button"
-                  class="hidden sm:inline-flex items-center h-10 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-blue-500/25"
-                >
-                  <Icon
-                    name="login"
-                    size={20}
-                    className="mr-3 text-white filter brightness-0 invert"
-                  />
-                  Inicio de sesión
-                </button>
-              </a>
-            )}
+              )}
 
             {/* Menú hamburguesa para mobile */}
             <button
@@ -253,11 +255,9 @@ export default function Header({
                       <Icon
                         name={item.icon}
                         size={16}
-                        className={
-                          item.active
-                            ? "text-blue-700 dark:text-blue-400"
-                            : "text-gray-600 dark:text-gray-300"
-                        }
+                        className={item.active
+                          ? "text-blue-700 dark:text-blue-400"
+                          : "text-gray-600 dark:text-gray-300"}
                       />
                       {item.label}
                     </a>
@@ -267,50 +267,52 @@ export default function Header({
             )}
 
             {/* Usuario en mobile */}
-            {isAuthenticated ? (
-              <div class="space-y-3">
-                <div class="px-4">
-                  <p class="text-gray-700 dark:text-gray-300 text-sm">
-                    Bienvenido/a
-                  </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
-                    {user?.email}
-                  </p>
-                  {user?.role === "superadmin" && (
-                    <span class="inline-block mt-1 text-xs bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400 px-2 py-0.5 rounded-full font-medium">
-                      ✨ Super Admin
-                    </span>
-                  )}
+            {isAuthenticated
+              ? (
+                <div class="space-y-3">
+                  <div class="px-4">
+                    <p class="text-gray-700 dark:text-gray-300 text-sm">
+                      Bienvenido/a
+                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                      {user?.email}
+                    </p>
+                    {user?.role === "superadmin" && (
+                      <span class="inline-block mt-1 text-xs bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400 px-2 py-0.5 rounded-full font-medium">
+                        ✨ Super Admin
+                      </span>
+                    )}
+                  </div>
+                  <a
+                    href="/api/auth/logout"
+                    class="flex items-center justify-center w-full h-10 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Icon
+                      name="logout"
+                      size={16}
+                      className="mr-2 text-white filter brightness-0 invert"
+                    />
+                    Salir
+                  </a>
                 </div>
-                <a
-                  href="/api/auth/logout"
-                  class="flex items-center justify-center w-full h-10 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <Icon
-                    name="logout"
-                    size={16}
-                    className="mr-2 text-white filter brightness-0 invert"
-                  />
-                  Salir
+              )
+              : (
+                <a href="/login">
+                  <button
+                    type="button"
+                    class="flex items-center justify-center w-full h-10 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Icon
+                      name="login"
+                      size={20}
+                      className="mr-3 text-white filter brightness-0 invert"
+                    />
+                    Inicio de sesión
+                  </button>
                 </a>
-              </div>
-            ) : (
-              <a href="/login">
-                <button
-                  type="button"
-                  class="flex items-center justify-center w-full h-10 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <Icon
-                    name="login"
-                    size={20}
-                    className="mr-3 text-white filter brightness-0 invert"
-                  />
-                  Inicio de sesión
-                </button>
-              </a>
-            )}
+              )}
           </div>
         )}
       </div>

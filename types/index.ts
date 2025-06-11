@@ -33,6 +33,16 @@ export interface SessionUser {
   name?: string; // Nombre completo del usuario
 }
 
+// === TIPOS DE SALAS ===
+export type RoomId = "A" | "B" | "C" | "D" | "E";
+
+export interface Room {
+  id: RoomId;
+  name: string;
+  isAvailable: boolean;
+  equipment?: string[];
+}
+
 // === TIPOS DE CITAS ===
 export type AppointmentStatus =
   | "pending"
@@ -48,6 +58,7 @@ export interface Appointment {
   patientName: string;
   appointmentDate: string; // YYYY-MM-DD
   appointmentTime: string; // HH:MM
+  roomId: RoomId; // Sala de atención asignada
   status: AppointmentStatus;
   createdAt: string;
   updatedAt?: string;
@@ -85,6 +96,7 @@ export interface CreateAppointmentForm {
   psychologistEmail: string;
   appointmentDate: string;
   appointmentTime: string;
+  roomId: RoomId;
 }
 
 // === TIPOS DE COMPONENTES ===
@@ -116,9 +128,10 @@ export type KVAppointmentKey = ["appointments", string];
 export type KVAppointmentByPsychologistKey = [
   "appointments_by_psychologist",
   string,
-  string
+  string,
 ];
 export type KVSessionKey = ["sessions", string];
+export type KVRoomKey = ["rooms", RoomId];
 
 // === TIPOS DE UTILIDADES ===
 export interface PaginationParams {

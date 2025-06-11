@@ -1,5 +1,10 @@
 import { hash } from "@felix/bcrypt";
-import { type Appointment, type AppointmentStatus } from "../types/index.ts";
+import {
+  type Appointment,
+  type AppointmentStatus,
+  type Room,
+  type RoomId,
+} from "../types/index.ts";
 
 // Define all users to be seeded
 const usersToSeed = [
@@ -35,6 +40,65 @@ const usersToSeed = [
   },
 ];
 
+// Define rooms to be seeded
+const roomsToSeed: Room[] = [
+  {
+    id: "A",
+    name: "Sala A - Terapia Individual",
+    isAvailable: true,
+    equipment: [
+      "Sillón reclinable",
+      "Mesa auxiliar",
+      "Lámpara de ambiente",
+      "Caja de pañuelos",
+    ],
+  },
+  {
+    id: "B",
+    name: "Sala B - Terapia Familiar",
+    isAvailable: true,
+    equipment: [
+      "Sofá de 3 plazas",
+      "Sillas individuales",
+      "Mesa de centro",
+      "Juegos familiares",
+    ],
+  },
+  {
+    id: "C",
+    name: "Sala C - Terapia de Grupo",
+    isAvailable: true,
+    equipment: [
+      "Círculo de 8 sillas",
+      "Pizarra",
+      "Proyector",
+      "Sistema de audio",
+    ],
+  },
+  {
+    id: "D",
+    name: "Sala D - Evaluación Psicológica",
+    isAvailable: true,
+    equipment: [
+      "Escritorio",
+      "Computadora",
+      "Tests psicológicos",
+      "Cronómetro",
+    ],
+  },
+  {
+    id: "E",
+    name: "Sala E - Relajación y Mindfulness",
+    isAvailable: true,
+    equipment: [
+      "Camilla de relajación",
+      "Sistema de música",
+      "Aromaterapia",
+      "Mantas",
+    ],
+  },
+];
+
 // Define sample appointments to be seeded
 const appointmentsToSeed = [
   {
@@ -44,6 +108,7 @@ const appointmentsToSeed = [
     psychologistName: "Dr. Carlos Mendoza",
     appointmentDate: "2024-12-15",
     appointmentTime: "10:00",
+    roomId: "A" as RoomId,
     status: "pending" as AppointmentStatus,
     notes: "Primera consulta - evaluación inicial",
   },
@@ -54,6 +119,7 @@ const appointmentsToSeed = [
     psychologistName: "Dra. Laura Jiménez",
     appointmentDate: "2024-12-16",
     appointmentTime: "14:30",
+    roomId: "B" as RoomId,
     status: "scheduled" as AppointmentStatus,
     notes: "Seguimiento de terapia cognitiva",
   },
@@ -64,6 +130,7 @@ const appointmentsToSeed = [
     psychologistName: "Dr. Carlos Mendoza",
     appointmentDate: "2024-12-17",
     appointmentTime: "09:00",
+    roomId: "C" as RoomId,
     status: "in_progress" as AppointmentStatus,
     notes: "Sesión de terapia familiar",
   },
@@ -74,6 +141,7 @@ const appointmentsToSeed = [
     psychologistName: "Dra. Laura Jiménez",
     appointmentDate: "2024-12-14",
     appointmentTime: "16:00",
+    roomId: "D" as RoomId,
     status: "completed" as AppointmentStatus,
     notes: "Evaluación psicológica completada",
   },
@@ -84,6 +152,7 @@ const appointmentsToSeed = [
     psychologistName: "Dr. Carlos Mendoza",
     appointmentDate: "2024-12-18",
     appointmentTime: "11:30",
+    roomId: "E" as RoomId,
     status: "cancelled" as AppointmentStatus,
     notes: "Cancelada por el paciente",
   },
@@ -92,6 +161,25 @@ const appointmentsToSeed = [
 async function seedDatabase() {
   console.log("🌱 Starting database seeding...");
   const kv = await Deno.openKv();
+
+  // Seed rooms first
+  console.log("🏢 Seeding rooms...");
+  for (const room of roomsToSeed) {
+    // Check if the room already exists
+    const existingRoom = await kv.get(["rooms", room.id]);
+    if (existingRoom.value) {
+      console.log(`- Room '${room.id}' already exists. Skipping.`);
+      continue;
+    }
+
+    const result = await kv.set(["rooms", room.id], room);
+
+    if (result.ok) {
+      console.log(`✅ Room '${room.id} - ${room.name}' created successfully!`);
+    } else {
+      console.error(`❌ Failed to create room '${room.id}'.`);
+    }
+  }
 
   // Seed users
   console.log("👥 Seeding users...");
@@ -121,7 +209,7 @@ async function seedDatabase() {
     const result = await kv
       .atomic()
       .set(["users", email], userRecord)
-      .set(["users_by_role", role, email], userRecord)
+      .set(["users_by_role", role, email], email) // Guardar solo el email en el índice
       .commit();
 
     if (result.ok) {
@@ -141,7 +229,7 @@ async function seedDatabase() {
     ]);
     if (existingAppointment.value) {
       console.log(
-        `- Appointment for '${appointmentData.patientName}' already exists. Skipping.`
+        `- Appointment for '${appointmentData.patientName}' already exists. Skipping.`,
       );
       continue;
     }
@@ -151,25 +239,41 @@ async function seedDatabase() {
       createdAt: new Date().toISOString(),
     };
 
-    // Save the appointment
+    // Save the appointment with psychologist index
     const result = await kv
       .atomic()
       .set(["appointments", appointment.id], appointment)
+      .set(
+        [
+          "appointments_by_psychologist",
+          appointment.psychologistEmail,
+          appointment.id,
+        ],
+        appointment.id,
+      )
       .commit();
 
     if (result.ok) {
       console.log(
-        `✅ Appointment for '${appointment.patientName}' created successfully!`
+        `✅ Appointment for '${appointment.patientName}' in room ${appointment.roomId} created successfully!`,
       );
     } else {
       console.error(
-        `❌ Failed to create appointment for '${appointment.patientName}'.`
+        `❌ Failed to create appointment for '${appointment.patientName}'.`,
       );
     }
   }
 
   await kv.close();
   console.log("🌱 Database seeding finished.");
+  console.log("\n📋 Summary:");
+  console.log(`- ${roomsToSeed.length} rooms available (A, B, C, D, E)`);
+  console.log(`- ${usersToSeed.length} users created`);
+  console.log(`- ${appointmentsToSeed.length} sample appointments created`);
+  console.log("\n🔑 Login credentials:");
+  console.log("- Superadmin: admin@horizonte.com / password123");
+  console.log("- Psicólogo 1: psicologo1@horizonte.com / password123");
+  console.log("- Psicólogo 2: psicologo2@horizonte.com / password123");
 }
 
 // This allows the script to be run directly from the command line
