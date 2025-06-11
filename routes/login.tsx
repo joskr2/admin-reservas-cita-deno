@@ -1,10 +1,6 @@
 /// <reference lib="deno.unstable" />
 import { type PageProps, type FreshContext } from "$fresh/server.ts";
-import {
-  type AppState,
-  type LoginForm,
-  type ApiResponse,
-} from "../types/index.ts";
+import { type AppState } from "../types/index.ts";
 import { Icon } from "../components/ui/Icon.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { Input } from "../components/ui/Input.tsx";

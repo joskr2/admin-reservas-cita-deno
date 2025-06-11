@@ -33,6 +33,7 @@ export function Icon({
     "trash-2": { light: "/icons/trash-2.svg" },
     "file-digit": { light: "/icons/file-digit.svg" },
     "file-warning": { light: "/icons/file-warning.svg" },
+    eye: { light: "/icons/eye.svg" },
 
     // Iconos de interfaz
     "arrow-left": { light: "/icons/arrow-left.svg" },

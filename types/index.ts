@@ -34,7 +34,12 @@ export interface SessionUser {
 }
 
 // === TIPOS DE CITAS ===
-export type AppointmentStatus = "scheduled" | "completed" | "cancelled";
+export type AppointmentStatus =
+  | "pending"
+  | "scheduled"
+  | "in_progress"
+  | "completed"
+  | "cancelled";
 
 export interface Appointment {
   id: string;
@@ -45,6 +50,7 @@ export interface Appointment {
   appointmentTime: string; // HH:MM
   status: AppointmentStatus;
   createdAt: string;
+  updatedAt?: string;
   notes?: string;
 }
 

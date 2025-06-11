@@ -27,6 +27,7 @@ import * as $api_profiles_id_update from "./routes/api/profiles/[id]/update.ts";
 import * as $api_profiles_create from "./routes/api/profiles/create.ts";
 import * as $api_profiles_index from "./routes/api/profiles/index.ts";
 import * as $appointments_id_ from "./routes/appointments/[id].tsx";
+import * as $appointments_edit_id_ from "./routes/appointments/edit/[id].tsx";
 import * as $appointments_index from "./routes/appointments/index.tsx";
 import * as $appointments_new from "./routes/appointments/new.tsx";
 import * as $dashboard_index from "./routes/dashboard/index.tsx";
@@ -74,6 +75,7 @@ const manifest = {
     "./routes/api/profiles/create.ts": $api_profiles_create,
     "./routes/api/profiles/index.ts": $api_profiles_index,
     "./routes/appointments/[id].tsx": $appointments_id_,
+    "./routes/appointments/edit/[id].tsx": $appointments_edit_id_,
     "./routes/appointments/index.tsx": $appointments_index,
     "./routes/appointments/new.tsx": $appointments_new,
     "./routes/dashboard/index.tsx": $dashboard_index,
