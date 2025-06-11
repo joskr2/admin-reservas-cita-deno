@@ -1,176 +1,188 @@
 /// <reference lib="deno.unstable" />
-import type { Handlers, PageProps } from "$fresh/server.ts";
-import { setCookie } from "$std/http/cookie.ts";
-import { verify } from "@felix/bcrypt";
-
-import { Input } from "../components/ui/Input.tsx";
-import { Button } from "../components/ui/Button.tsx";
-import Footer from "../components/layout/Footer.tsx";
-import Header from "../islands/Header.tsx";
+import { type PageProps, type FreshContext } from "$fresh/server.ts";
+import {
+  type AppState,
+  type LoginForm,
+  type ApiResponse,
+} from "../types/index.ts";
 import { Icon } from "../components/ui/Icon.tsx";
-import type { User, LoginForm, ApiResponse } from "../types/index.ts";
+import { Button } from "../components/ui/Button.tsx";
+import { Input } from "../components/ui/Input.tsx";
+import { getUserByEmail } from "../lib/kv.ts";
 
-// Interface for the data passed from the handler to the component
-interface Data {
-  error?: string;
-}
+export async function handler(req: Request, ctx: FreshContext<AppState>) {
+  if (req.method === "GET") {
+    // Si ya está autenticado, redirigir al dashboard
+    if (ctx.state.user) {
+      return new Response(null, {
+        status: 307,
+        headers: { Location: "/dashboard" },
+      });
+    }
+    return ctx.render({});
+  }
 
-export const handler: Handlers<Data> = {
-  // --- FORM SUBMISSION LOGIC (SERVER-SIDE) ---
-  async POST(req, ctx) {
-    const form = await req.formData();
-    const email = form.get("email")?.toString();
-    const password = form.get("password")?.toString();
+  if (req.method === "POST") {
+    const formData = await req.formData();
+    const email = formData.get("email")?.toString();
+    const password = formData.get("password")?.toString();
 
     if (!email || !password) {
-      return ctx.render({ error: "Email y contraseña son requeridos." });
+      return ctx.render({
+        error: "Email y contraseña son requeridos",
+      });
     }
 
     const kv = await Deno.openKv();
-    const userEntry = await kv.get(["users", email]);
-    await kv.close();
 
-    if (!userEntry.value) {
-      return ctx.render({ error: "Credenciales incorrectas." });
+    try {
+      const user = await getUserByEmail(email);
+
+      if (!user) {
+        return ctx.render({
+          error: "Credenciales inválidas",
+        });
+      }
+
+      // Verificar contraseña (en un caso real usarías bcrypt)
+      const encoder = new TextEncoder();
+      const data = encoder.encode(password + "salt");
+      const hash = await crypto.subtle.digest("SHA-256", data);
+      const hashedPassword = Array.from(new Uint8Array(hash))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+
+      if (hashedPassword !== user.passwordHash) {
+        return ctx.render({
+          error: "Credenciales inválidas",
+        });
+      }
+
+      // Crear sesión
+      const sessionId = crypto.randomUUID();
+      const sessionKey = ["sessions", sessionId];
+      const userKey = ["users", email];
+
+      await kv.set(sessionKey, userKey, { expireIn: 7 * 24 * 60 * 60 * 1000 }); // 7 días
+
+      const headers = new Headers();
+      headers.set(
+        "Set-Cookie",
+        `session=${sessionId}; HttpOnly; Path=/; Max-Age=${7 * 24 * 60 * 60}`
+      );
+      headers.set("Location", "/dashboard");
+
+      return new Response(null, {
+        status: 307,
+        headers,
+      });
+    } finally {
+      await kv.close();
     }
+  }
 
-    const user = userEntry.value as User;
-    const isPasswordValid = await verify(password, user.passwordHash);
+  return new Response("Method not allowed", { status: 405 });
+}
 
-    if (!isPasswordValid) {
-      return ctx.render({ error: "Credenciales incorrectas." });
-    }
+export default function LoginPage({
+  data,
+}: PageProps<{ error?: string }, AppState>) {
+  const { error } = data || {};
 
-    // --- Session Management ---
-    const sessionId = crypto.randomUUID();
-    const sessionExpiry = 3 * 24 * 60 * 60 * 1000; // 3 days
-
-    const kvSession = await Deno.openKv();
-    await kvSession.set(["sessions", sessionId], userEntry.key, {
-      expireIn: sessionExpiry,
-    });
-    await kvSession.close();
-
-    const headers = new Headers();
-    setCookie(headers, {
-      name: "auth_session",
-      value: sessionId,
-      path: "/",
-      httpOnly: true,
-      secure: false, // Set to false for local HTTP testing if needed
-      sameSite: "Lax",
-      expires: new Date(Date.now() + sessionExpiry),
-    });
-
-    // Redirect to dashboard on successful login
-    headers.set("location", "/dashboard");
-    return new Response(null, {
-      status: 303, // See Other: standard for redirecting after a POST
-      headers,
-    });
-  },
-};
-
-// --- PAGE RENDERING LOGIC (SERVER-SIDE) ---
-export default function LoginPage({ data }: PageProps<Data>) {
   return (
-    <div class="flex flex-col min-h-screen">
-      <Header />
-      <main class="flex-grow flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-12">
-        <div class="w-full max-w-md">
-          <div class="text-center mb-8">
-            <div class="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4">
-              <Icon
-                name="login"
-                size={32}
-                className="text-white filter brightness-0 invert"
-              />
-            </div>
-            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
-              Iniciar Sesión
-            </h2>
-            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              Ingresa a tu cuenta para continuar.
-            </p>
+    <div class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-md w-full space-y-8">
+        <div>
+          <div class="mx-auto h-12 w-12 flex items-center justify-center">
+            <Icon name="logo" className="h-12 w-12 text-indigo-600" />
           </div>
+          <h2 class="mt-6 text-center text-3xl font-bold text-gray-900 dark:text-white">
+            Iniciar Sesión
+          </h2>
+          <p class="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+            Accede a tu cuenta de Horizonte Clínica
+          </p>
+        </div>
 
-          {/* Simple Form - No client-side JS needed for submission */}
-          <form method="POST" class="space-y-6">
-            {data?.error && (
-              <div
-                class="bg-red-100 border border-red-400 text-red-700 dark:bg-red-900/20 dark:border-red-500 dark:text-red-300 px-4 py-3 rounded-md text-sm"
-                role="alert"
-              >
-                <div class="flex items-center gap-2">
-                  <Icon
-                    name="x"
-                    size={16}
-                    className="text-red-600 dark:text-red-400"
-                  />
-                  {data.error}
+        <form class="mt-8 space-y-6" method="POST">
+          <div class="space-y-4">
+            <div>
+              <label htmlFor="email" class="sr-only">
+                Correo electrónico
+              </label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Icon name="mail" className="h-5 w-5 text-gray-400" />
                 </div>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  autoComplete="email"
+                  required
+                  className="pl-10"
+                  placeholder="Correo electrónico"
+                />
               </div>
-            )}
-
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Icon name="mail" size={20} className="text-gray-400" />
-              </div>
-              <Input
-                type="email"
-                name="email"
-                placeholder="Correo electrónico"
-                required
-                class="pl-10"
-              />
-            </div>
-
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Icon name="lock" size={20} className="text-gray-400" />
-              </div>
-              <Input
-                type="password"
-                name="password"
-                placeholder="Contraseña"
-                required
-                class="pl-10"
-              />
             </div>
 
             <div>
-              <Button
-                type="submit"
-                class="w-full flex justify-center items-center gap-2"
-              >
+              <label htmlFor="password" class="sr-only">
+                Contraseña
+              </label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Icon name="lock" className="h-5 w-5 text-gray-400" />
+                </div>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  required
+                  className="pl-10"
+                  placeholder="Contraseña"
+                />
+              </div>
+            </div>
+          </div>
+
+          {error && (
+            <div class="rounded-md bg-red-50 dark:bg-red-900/50 p-4">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <Icon name="file-warning" className="h-5 w-5 text-red-400" />
+                </div>
+                <div class="ml-3">
+                  <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+                    Error de autenticación
+                  </h3>
+                  <div class="mt-2 text-sm text-red-700 dark:text-red-300">
+                    {error}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              className="group relative w-full flex justify-center"
+            >
+              <span class="absolute left-0 inset-y-0 flex items-center pl-3">
                 <Icon
                   name="login"
-                  size={20}
-                  className="text-white filter brightness-0 invert"
+                  className="h-5 w-5 text-indigo-500 group-hover:text-indigo-400"
                 />
-                Ingresar
-              </Button>
-            </div>
-
-            <div class="text-xs text-center text-gray-500 dark:text-gray-400 space-y-1">
-              <p>Para probar (después de ejecutar `deno task seed`):</p>
-              <p>
-                Usuario:{" "}
-                <code class="font-mono bg-gray-200 dark:bg-gray-700 p-1 rounded">
-                  admin@horizonte.com
-                </code>
-              </p>
-              <p>
-                Contraseña:{" "}
-                <code class="font-mono bg-gray-200 dark:bg-gray-700 p-1 rounded">
-                  password123
-                </code>
-              </p>
-            </div>
-          </form>
-        </div>
-      </main>
-      <Footer />
+              </span>
+              Iniciar Sesión
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

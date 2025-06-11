@@ -1,277 +1,192 @@
-import type { Handlers, PageProps } from "$fresh/server.ts";
-import Header from "../../islands/Header.tsx";
-import Footer from "../../components/layout/Footer.tsx";
-import type { AppState, Appointment } from "../../types/index.ts";
-import { Button } from "../../components/ui/Button.tsx";
+import { type PageProps, type FreshContext } from "$fresh/server.ts";
+import { type AppState, type Appointment } from "../../types/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
+import { getAppointmentById } from "../../lib/kv.ts";
 
-interface Data {
-  appointment: Appointment;
-  error?: string;
-}
+export async function handler(req: Request, ctx: FreshContext<AppState>) {
+  const url = new URL(req.url);
+  const id = url.pathname.split("/").pop();
 
-// Helper to fetch and validate appointment access
-async function getAppointment(
-  kv: Deno.Kv,
-  id: string,
-  user: AppState["user"]
-): Promise<Appointment | null> {
-  const result = await kv.get<Appointment>(["appointments", id]);
-  if (!result.value) return null;
-
-  // Superadmins can see everything
-  if (user?.role === "superadmin") {
-    return result.value;
+  if (!id) {
+    return new Response("ID de cita requerido", { status: 400 });
   }
 
-  // Psychologists can only see their own appointments
-  if (
-    user?.role === "psychologist" &&
-    result.value.psychologistEmail === user.email
-  ) {
-    return result.value;
-  }
+  const kv = await Deno.openKv();
 
-  // Deny access otherwise
-  return null;
-}
-
-export const handler: Handlers<Data, AppState> = {
-  // --- RENDER THE DETAILS PAGE ---
-  async GET(_req, ctx) {
-    const { id } = ctx.params;
-    const kv = await Deno.openKv();
-    const appointment = await getAppointment(kv, id, ctx.state.user);
-    kv.close();
+  try {
+    const appointment = await getAppointmentById(id);
 
     if (!appointment) {
-      return new Response(null, {
-        status: 303,
-        headers: { Location: "/appointments" },
-      });
+      return new Response("Cita no encontrada", { status: 404 });
     }
 
     return ctx.render({ appointment });
-  },
+  } finally {
+    await kv.close();
+  }
+}
 
-  // --- HANDLE ACTIONS (UPDATE/DELETE) ---
-  async POST(req, ctx) {
-    const { id } = ctx.params;
-    const form = await req.formData();
-    const action = form.get("_action")?.toString();
-
-    const kv = await Deno.openKv();
-    const appointment = await getAppointment(kv, id, ctx.state.user);
-
-    if (!appointment) {
-      kv.close();
-      return new Response("Appointment not found or access denied.", {
-        status: 404,
-      });
-    }
-
-    let newStatus: Appointment["status"] | undefined;
-    if (action === "complete" && appointment.status === "scheduled") {
-      newStatus = "completed";
-    } else if (action === "cancel" && appointment.status === "scheduled") {
-      newStatus = "cancelled";
-    }
-
-    if (newStatus) {
-      const updatedAppointment = { ...appointment, status: newStatus };
-      await kv.set(["appointments", id], updatedAppointment);
-      // Note: We might also want to update the indexed value, though it's less critical for status changes.
-    }
-    kv.close();
-
-    // Redirect back to the same page to show the update
-    return new Response(null, {
-      status: 303,
-      headers: { Location: `/appointments/${id}` },
-    });
-  },
-};
-
-export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
+export default function AppointmentDetailPage({
+  data,
+}: PageProps<{ appointment: Appointment }, AppState>) {
   const { appointment } = data;
 
-  const statusInfo = {
-    scheduled: {
-      text: "Agendada",
-      color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-    },
-    completed: {
-      text: "Completada",
-      color:
-        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-    },
-    cancelled: {
-      text: "Cancelada",
-      color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-    },
-  };
-
   return (
-    <div class="flex flex-col min-h-screen">
-      <Header />
-      <main class="flex-grow bg-gray-50 dark:bg-gray-900">
-        <div class="mx-auto max-w-4xl py-12 px-4 sm:px-6 lg:px-8">
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="px-4 py-6 sm:px-0">
+          {/* Header */}
           <div class="mb-8">
-            {/* Enlace volver */}
-            <a
-              href="/appointments"
-              class="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-            >
-              <Icon
-                name="arrow-left"
-                size={16}
-                className="text-gray-500 dark:text-gray-400"
-              />
-              Volver a la lista de citas
-            </a>
+            <div class="flex items-center justify-between">
+              <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                  Detalles de la Cita
+                </h1>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  Información completa de la cita programada
+                </p>
+              </div>
+              <a
+                href="/appointments"
+                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <Icon name="arrow-left" className="h-4 w-4 mr-2" />
+                Volver a Citas
+              </a>
+            </div>
           </div>
-          <div class="bg-white dark:bg-gray-800 shadow-lg rounded-lg overflow-hidden">
-            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-              <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between">
+
+          {/* Appointment Details */}
+          <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 class="text-lg font-medium text-gray-900 dark:text-white">
+                Información de la Cita
+              </h2>
+            </div>
+
+            <div class="px-6 py-4 space-y-6">
+              {/* Patient Information */}
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                    Detalles de la Cita
-                  </h2>
-                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Cita con{" "}
-                    <span class="font-medium">{appointment.patientName}</span>.
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <Icon name="user" className="h-4 w-4 inline mr-2" />
+                    Paciente
+                  </label>
+                  <p class="text-lg text-gray-900 dark:text-white">
+                    {appointment.patientName}
                   </p>
                 </div>
-                <div
-                  class={`mt-3 sm:mt-0 sm:ml-4 inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${
-                    statusInfo[appointment.status].color
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <Icon name="user-cog" className="h-4 w-4 inline mr-2" />
+                    Psicólogo
+                  </label>
+                  <p class="text-lg text-gray-900 dark:text-white">
+                    {appointment.psychologistName ||
+                      appointment.psychologistEmail}
+                  </p>
+                </div>
+              </div>
+
+              {/* Date and Time */}
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <Icon name="calendar" className="h-4 w-4 inline mr-2" />
+                    Fecha
+                  </label>
+                  <p class="text-lg text-gray-900 dark:text-white">
+                    {new Date(appointment.appointmentDate).toLocaleDateString(
+                      "es-ES",
+                      {
+                        weekday: "long",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      }
+                    )}
+                  </p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <Icon name="clock" className="h-4 w-4 inline mr-2" />
+                    Hora
+                  </label>
+                  <p class="text-lg text-gray-900 dark:text-white">
+                    {appointment.appointmentTime}
+                  </p>
+                </div>
+              </div>
+
+              {/* Status */}
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <Icon name="circle" className="h-4 w-4 inline mr-2" />
+                  Estado
+                </label>
+                <span
+                  class={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${
+                    appointment.status === "scheduled"
+                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                      : appointment.status === "completed"
+                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                      : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
                   }`}
                 >
-                  {statusInfo[appointment.status].text}
-                </div>
+                  {appointment.status === "scheduled"
+                    ? "Programada"
+                    : appointment.status === "completed"
+                    ? "Completada"
+                    : "Cancelada"}
+                </span>
               </div>
-            </div>
-            <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
-              {/* Paciente */}
-              <div class="flex items-center gap-4">
-                <Icon
-                  name="user"
-                  size={24}
-                  className="text-gray-400 dark:text-gray-500"
-                />
-                <dl>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Paciente
-                  </dt>
-                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                    {appointment.patientName}
-                  </dd>
-                </dl>
-              </div>
-              {/* Psicólogo */}
-              <div class="flex items-center gap-4">
-                <Icon
-                  name="user"
-                  size={24}
-                  className="text-gray-400 dark:text-gray-500"
-                />
-                <dl>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Psicólogo
-                  </dt>
-                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                    {appointment.psychologistEmail}
-                  </dd>
-                </dl>
-              </div>
-              {/* Fecha */}
-              <div class="flex items-center gap-4">
-                <Icon
-                  name="calendar"
-                  size={24}
-                  className="text-gray-400 dark:text-gray-500"
-                />
-                <dl>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Fecha
-                  </dt>
-                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                    {new Date(appointment.appointmentDate).toLocaleDateString(
-                      "es-PE",
-                      { timeZone: "UTC" }
-                    )}
-                  </dd>
-                </dl>
-              </div>
-              {/* Hora */}
-              <div class="flex items-center gap-4">
-                <Icon
-                  name="clock"
-                  size={24}
-                  className="text-gray-400 dark:text-gray-500"
-                />
-                <dl>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Hora
-                  </dt>
-                  <dd class="mt-1 text-sm text-gray-900 dark:text-white">
-                    {appointment.appointmentTime}
-                  </dd>
-                </dl>
-              </div>
-              {/* ID de Cita */}
-              <div class="flex items-center gap-4">
-                <Icon
-                  name="hash"
-                  size={24}
-                  className="text-gray-400 dark:text-gray-500"
-                />
-                <dl>
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    ID de Cita
-                  </dt>
-                  <dd class="mt-1 text-xs text-gray-900 dark:text-white font-mono">
-                    {appointment.id}
-                  </dd>
-                </dl>
-              </div>
-            </div>
-            {appointment.status === "scheduled" && (
-              <div class="p-6 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700">
-                <form
-                  method="POST"
-                  class="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-4"
-                >
-                  <p class="text-sm text-gray-600 dark:text-gray-300">
-                    Acciones disponibles:
+
+              {/* Notes */}
+              {appointment.notes && (
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <Icon name="file-warning" className="h-4 w-4 inline mr-2" />
+                    Notas
+                  </label>
+                  <p class="text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700 p-3 rounded-md">
+                    {appointment.notes}
                   </p>
-                  {/* Botón Cancelar */}
-                  <Button
-                    type="submit"
-                    name="_action"
-                    value="cancel"
-                    variant="danger"
-                  >
-                    <Icon name="circle" size={20} className="mr-2" />
-                    Cancelar Cita
-                  </Button>
-                  {/* Botón Completar */}
-                  <Button
-                    type="submit"
-                    name="_action"
-                    value="complete"
-                    variant="primary"
-                  >
-                    <Icon name="check" size={20} className="mr-2" />
-                    Marcar como Completada
-                  </Button>
-                </form>
+                </div>
+              )}
+
+              {/* Created Date */}
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <Icon name="calendar-plus" className="h-4 w-4 inline mr-2" />
+                  Fecha de Creación
+                </label>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  {new Date(appointment.createdAt).toLocaleString("es-ES")}
+                </p>
               </div>
-            )}
+            </div>
+
+            {/* Actions */}
+            <div class="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  if (
+                    confirm("¿Estás seguro de que quieres eliminar esta cita?")
+                  ) {
+                    window.location.href = `/api/appointments/${appointment.id}/delete`;
+                  }
+                }}
+                class="inline-flex items-center px-4 py-2 border border-red-300 dark:border-red-600 rounded-md shadow-sm text-sm font-medium text-red-700 dark:text-red-300 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20"
+              >
+                <Icon name="trash-2" className="h-4 w-4 mr-2" />
+                Eliminar Cita
+              </button>
+            </div>
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

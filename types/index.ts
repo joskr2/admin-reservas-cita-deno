@@ -14,6 +14,7 @@ export interface User {
   email: string;
   passwordHash: string;
   role: UserRole;
+  name?: string; // Nombre completo del usuario
   createdAt: string;
   isActive?: boolean;
 }
@@ -21,6 +22,7 @@ export interface User {
 export interface UserProfile {
   email: string;
   role: UserRole;
+  name?: string; // Nombre completo del usuario
   createdAt: string;
   isActive?: boolean;
 }
@@ -28,6 +30,7 @@ export interface UserProfile {
 export interface SessionUser {
   email: string;
   role: UserRole;
+  name?: string; // Nombre completo del usuario
 }
 
 // === TIPOS DE CITAS ===
@@ -36,6 +39,7 @@ export type AppointmentStatus = "scheduled" | "completed" | "cancelled";
 export interface Appointment {
   id: string;
   psychologistEmail: string;
+  psychologistName?: string; // Nombre del psicólogo para mostrar
   patientName: string;
   appointmentDate: string; // YYYY-MM-DD
   appointmentTime: string; // HH:MM
@@ -66,6 +70,7 @@ export interface LoginForm {
 export interface CreateUserForm {
   email: string;
   password: string;
+  name?: string; // Nombre completo
   role: UserRole;
 }
 

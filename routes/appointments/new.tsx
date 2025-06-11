@@ -1,61 +1,34 @@
-import type { Handlers, PageProps } from "$fresh/server.ts";
-import Header from "../../islands/Header.tsx";
-import Footer from "../../components/layout/Footer.tsx";
-import type { AppState, UserProfile } from "../../types/index.ts";
+import { type PageProps, type FreshContext } from "$fresh/server.ts";
+import { type AppState, type UserProfile } from "../../types/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
-
+import { Button } from "../../components/ui/Button.tsx";
 import { Input } from "../../components/ui/Input.tsx";
 import { Select } from "../../components/ui/Select.tsx";
-import { Button } from "../../components/ui/Button.tsx";
+import { getAllUsers, createAppointment } from "../../lib/kv.ts";
 
-// Data passed from GET handler to the component
-interface Data {
-  psychologists: UserProfile[];
-  error?: string;
-}
+export async function handler(req: Request, ctx: FreshContext<AppState>) {
+  if (req.method === "GET") {
+    const kv = await Deno.openKv();
 
-// Helper function to fetch assignable users to avoid code duplication
-async function getAssignableUsers(kv: Deno.Kv): Promise<UserProfile[]> {
-  const users: UserProfile[] = [];
-  const iter = kv.list<UserProfile>({ prefix: ["users_by_role"] });
-  for await (const entry of iter) {
-    // We only want psychologists and superadmins to be assignable
-    if (entry.key[1] === "psychologist" || entry.key[1] === "superadmin") {
-      users.push(entry.value);
+    try {
+      const users = await getAllUsers();
+      const psychologists = users
+        .filter((user) => user.role === "psychologist")
+        .sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email));
+
+      return ctx.render({ psychologists });
+    } finally {
+      await kv.close();
     }
   }
-  // Remove duplicates just in case and sort
-  const uniqueUsers = Array.from(
-    new Map(users.map((u) => [u.email, u])).values()
-  );
-  uniqueUsers.sort((a, b) => a.email.localeCompare(b.email));
-  return uniqueUsers;
-}
 
-export const handler: Handlers<Data, AppState> = {
-  // --- RENDER THE FORM ---
-  async GET(_req, ctx) {
-    const kv = await Deno.openKv();
-    const psychologists = await getAssignableUsers(kv);
-    kv.close();
+  if (req.method === "POST") {
+    const formData = await req.formData();
+    const patientName = formData.get("patientName")?.toString();
+    const psychologistEmail = formData.get("psychologistEmail")?.toString();
+    const appointmentDate = formData.get("appointmentDate")?.toString();
+    const appointmentTime = formData.get("appointmentTime")?.toString();
 
-    return ctx.render({ psychologists });
-  },
-
-  // --- PROCESS FORM SUBMISSION ---
-  async POST(req, ctx) {
-    const form = await req.formData();
-    const patientName = form.get("patientName")?.toString();
-    let psychologistEmail = form.get("psychologistEmail")?.toString();
-    const appointmentDate = form.get("appointmentDate")?.toString();
-    const appointmentTime = form.get("appointmentTime")?.toString();
-
-    // If the logged-in user is a psychologist, they can only book for themselves
-    if (ctx.state.user?.role === "psychologist") {
-      psychologistEmail = ctx.state.user.email;
-    }
-
-    // --- Validation ---
     if (
       !patientName ||
       !psychologistEmail ||
@@ -63,187 +36,209 @@ export const handler: Handlers<Data, AppState> = {
       !appointmentTime
     ) {
       const kv = await Deno.openKv();
-      const psychologists = await getAssignableUsers(kv);
-      kv.close();
-      return ctx.render({
-        psychologists,
-        error: "Todos los campos son requeridos.",
-      });
+      try {
+        const users = await getAllUsers();
+        const psychologists = users
+          .filter((user) => user.role === "psychologist")
+          .sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email));
+
+        return ctx.render({
+          psychologists,
+          error: "Todos los campos son requeridos",
+        });
+      } finally {
+        await kv.close();
+      }
     }
 
-    // --- Create Appointment Record ---
     const kv = await Deno.openKv();
-    const appointmentId = crypto.randomUUID();
-    const newAppointment = {
-      id: appointmentId,
-      psychologistEmail,
-      patientName,
-      appointmentDate,
-      appointmentTime,
-      status: "scheduled" as const,
-      createdAt: new Date().toISOString(),
-    };
 
-    // Use an atomic operation to ensure data consistency
-    const result = await kv
-      .atomic()
-      .set(["appointments", appointmentId], newAppointment)
-      .set(
-        ["appointments_by_psychologist", psychologistEmail, appointmentId],
-        newAppointment
-      )
-      .commit();
+    try {
+      // Obtener el nombre del psicólogo
+      const psychologist = await getAllUsers().then((users) =>
+        users.find((user) => user.email === psychologistEmail)
+      );
 
-    kv.close();
+      const appointmentData = {
+        patientName,
+        psychologistEmail,
+        psychologistName: psychologist?.name,
+        appointmentDate,
+        appointmentTime,
+        status: "scheduled" as const,
+      };
 
-    if (!result.ok) {
-      const psychologists = await getAssignableUsers(kv);
-      return ctx.render({
-        psychologists,
-        error: "Error al guardar la cita en la base de datos.",
+      await createAppointment(appointmentData);
+
+      return new Response(null, {
+        status: 307,
+        headers: { Location: "/appointments" },
       });
+    } finally {
+      await kv.close();
     }
+  }
 
-    // Redirect to appointments list on success
-    return new Response(null, {
-      status: 303,
-      headers: { Location: "/appointments" },
-    });
-  },
-};
+  return new Response("Method not allowed", { status: 405 });
+}
 
 export default function NewAppointmentPage({
   data,
-  state,
-}: PageProps<Data, AppState>) {
-  const { psychologists, error } = data;
-  const currentUser = state.user;
-  const isPsychologist = currentUser?.role === "psychologist";
+}: PageProps<{ psychologists: UserProfile[]; error?: string }, AppState>) {
+  const { psychologists, error } = data || { psychologists: [] };
 
   return (
-    <div class="flex flex-col min-h-screen">
-      <Header />
-      <main class="flex-grow bg-gray-50 dark:bg-gray-900">
-        <div class="mx-auto max-w-2xl py-12 px-4 sm:px-6 lg:px-8">
-          <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8">
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Agendar Nueva Cita
-            </h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              Completa los detalles para programar una nueva consulta.
-            </p>
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="px-4 py-6 sm:px-0">
+          <div class="mb-8">
+            <div class="flex items-center justify-between">
+              <div>
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                  Nueva Cita
+                </h1>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  Programa una nueva cita para un paciente
+                </p>
+              </div>
+              <a
+                href="/appointments"
+                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <Icon name="arrow-left" className="h-4 w-4 mr-2" />
+                Volver a Citas
+              </a>
+            </div>
+          </div>
 
-            <form method="POST" class="space-y-6">
+          <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 class="text-lg font-medium text-gray-900 dark:text-white">
+                Información de la Cita
+              </h2>
+            </div>
+
+            <form method="POST" class="px-6 py-4 space-y-6">
               {error && (
-                <div
-                  class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4"
-                  role="alert"
-                >
-                  <p class="font-bold">Error</p>
-                  <p>{error}</p>
+                <div class="rounded-md bg-red-50 dark:bg-red-900/50 p-4">
+                  <div class="flex">
+                    <div class="flex-shrink-0">
+                      <Icon
+                        name="file-warning"
+                        className="h-5 w-5 text-red-400"
+                      />
+                    </div>
+                    <div class="ml-3">
+                      <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+                        Error en el formulario
+                      </h3>
+                      <div class="mt-2 text-sm text-red-700 dark:text-red-300">
+                        {error}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
 
-              <div>
-                <label
-                  for="patientName"
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  Nombre del Paciente
-                </label>
-                <div class="mt-1">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label
+                    htmlFor="patientName"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    <Icon name="user" className="h-4 w-4 inline mr-2" />
+                    Nombre del Paciente
+                  </label>
                   <Input
-                    type="text"
-                    name="patientName"
                     id="patientName"
+                    name="patientName"
+                    type="text"
+                    required
+                    placeholder="Ingrese el nombre completo del paciente"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="psychologistEmail"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    <Icon name="user-cog" className="h-4 w-4 inline mr-2" />
+                    Psicólogo Asignado
+                  </label>
+                  <Select
+                    id="psychologistEmail"
+                    name="psychologistEmail"
+                    required
+                  >
+                    <option value="">Seleccione un psicólogo</option>
+                    {psychologists.map((psychologist) => (
+                      <option
+                        key={psychologist.email}
+                        value={psychologist.email}
+                      >
+                        {psychologist.name || psychologist.email} - Psicólogo
+                      </option>
+                    ))}
+                  </Select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label
+                    htmlFor="appointmentDate"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    <Icon name="calendar" className="h-4 w-4 inline mr-2" />
+                    Fecha de la Cita
+                  </label>
+                  <Input
+                    id="appointmentDate"
+                    name="appointmentDate"
+                    type="date"
+                    required
+                    min={new Date().toISOString().split("T")[0]}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="appointmentTime"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    <Icon name="clock" className="h-4 w-4 inline mr-2" />
+                    Hora de la Cita
+                  </label>
+                  <Input
+                    id="appointmentTime"
+                    name="appointmentTime"
+                    type="time"
                     required
                   />
                 </div>
               </div>
 
-              <div>
-                <label
-                  for="psychologistEmail"
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  Psicólogo Asignado
-                </label>
-                <div class="mt-1">
-                  <Select
-                    name="psychologistEmail"
-                    id="psychologistEmail"
-                    disabled={isPsychologist}
-                  >
-                    {psychologists.map((p) => (
-                      <option
-                        key={p.email}
-                        value={p.email}
-                        selected={currentUser?.email === p.email}
-                      >
-                        {p.email} ({p.role})
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-                {isPsychologist && (
-                  <p class="mt-2 text-xs text-gray-500">
-                    Como psicólogo, solo puedes agendar citas para ti mismo.
-                  </p>
-                )}
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    for="appointmentDate"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Fecha de la Cita
-                  </label>
-                  <div class="mt-1">
-                    <Input
-                      type="date"
-                      name="appointmentDate"
-                      id="appointmentDate"
-                      required
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label
-                    for="appointmentTime"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Hora de la Cita
-                  </label>
-                  <div class="mt-1">
-                    <Input
-                      type="time"
-                      name="appointmentTime"
-                      id="appointmentTime"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div class="flex justify-end gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+              <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <a
                   href="/appointments"
-                  class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
+                  class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
                   Cancelar
                 </a>
-                <Button type="submit">
-                  <Icon name="calendar-plus" size={20} className="mr-2" />
-                  Agendar Cita
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="inline-flex items-center"
+                >
+                  <Icon name="calendar-plus" className="h-4 w-4 mr-2" />
+                  Crear Cita
                 </Button>
               </div>
             </form>
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

@@ -1,188 +1,164 @@
-import type { Handlers, PageProps } from "$fresh/server.ts";
-import Header from "../../islands/Header.tsx";
-import Footer from "../../components/layout/Footer.tsx";
-import type { AppState, Appointment } from "../../types/index.ts";
+import { type PageProps, type FreshContext } from "$fresh/server.ts";
+import { type AppState, type Appointment } from "../../types/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
+import { getAllAppointments } from "../../lib/kv.ts";
 
-// Data passed from the handler to the component
-interface Data {
-  appointments: Appointment[];
+export async function handler(req: Request, ctx: FreshContext<AppState>) {
+  const kv = await Deno.openKv();
+
+  try {
+    const appointments = await getAllAppointments();
+    return ctx.render({ appointments });
+  } finally {
+    await kv.close();
+  }
 }
 
-export const handler: Handlers<Data, AppState> = {
-  async GET(_req, ctx) {
-    const { user } = ctx.state;
-    if (!user) {
-      // Should be handled by middleware, but as a safeguard
-      return new Response(null, {
-        status: 307,
-        headers: { Location: "/login" },
-      });
-    }
-
-    const kv = await Deno.openKv();
-    const appointments: Appointment[] = [];
-    let iterator: Deno.KvListIterator<Appointment>;
-
-    if (user.role === "superadmin") {
-      // Superadmin sees all appointments
-      iterator = kv.list<Appointment>({ prefix: ["appointments"] });
-    } else {
-      // Psychologist sees only their own appointments
-      iterator = kv.list<Appointment>({
-        prefix: ["appointments_by_psychologist", user.email],
-      });
-    }
-
-    for await (const entry of iterator) {
-      // For the psychologist's index, the value is the primary key of the appointment
-      if (user.role === "psychologist") {
-        const appointmentKey = entry.value as unknown as Deno.KvKey;
-        const mainEntry = await kv.get<Appointment>(appointmentKey);
-        if (mainEntry.value) {
-          appointments.push(mainEntry.value);
-        }
-      } else {
-        appointments.push(entry.value);
-      }
-    }
-    kv.close();
-
-    // Sort appointments by date, newest first
-    appointments.sort(
-      (a, b) =>
-        new Date(b.appointmentDate).getTime() -
-        new Date(a.appointmentDate).getTime()
-    );
-
-    return ctx.render({ appointments });
-  },
-};
-
-export default function AppointmentsPage(props: PageProps<Data, AppState>) {
-  const { appointments } = props.data;
-  const { user } = props.state;
-  const isSuperAdmin = user?.role === "superadmin";
+export default function AppointmentsPage({
+  data,
+}: PageProps<{ appointments: Appointment[] }, AppState>) {
+  const { appointments } = data;
 
   return (
-    <div class="flex flex-col min-h-screen">
-      <Header />
-      <main class="flex-grow bg-gray-50 dark:bg-gray-900">
-        <div class="mx-auto max-w-7xl py-12 px-4 sm:px-6 lg:px-8">
-          {/* Page Header */}
-          <div class="sm:flex sm:items-center sm:justify-between pb-8 border-b border-gray-200 dark:border-gray-700">
-            <div>
-              <h1 class="text-3xl font-bold leading-tight tracking-tight text-gray-900 dark:text-white">
-                {isSuperAdmin ? "Gestión de Citas" : "Mis Citas"}
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="px-4 py-6 sm:px-0">
+          <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                Citas
               </h1>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Visualiza y administra todas las citas programadas.
+              <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                Lista de todas las citas programadas en el sistema.
               </p>
             </div>
-            <div class="mt-4 sm:mt-0 sm:ml-4">
+            <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
               <a
                 href="/appointments/new"
-                class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:ring-offset-gray-800"
+                class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
               >
-                <Icon
-                  name="calendar-plus"
-                  size={20}
-                  className="mr-2 text-white"
-                />
-                Agendar Nueva Cita
+                <Icon name="plus" className="h-4 w-4 mr-2" />
+                Nueva Cita
               </a>
             </div>
           </div>
 
-          {/* Appointments List */}
-          <div class="mt-8">
-            {appointments.length === 0 ? (
-              <div class="text-center py-16 px-4 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
-                <Icon
-                  name="calendar"
-                  size={48}
-                  className="mx-auto text-gray-400 dark:text-gray-500"
-                />
-                <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">
-                  No hay citas agendadas
-                </h3>
-                <p class="mt-1 text-sm text-gray-500">
-                  Comienza por agendar una nueva cita.
-                </p>
+          <div class="mt-8 flow-root">
+            <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                  <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-800">
+                      <tr>
+                        <th
+                          scope="col"
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                        >
+                          Paciente
+                        </th>
+                        <th
+                          scope="col"
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                        >
+                          Psicólogo
+                        </th>
+                        <th
+                          scope="col"
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                        >
+                          Fecha y Hora
+                        </th>
+                        <th
+                          scope="col"
+                          class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                        >
+                          Estado
+                        </th>
+                        <th scope="col" class="relative px-6 py-3">
+                          <span class="sr-only">Acciones</span>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                      {appointments.length === 0 ? (
+                        <tr>
+                          <td
+                            colSpan={5}
+                            class="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400"
+                          >
+                            No hay citas programadas
+                          </td>
+                        </tr>
+                      ) : (
+                        appointments.map((appointment) => (
+                          <tr
+                            key={appointment.id}
+                            class="hover:bg-gray-50 dark:hover:bg-gray-800"
+                          >
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                              {appointment.patientName}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              {appointment.psychologistName ||
+                                appointment.psychologistEmail}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                              {new Date(
+                                `${appointment.appointmentDate}T${appointment.appointmentTime}`
+                              ).toLocaleString()}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                              <span
+                                class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                  appointment.status === "scheduled"
+                                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                                    : appointment.status === "completed"
+                                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                                    : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                                }`}
+                              >
+                                {appointment.status === "scheduled"
+                                  ? "Programada"
+                                  : appointment.status === "completed"
+                                  ? "Completada"
+                                  : "Cancelada"}
+                              </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <a
+                                href={`/appointments/${appointment.id}`}
+                                class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300 mr-4"
+                                title="Ver detalles de la cita"
+                              >
+                                <Icon name="eye" className="h-4 w-4" />
+                              </a>
+                              <button
+                                title="Eliminar cita"
+                                class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                onClick={() => {
+                                  if (
+                                    confirm(
+                                      "¿Estás seguro de que quieres eliminar esta cita?"
+                                    )
+                                  ) {
+                                    window.location.href = `/api/appointments/${appointment.id}/delete`;
+                                  }
+                                }}
+                              >
+                                <Icon name="trash-2" className="h-4 w-4" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            ) : (
-              <ul class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {appointments.map((appt) => (
-                  <li
-                    key={appt.id}
-                    class="col-span-1 divide-y divide-gray-200 dark:divide-gray-700 rounded-lg bg-white dark:bg-gray-800 shadow"
-                  >
-                    <div class="flex w-full items-center justify-between space-x-6 p-6">
-                      <div class="flex-1 truncate">
-                        <div class="flex items-center space-x-3">
-                          <h3 class="truncate text-sm font-medium text-gray-900 dark:text-white">
-                            {appt.patientName}
-                          </h3>
-                          <span
-                            class={`inline-block flex-shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                              appt.status === "scheduled"
-                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                                : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
-                            }`}
-                          >
-                            {appt.status === "scheduled"
-                              ? "Agendada"
-                              : "Completada"}
-                          </span>
-                        </div>
-                        {isSuperAdmin && (
-                          <p class="mt-1 truncate text-xs text-gray-500 dark:text-gray-400">
-                            Psic. {appt.psychologistEmail.split("@")[0]}
-                          </p>
-                        )}
-                        <div class="mt-2 space-y-1 text-sm text-gray-500 dark:text-gray-400">
-                          <p class="flex items-center gap-2">
-                            <Icon
-                              name="calendar"
-                              size={16}
-                              className="text-gray-400 dark:text-gray-500"
-                            />
-                            {new Date(appt.appointmentDate).toLocaleDateString(
-                              "es-PE",
-                              { timeZone: "UTC" }
-                            )}
-                          </p>
-                          <p class="flex items-center gap-2">
-                            <Icon
-                              name="clock"
-                              size={16}
-                              className="text-gray-400 dark:text-gray-500"
-                            />
-                            {appt.appointmentTime}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                    <div>
-                      <div class="-mt-px flex divide-x divide-gray-200 dark:divide-gray-700">
-                        <div class="flex w-0 flex-1">
-                          <a
-                            href={`/appointments/${appt.id}`}
-                            class="relative -mr-px inline-flex w-0 flex-1 items-center justify-center gap-x-3 rounded-bl-lg border border-transparent py-4 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                          >
-                            Ver Detalles
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+            </div>
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 }

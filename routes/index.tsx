@@ -1,192 +1,196 @@
-import type { Handlers, PageProps } from "$fresh/server.ts";
-import type { AppState } from "../types/index.ts";
-import Header from "../islands/Header.tsx";
-import Footer from "../components/layout/Footer.tsx";
+import { type PageProps } from "$fresh/server.ts";
+import { type AppState } from "../types/index.ts";
 import { Icon } from "../components/ui/Icon.tsx";
 
-export const handler: Handlers<unknown, AppState> = {
-  GET(_req, ctx) {
-    return ctx.render();
-  },
-};
-
-export default function HomePage(props: PageProps<unknown, AppState>) {
-  const { user } = props.state;
-  const currentPath = "/";
-
-  // Map user.role to the expected union type if user exists
-  const headerUser: {
-    email: string;
-    role: "superadmin" | "psychologist";
-  } | null = user
-    ? {
-        email: user.email,
-        // Only allow "superadmin" or "psychologist", fallback to "psychologist" if not matching
-        role:
-          user.role === "superadmin" || user.role === "psychologist"
-            ? user.role
-            : "psychologist",
-      }
-    : null;
-
+export default function Home({ state }: PageProps<unknown, AppState>) {
   return (
-    <div>
-      <Header user={headerUser} currentPath={currentPath} />
+    <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      {/* Hero Section */}
+      <section class="relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div class="text-center">
+            <h1 class="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
+              Horizonte Clínica
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-3xl mx-auto">
+              Sistema integral de gestión para consultorios psicológicos.
+              Organiza citas, gestiona pacientes y optimiza tu práctica
+              profesional.
+            </p>
 
-      <main>
-        <section class="relative overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
-          <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http://www.w3.org/2000/svg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%239C92AC%22%20fill-opacity%3D%220.1%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%224%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-40" />
-
-          <div class="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:px-8">
-            <div class="text-center">
-              <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-6xl">
-                <span class="block">Horizonte</span>
-                <span class="block bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Clínica Psicológica
-                </span>
-              </h1>
-              <p class="mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                Sistema profesional de gestión de citas psicológicas. Conectamos
-                profesionales de la salud mental con sus pacientes de manera
-                eficiente y segura.
-              </p>
-
-              <div class="mt-10 flex items-center justify-center gap-x-6">
-                {user ? (
-                  <a
-                    href="/dashboard"
-                    class="rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 text-lg font-semibold text-white shadow-xl hover:from-blue-700 hover:to-purple-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25"
-                  >
-                    Ir al Dashboard
-                  </a>
-                ) : (
-                  <a
-                    href="/login"
-                    class="inline-flex items-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 text-lg font-semibold text-white shadow-xl hover:from-blue-700 hover:to-purple-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25"
-                  >
-                    <Icon
-                      name="login"
-                      size={20}
-                      className="mr-3 text-white filter brightness-0 invert"
-                    />
-                    Iniciar Sesión
-                  </a>
-                )}
-
+            {state.user ? (
+              <div class="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
                 <a
-                  href="#features"
-                  class="text-lg font-semibold leading-6 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+                  href="/dashboard"
+                  class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
                 >
-                  Conoce más <span aria-hidden="true">→</span>
+                  <Icon name="briefcase" className="h-5 w-5 mr-2" />
+                  Ir al Dashboard
+                </a>
+                <a
+                  href="/appointments"
+                  class="inline-flex items-center px-8 py-3 border border-gray-300 dark:border-gray-600 text-base font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 md:py-4 md:text-lg md:px-10"
+                >
+                  <Icon name="calendar" className="h-5 w-5 mr-2" />
+                  Ver Citas
                 </a>
               </div>
-            </div>
+            ) : (
+              <div class="space-y-4 sm:space-y-0 sm:space-x-4 sm:flex sm:justify-center">
+                <a
+                  href="/login"
+                  class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:py-4 md:text-lg md:px-10"
+                >
+                  <Icon name="login" className="h-5 w-5 mr-2" />
+                  Iniciar Sesión
+                </a>
+              </div>
+            )}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Features Section */}
-        <section id="features" class="py-24 bg-white dark:bg-gray-900">
-          <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div class="text-center">
-              <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
-                ¿Por qué elegir Horizonte?
-              </h2>
-              <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">
-                Nuestra plataforma está diseñada específicamente para
-                profesionales de la salud mental
+      {/* Features Section */}
+      <section class="py-16 bg-white dark:bg-gray-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              Características Principales
+            </h2>
+            <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              Todo lo que necesitas para gestionar tu consulta psicológica de
+              manera eficiente
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Feature 1 */}
+            <div class="text-center p-6 rounded-lg bg-gray-50 dark:bg-gray-800">
+              <div class="w-16 h-16 mx-auto mb-4 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center">
+                <Icon
+                  name="calendar-plus"
+                  className="h-8 w-8 text-indigo-600 dark:text-indigo-400"
+                />
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Gestión de Citas
+              </h3>
+              <p class="text-gray-600 dark:text-gray-400">
+                Programa, modifica y gestiona todas tus citas de manera sencilla
+                e intuitiva.
               </p>
             </div>
 
-            <div class="mt-20 grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-3">
-              {/* Feature 1 */}
-              <div class="relative group">
-                <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                  <Icon
-                    name="heart"
-                    size={32}
-                    className="text-white filter brightness-0 invert"
-                  />
-                </div>
-                <h3 class="mt-6 text-xl font-semibold text-gray-900 dark:text-white">
-                  Enfoque Humano
-                </h3>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">
-                  Priorizamos la conexión humana y el bienestar emocional en
-                  cada interacción.
-                </p>
+            {/* Feature 2 */}
+            <div class="text-center p-6 rounded-lg bg-gray-50 dark:bg-gray-800">
+              <div class="w-16 h-16 mx-auto mb-4 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
+                <Icon
+                  name="users"
+                  className="h-8 w-8 text-green-600 dark:text-green-400"
+                />
               </div>
-
-              {/* Feature 2 */}
-              <div class="relative group">
-                <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                  <Icon
-                    name="shield"
-                    size={32}
-                    className="text-white filter brightness-0 invert"
-                  />
-                </div>
-                <h3 class="mt-6 text-xl font-semibold text-gray-900 dark:text-white">
-                  Seguridad Total
-                </h3>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">
-                  Protección completa de datos personales y confidencialidad
-                  garantizada.
-                </p>
-              </div>
-
-              {/* Feature 3 */}
-              <div class="relative group">
-                <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                  <Icon
-                    name="clock"
-                    size={32}
-                    className="text-white filter brightness-0 invert"
-                  />
-                </div>
-                <h3 class="mt-6 text-xl font-semibold text-gray-900 dark:text-white">
-                  Gestión Eficiente
-                </h3>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">
-                  Organiza tus citas y pacientes de manera simple e intuitiva.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section class="bg-gradient-to-r from-blue-600 to-purple-600">
-          <div class="mx-auto max-w-7xl px-4 py-24 sm:px-6 lg:px-8">
-            <div class="text-center">
-              <h2 class="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                ¿Listo para comenzar?
-              </h2>
-              <p class="mt-4 text-xl text-blue-100">
-                Únete a nuestra plataforma y optimiza la gestión de tu práctica
-                psicológica.
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Gestión de Pacientes
+              </h3>
+              <p class="text-gray-600 dark:text-gray-400">
+                Mantén un registro completo de todos tus pacientes y su
+                historial.
               </p>
+            </div>
 
-              {!user && (
-                <div class="mt-8">
-                  <a
-                    href="/login"
-                    class="inline-flex items-center rounded-xl bg-white px-8 py-4 text-lg font-semibold text-blue-600 shadow-lg hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
-                  >
-                    <Icon
-                      name="login"
-                      size={20}
-                      className="mr-3 text-blue-600"
-                    />
-                    Acceder al Sistema
-                  </a>
-                </div>
-              )}
+            {/* Feature 3 */}
+            <div class="text-center p-6 rounded-lg bg-gray-50 dark:bg-gray-800">
+              <div class="w-16 h-16 mx-auto mb-4 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
+                <Icon
+                  name="dashboard"
+                  className="h-8 w-8 text-purple-600 dark:text-purple-400"
+                />
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Reportes y Estadísticas
+              </h3>
+              <p class="text-gray-600 dark:text-gray-400">
+                Obtén insights valiosos sobre tu práctica con reportes
+                detallados.
+              </p>
+            </div>
+
+            {/* Feature 4 */}
+            <div class="text-center p-6 rounded-lg bg-gray-50 dark:bg-gray-800">
+              <div class="w-16 h-16 mx-auto mb-4 bg-yellow-100 dark:bg-yellow-900 rounded-full flex items-center justify-center">
+                <Icon
+                  name="shield"
+                  className="h-8 w-8 text-yellow-600 dark:text-yellow-400"
+                />
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Seguridad y Privacidad
+              </h3>
+              <p class="text-gray-600 dark:text-gray-400">
+                Protección total de datos con los más altos estándares de
+                seguridad.
+              </p>
+            </div>
+
+            {/* Feature 5 */}
+            <div class="text-center p-6 rounded-lg bg-gray-50 dark:bg-gray-800">
+              <div class="w-16 h-16 mx-auto mb-4 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center">
+                <Icon
+                  name="heart"
+                  className="h-8 w-8 text-red-600 dark:text-red-400"
+                />
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Enfoque Humano
+              </h3>
+              <p class="text-gray-600 dark:text-gray-400">
+                Diseñado pensando en la relación terapéutica y el bienestar del
+                paciente.
+              </p>
+            </div>
+
+            {/* Feature 6 */}
+            <div class="text-center p-6 rounded-lg bg-gray-50 dark:bg-gray-800">
+              <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                <Icon
+                  name="heart-handshake"
+                  className="h-8 w-8 text-blue-600 dark:text-blue-400"
+                />
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                Soporte Continuo
+              </h3>
+              <p class="text-gray-600 dark:text-gray-400">
+                Acompañamiento y soporte técnico para que te enfoques en lo
+                importante.
+              </p>
             </div>
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
 
-      <Footer />
+      {/* CTA Section */}
+      <section class="py-16 bg-indigo-600 dark:bg-indigo-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
+            ¿Listo para transformar tu práctica?
+          </h2>
+          <p class="text-xl text-indigo-100 mb-8 max-w-2xl mx-auto">
+            Únete a los profesionales que ya confían en Horizonte Clínica para
+            gestionar su consulta.
+          </p>
+
+          {!state.user && (
+            <a
+              href="/login"
+              class="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
+            >
+              <Icon name="login" className="h-5 w-5 mr-2" />
+              Comenzar Ahora
+            </a>
+          )}
+        </div>
+      </section>
     </div>
   );
 }
