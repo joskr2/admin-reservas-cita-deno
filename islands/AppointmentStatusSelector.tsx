@@ -1,22 +1,22 @@
 import { useState } from "preact/hooks";
 import { type AppointmentStatus } from "../types/index.ts";
+import {
+  getNextStatuses,
+  getStatusColor,
+  getStatusText,
+} from "../lib/utils/appointmentUtils.ts";
 
 interface AppointmentStatusSelectorProps {
   appointmentId: string;
   currentStatus: AppointmentStatus;
-  availableStatuses: AppointmentStatus[];
-  getStatusText: (status: AppointmentStatus) => string;
-  getStatusColor: (status: AppointmentStatus) => string;
 }
 
 export default function AppointmentStatusSelector({
   appointmentId,
   currentStatus,
-  availableStatuses,
-  getStatusText,
-  getStatusColor,
 }: AppointmentStatusSelectorProps) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const availableStatuses = getNextStatuses(currentStatus);
 
   const handleStatusChange = async (e: Event) => {
     const target = e.target as HTMLSelectElement;

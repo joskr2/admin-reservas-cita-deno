@@ -23,7 +23,18 @@ export default function AppointmentFormValidator({
         .get("psychologistEmail")
         ?.toString();
 
-      if (selectedPsychologist !== currentUserEmail) {
+      // Si no hay psicólogo seleccionado y es un psicólogo, usar su email
+      if (!selectedPsychologist && currentUserRole === "psychologist") {
+        // Agregar el email del psicólogo actual al formulario
+        const hiddenInput = document.createElement("input");
+        hiddenInput.type = "hidden";
+        hiddenInput.name = "psychologistEmail";
+        hiddenInput.value = currentUserEmail;
+        (e.target as HTMLFormElement).appendChild(hiddenInput);
+      } else if (
+        selectedPsychologist &&
+        selectedPsychologist !== currentUserEmail
+      ) {
         e.preventDefault();
         alert("No tienes permisos para asignar citas a otros psicólogos");
         return false;

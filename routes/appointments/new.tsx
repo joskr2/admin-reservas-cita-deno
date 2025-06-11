@@ -324,6 +324,9 @@ export default function NewAppointmentPage({
                       name="psychologistEmail"
                       required
                       disabled={currentUserRole === "psychologist"}
+                      value={currentUserRole === "psychologist"
+                        ? currentUserEmail
+                        : ""}
                     >
                       {currentUserRole === "superadmin" && (
                         <option value="">Seleccione un psicólogo</option>
@@ -339,6 +342,14 @@ export default function NewAppointmentPage({
                         </option>
                       ))}
                     </Select>
+                    {/* Campo oculto para asegurar que el valor se envíe cuando el select está deshabilitado */}
+                    {currentUserRole === "psychologist" && (
+                      <input
+                        type="hidden"
+                        name="psychologistEmail"
+                        value={currentUserEmail}
+                      />
+                    )}
                     {currentUserRole === "psychologist" && (
                       <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                         Las citas se asignarán automáticamente a tu perfil
