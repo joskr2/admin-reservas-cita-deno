@@ -1,28 +1,23 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import Header from "../../islands/Header.tsx";
 import Footer from "../../components/layout/Footer.tsx";
-import type { AppState } from "../_middleware.ts";
+import type { AppState, UserProfile } from "../../types/index.ts";
+import { Icon } from "../../components/ui/Icon.tsx";
 
 import { Input } from "../../components/ui/Input.tsx";
 import { Select } from "../../components/ui/Select.tsx";
 import { Button } from "../../components/ui/Button.tsx";
 
-// Interface for a user who can be assigned an appointment
-interface AssignableUser {
-  email: string;
-  role: "superadmin" | "psychologist";
-}
-
 // Data passed from GET handler to the component
 interface Data {
-  psychologists: AssignableUser[];
+  psychologists: UserProfile[];
   error?: string;
 }
 
 // Helper function to fetch assignable users to avoid code duplication
-async function getAssignableUsers(kv: Deno.Kv): Promise<AssignableUser[]> {
-  const users: AssignableUser[] = [];
-  const iter = kv.list<AssignableUser>({ prefix: ["users_by_role"] });
+async function getAssignableUsers(kv: Deno.Kv): Promise<UserProfile[]> {
+  const users: UserProfile[] = [];
+  const iter = kv.list<UserProfile>({ prefix: ["users_by_role"] });
   for await (const entry of iter) {
     // We only want psychologists and superadmins to be assignable
     if (entry.key[1] === "psychologist" || entry.key[1] === "superadmin") {
@@ -240,13 +235,7 @@ export default function NewAppointmentPage({
                   Cancelar
                 </a>
                 <Button type="submit">
-                  <img
-                    src="/icons/calendar-plus.svg"
-                    alt="Agendar"
-                    width="20"
-                    height="20"
-                    class="mr-2"
-                  />
+                  <Icon name="calendar-plus" size={20} className="mr-2" />
                   Agendar Cita
                 </Button>
               </div>

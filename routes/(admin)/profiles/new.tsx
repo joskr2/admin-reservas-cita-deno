@@ -1,7 +1,7 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import { hash } from "@felix/bcrypt";
 
-import type { AppState } from "../../_middleware.ts";
+import type { AppState } from "../../../types/index.ts";
 import Header from "../../../islands/Header.tsx";
 import { Input } from "../../../components/ui/Input.tsx";
 import { Button } from "../../../components/ui/Button.tsx";

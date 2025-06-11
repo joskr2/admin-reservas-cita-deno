@@ -6,10 +6,16 @@ import * as $_admin_profiles_delete_email_ from "./routes/(admin)/profiles/delet
 import * as $_admin_profiles_edit_email_ from "./routes/(admin)/profiles/edit/[email].tsx";
 import * as $_admin_profiles_index from "./routes/(admin)/profiles/index.tsx";
 import * as $_admin_profiles_new from "./routes/(admin)/profiles/new.tsx";
+import * as $_admin_rooms_delete_id_ from "./routes/(admin)/rooms/delete/[id].tsx";
+import * as $_admin_rooms_index from "./routes/(admin)/rooms/index.tsx";
+import * as $_admin_rooms_schedule from "./routes/(admin)/rooms/schedule.tsx";
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $_layout from "./routes/_layout.tsx";
 import * as $_middleware from "./routes/_middleware.ts";
+import * as $admin_profiles_delete_email_ from "./routes/admin/profiles/delete/[email].tsx";
+import * as $admin_profiles_edit_email_ from "./routes/admin/profiles/edit/[email].tsx";
+import * as $admin_profiles_index from "./routes/admin/profiles/index.tsx";
 import * as $api_appointments_id_delete from "./routes/api/appointments/[id]/delete.ts";
 import * as $api_appointments_id_update from "./routes/api/appointments/[id]/update.ts";
 import * as $api_appointments_create from "./routes/api/appointments/create.ts";
@@ -27,11 +33,16 @@ import * as $dashboard_index from "./routes/dashboard/index.tsx";
 import * as $dashboard_profiles from "./routes/dashboard/profiles.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login from "./routes/login.tsx";
+import * as $patients_delete_id_ from "./routes/patients/delete/[id].tsx";
+import * as $patients_edit_id_ from "./routes/patients/edit/[id].tsx";
+import * as $patients_index from "./routes/patients/index.tsx";
+import * as $patients_new from "./routes/patients/new.tsx";
 import * as $AppointmentCalendar from "./islands/AppointmentCalendar.tsx";
 import * as $AppointmentForm from "./islands/AppointmentForm.tsx";
 import * as $Counter from "./islands/Counter.tsx";
 import * as $DashboardStats from "./islands/DashboardStats.tsx";
 import * as $Header from "./islands/Header.tsx";
+import * as $PatientSearchSelect from "./islands/PatientSearchSelect.tsx";
 import * as $ThemeToggle from "./islands/ThemeToggle.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
@@ -42,10 +53,16 @@ const manifest = {
     "./routes/(admin)/profiles/edit/[email].tsx": $_admin_profiles_edit_email_,
     "./routes/(admin)/profiles/index.tsx": $_admin_profiles_index,
     "./routes/(admin)/profiles/new.tsx": $_admin_profiles_new,
+    "./routes/(admin)/rooms/delete/[id].tsx": $_admin_rooms_delete_id_,
+    "./routes/(admin)/rooms/index.tsx": $_admin_rooms_index,
+    "./routes/(admin)/rooms/schedule.tsx": $_admin_rooms_schedule,
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
     "./routes/_layout.tsx": $_layout,
     "./routes/_middleware.ts": $_middleware,
+    "./routes/admin/profiles/delete/[email].tsx": $admin_profiles_delete_email_,
+    "./routes/admin/profiles/edit/[email].tsx": $admin_profiles_edit_email_,
+    "./routes/admin/profiles/index.tsx": $admin_profiles_index,
     "./routes/api/appointments/[id]/delete.ts": $api_appointments_id_delete,
     "./routes/api/appointments/[id]/update.ts": $api_appointments_id_update,
     "./routes/api/appointments/create.ts": $api_appointments_create,
@@ -63,6 +80,10 @@ const manifest = {
     "./routes/dashboard/profiles.tsx": $dashboard_profiles,
     "./routes/index.tsx": $index,
     "./routes/login.tsx": $login,
+    "./routes/patients/delete/[id].tsx": $patients_delete_id_,
+    "./routes/patients/edit/[id].tsx": $patients_edit_id_,
+    "./routes/patients/index.tsx": $patients_index,
+    "./routes/patients/new.tsx": $patients_new,
   },
   islands: {
     "./islands/AppointmentCalendar.tsx": $AppointmentCalendar,
@@ -70,6 +91,7 @@ const manifest = {
     "./islands/Counter.tsx": $Counter,
     "./islands/DashboardStats.tsx": $DashboardStats,
     "./islands/Header.tsx": $Header,
+    "./islands/PatientSearchSelect.tsx": $PatientSearchSelect,
     "./islands/ThemeToggle.tsx": $ThemeToggle,
   },
   baseUrl: import.meta.url,

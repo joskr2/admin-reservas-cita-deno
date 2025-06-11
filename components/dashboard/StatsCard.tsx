@@ -1,12 +1,5 @@
-import type { ComponentChildren } from "preact";
-
-interface StatsCardProps {
-  title: string;
-  value: string | number;
-  icon: ComponentChildren;
-  // Example: 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300'
-  colorClass?: string;
-}
+import { Icon } from "../ui/Icon.tsx";
+import type { StatsCardProps } from "../../types/index.ts";
 
 export default function StatsCard({
   title,
@@ -19,8 +12,7 @@ export default function StatsCard({
       <div
         class={`flex-shrink-0 w-14 h-14 flex items-center justify-center rounded-full ${colorClass}`}
       >
-        {/* The icon is passed as a child component */}
-        {icon}
+        <Icon name={icon} size={24} className="text-current" />
       </div>
       <div>
         <p class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">

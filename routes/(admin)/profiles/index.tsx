@@ -1,19 +1,12 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
-
-import type { AppState } from "../../_middleware.ts";
+import type { AppState, UserProfile } from "../../../types/index.ts";
 import Header from "../../../islands/Header.tsx";
 import Footer from "../../../components/layout/Footer.tsx";
-
-// Define the shape of a user profile
-interface Profile {
-  email: string;
-  role: "superadmin" | "psychologist";
-  createdAt: string;
-}
+import { Icon } from "../../../components/ui/Icon.tsx";
 
 // Define the data that the handler will pass to the component
 interface Data {
-  profiles: Profile[];
+  profiles: UserProfile[];
 }
 
 export const handler: Handlers<Data, AppState> = {
@@ -28,14 +21,21 @@ export const handler: Handlers<Data, AppState> = {
     }
 
     const kv = await Deno.openKv();
-    const profiles: Profile[] = [];
+    const profiles: UserProfile[] = [];
 
     // Use kv.list to iterate over all users
     const userEntries = kv.list({ prefix: ["users"] });
     for await (const entry of userEntries) {
-      profiles.push(entry.value as Profile);
+      const user = entry.value as UserProfile & { passwordHash: string };
+      // Exclude passwordHash from the profile
+      profiles.push({
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+        isActive: user.isActive,
+      });
     }
-    kv.close();
+    await kv.close();
 
     // Sort profiles, maybe by creation date or email
     profiles.sort((a, b) => a.email.localeCompare(b.email));
@@ -66,14 +66,12 @@ export default function ProfilesPage({ data }: PageProps<Data>) {
             <div class="mt-4 sm:mt-0 sm:ml-4">
               <a
                 href="/profiles/new" // This will be the route for the creation form
-                class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:ring-offset-gray-800"
+                class="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:ring-offset-gray-800 transition-colors duration-200"
               >
-                <img
-                  src="/icons/user-plus.svg"
-                  alt="Nuevo perfil"
-                  width="20"
-                  height="20"
-                  class="mr-2"
+                <Icon
+                  name="user-plus"
+                  size={20}
+                  className="mr-2 text-white filter brightness-0 invert"
                 />
                 Crear Nuevo Perfil
               </a>
@@ -140,29 +138,33 @@ export default function ProfilesPage({ data }: PageProps<Data>) {
                               href={`/profiles/edit/${encodeURIComponent(
                                 profile.email
                               )}`}
-                              class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-200"
+                              class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-200 transition-colors duration-200"
+                              title="Editar perfil"
                             >
-                              <img
-                                src="/icons/file-digit.svg"
-                                alt="Editar"
-                                width="20"
-                                height="20"
+                              <Icon
+                                name="file-digit"
+                                size={20}
+                                className="text-current"
                               />
-                              <span class="sr-only">, {profile.email}</span>
+                              <span class="sr-only">
+                                Editar {profile.email}
+                              </span>
                             </a>
                             <a
                               href={`/profiles/delete/${encodeURIComponent(
                                 profile.email
                               )}`}
-                              class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200"
+                              class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-200 transition-colors duration-200"
+                              title="Eliminar perfil"
                             >
-                              <img
-                                src="/icons/trash-2.svg"
-                                alt="Eliminar"
-                                width="20"
-                                height="20"
+                              <Icon
+                                name="trash-2"
+                                size={20}
+                                className="text-current"
                               />
-                              <span class="sr-only">, {profile.email}</span>
+                              <span class="sr-only">
+                                Eliminar {profile.email}
+                              </span>
                             </a>
                           </div>
                         </td>

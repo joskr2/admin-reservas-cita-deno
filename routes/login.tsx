@@ -7,6 +7,8 @@ import { Input } from "../components/ui/Input.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import Footer from "../components/layout/Footer.tsx";
 import Header from "../islands/Header.tsx";
+import { Icon } from "../components/ui/Icon.tsx";
+import type { User, LoginForm, ApiResponse } from "../types/index.ts";
 
 // Interface for the data passed from the handler to the component
 interface Data {
@@ -26,16 +28,13 @@ export const handler: Handlers<Data> = {
 
     const kv = await Deno.openKv();
     const userEntry = await kv.get(["users", email]);
-    kv.close();
+    await kv.close();
 
     if (!userEntry.value) {
       return ctx.render({ error: "Credenciales incorrectas." });
     }
 
-    const user = userEntry.value as {
-      passwordHash: string;
-      [key: string]: unknown;
-    };
+    const user = userEntry.value as User;
     const isPasswordValid = await verify(password, user.passwordHash);
 
     if (!isPasswordValid) {
@@ -50,7 +49,7 @@ export const handler: Handlers<Data> = {
     await kvSession.set(["sessions", sessionId], userEntry.key, {
       expireIn: sessionExpiry,
     });
-    kvSession.close();
+    await kvSession.close();
 
     const headers = new Headers();
     setCookie(headers, {
@@ -80,6 +79,13 @@ export default function LoginPage({ data }: PageProps<Data>) {
       <main class="flex-grow flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-12">
         <div class="w-full max-w-md">
           <div class="text-center mb-8">
+            <div class="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-4">
+              <Icon
+                name="login"
+                size={32}
+                className="text-white filter brightness-0 invert"
+              />
+            </div>
             <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
               Iniciar Sesión
             </h2>
@@ -95,18 +101,21 @@ export default function LoginPage({ data }: PageProps<Data>) {
                 class="bg-red-100 border border-red-400 text-red-700 dark:bg-red-900/20 dark:border-red-500 dark:text-red-300 px-4 py-3 rounded-md text-sm"
                 role="alert"
               >
-                {data.error}
+                <div class="flex items-center gap-2">
+                  <Icon
+                    name="x"
+                    size={16}
+                    className="text-red-600 dark:text-red-400"
+                  />
+                  {data.error}
+                </div>
               </div>
             )}
 
             <div class="relative">
-              <img
-                src="/icons/mail.svg"
-                alt="Correo"
-                width={20}
-                height={20}
-                class="text-white"
-              />
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Icon name="mail" size={20} className="text-gray-400" />
+              </div>
               <Input
                 type="email"
                 name="email"
@@ -117,13 +126,9 @@ export default function LoginPage({ data }: PageProps<Data>) {
             </div>
 
             <div class="relative">
-              <img
-                src="/icons/lock.svg"
-                alt="Contraseña"
-                width={20}
-                height={20}
-                class="text-white"
-              />
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Icon name="lock" size={20} className="text-gray-400" />
+              </div>
               <Input
                 type="password"
                 name="password"
@@ -134,17 +139,19 @@ export default function LoginPage({ data }: PageProps<Data>) {
             </div>
 
             <div>
-              <Button type="submit" class="w-full flex justify-center">
-                <img
-                  src="/icons/login.svg"
-                  alt="Ingresar"
-                  width={20}
-                  height={20}
-                  class="text-white"
+              <Button
+                type="submit"
+                class="w-full flex justify-center items-center gap-2"
+              >
+                <Icon
+                  name="login"
+                  size={20}
+                  className="text-white filter brightness-0 invert"
                 />
                 Ingresar
               </Button>
             </div>
+
             <div class="text-xs text-center text-gray-500 dark:text-gray-400 space-y-1">
               <p>Para probar (después de ejecutar `deno task seed`):</p>
               <p>

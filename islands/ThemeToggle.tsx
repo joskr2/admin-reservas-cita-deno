@@ -1,45 +1,45 @@
 import { useEffect } from "preact/hooks";
 import { signal, effect } from "@preact/signals";
+import { Icon } from "../components/ui/Icon.tsx";
+import type { Theme } from "../types/index.ts";
 
-// Signal to hold the current theme state. Default to 'light'.
-const theme = signal<"light" | "dark">("light");
+// Signal para mantener el estado actual del tema. Por defecto 'light'.
+const theme = signal<Theme>("light");
 
-// Global effect that runs when theme changes
+// Efecto global que se ejecuta cuando el tema cambia
 effect(() => {
   if (typeof window !== "undefined") {
     const currentTheme = theme.value;
 
-    // Update the class on the <html> element
+    // Actualizar la clase en el elemento <html>
     if (currentTheme === "dark") {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
 
-    // Persist the user's choice in localStorage
+    // Persistir la elección del usuario en localStorage
     localStorage.setItem("theme", currentTheme);
   }
 });
 
 export default function ThemeToggle() {
-  // Initialize the theme once when the component mounts on the client.
+  // Inicializar el tema una vez cuando el componente se monta en el cliente
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const storedTheme = localStorage.getItem("theme") as
-        | "light"
-        | "dark"
-        | null;
+      const storedTheme = localStorage.getItem("theme") as Theme | null;
       const prefersDark = globalThis.matchMedia(
         "(prefers-color-scheme: dark)"
       ).matches;
 
-      // Set theme from localStorage or system preference
-      const initialTheme = storedTheme || (prefersDark ? "dark" : "light");
+      // Establecer tema desde localStorage o preferencia del sistema
+      const initialTheme: Theme =
+        storedTheme || (prefersDark ? "dark" : "light");
       theme.value = initialTheme;
     }
   }, []);
 
-  // Function to toggle the theme signal's value.
+  // Función para alternar el valor del signal del tema
   const toggleTheme = () => {
     theme.value = theme.value === "light" ? "dark" : "light";
   };
@@ -48,15 +48,18 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
+      title={`Cambiar a modo ${theme.value === "light" ? "oscuro" : "claro"}`}
       class="inline-flex items-center justify-center p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-800 focus:ring-indigo-500 transition duration-150 ease-in-out"
-      aria-label="Toggle theme"
+      aria-label={`Cambiar a modo ${
+        theme.value === "light" ? "oscuro" : "claro"
+      }`}
     >
       {/* El componente se re-renderiza automáticamente cuando theme.value cambia */}
-      {theme.value === "light" ? (
-        <img src="/icons/moon.svg" alt="Modo claro" width={24} height={24} />
-      ) : (
-        <img src="/icons/sun.svg" alt="Modo oscuro" width={24} height={24} />
-      )}
+      <Icon
+        name={theme.value === "light" ? "moon" : "sun"}
+        size={24}
+        className="text-gray-500 dark:text-gray-400"
+      />
     </button>
   );
 }

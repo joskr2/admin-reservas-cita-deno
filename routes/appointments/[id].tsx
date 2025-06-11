@@ -1,18 +1,9 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import Header from "../../islands/Header.tsx";
 import Footer from "../../components/layout/Footer.tsx";
-import type { AppState } from "../_middleware.ts";
+import type { AppState, Appointment } from "../../types/index.ts";
 import { Button } from "../../components/ui/Button.tsx";
-
-interface Appointment {
-  id: string;
-  psychologistEmail: string;
-  patientName: string;
-  appointmentDate: string; // YYYY-MM-DD
-  appointmentTime: string; // HH:MM
-  status: "scheduled" | "completed" | "cancelled";
-  createdAt: string;
-}
+import { Icon } from "../../components/ui/Icon.tsx";
 
 interface Data {
   appointment: Appointment;
@@ -131,11 +122,10 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
               href="/appointments"
               class="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
             >
-              <img
-                src="/icons/arrow-left.svg"
-                alt="Volver"
-                width={16}
-                height={16}
+              <Icon
+                name="arrow-left"
+                size={16}
+                className="text-gray-500 dark:text-gray-400"
               />
               Volver a la lista de citas
             </a>
@@ -164,12 +154,10 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
             <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
               {/* Paciente */}
               <div class="flex items-center gap-4">
-                <img
-                  src="/icons/user.svg"
-                  alt="Paciente"
-                  width={24}
-                  height={24}
-                  class="text-gray-400"
+                <Icon
+                  name="user"
+                  size={24}
+                  className="text-gray-400 dark:text-gray-500"
                 />
                 <dl>
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -182,12 +170,10 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
               </div>
               {/* Psicólogo */}
               <div class="flex items-center gap-4">
-                <img
-                  src="/icons/user.svg"
-                  alt="Psicólogo"
-                  width={24}
-                  height={24}
-                  class="text-gray-400"
+                <Icon
+                  name="user"
+                  size={24}
+                  className="text-gray-400 dark:text-gray-500"
                 />
                 <dl>
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -200,12 +186,10 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
               </div>
               {/* Fecha */}
               <div class="flex items-center gap-4">
-                <img
-                  src="/icons/calendar.svg"
-                  alt="Fecha"
-                  width={24}
-                  height={24}
-                  class="text-gray-400"
+                <Icon
+                  name="calendar"
+                  size={24}
+                  className="text-gray-400 dark:text-gray-500"
                 />
                 <dl>
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -221,12 +205,10 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
               </div>
               {/* Hora */}
               <div class="flex items-center gap-4">
-                <img
-                  src="/icons/clock.svg"
-                  alt="Hora"
-                  width={24}
-                  height={24}
-                  class="text-gray-400"
+                <Icon
+                  name="clock"
+                  size={24}
+                  className="text-gray-400 dark:text-gray-500"
                 />
                 <dl>
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -239,12 +221,10 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
               </div>
               {/* ID de Cita */}
               <div class="flex items-center gap-4">
-                <img
-                  src="/icons/hash.svg"
-                  alt="ID de Cita"
-                  width={24}
-                  height={24}
-                  class="text-gray-400"
+                <Icon
+                  name="hash"
+                  size={24}
+                  className="text-gray-400 dark:text-gray-500"
                 />
                 <dl>
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -272,13 +252,7 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
                     value="cancel"
                     variant="danger"
                   >
-                    <img
-                      src="/icons/circle.svg"
-                      alt="Cancelar"
-                      width={20}
-                      height={20}
-                      class="mr-2"
-                    />
+                    <Icon name="circle" size={20} className="mr-2" />
                     Cancelar Cita
                   </Button>
                   {/* Botón Completar */}
@@ -288,13 +262,7 @@ export default function AppointmentDetailsPage({ data }: PageProps<Data>) {
                     value="complete"
                     variant="primary"
                   >
-                    <img
-                      src="/icons/check.svg"
-                      alt="Completada"
-                      width={20}
-                      height={20}
-                      class="mr-2"
-                    />
+                    <Icon name="check" size={20} className="mr-2" />
                     Marcar como Completada
                   </Button>
                 </form>

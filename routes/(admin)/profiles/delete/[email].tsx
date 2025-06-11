@@ -1,18 +1,14 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 
-import type { AppState } from "../../../_middleware.ts";
+import type { AppState, UserProfile } from "../../../../types/index.ts";
 import Header from "../../../../islands/Header.tsx";
 import { Button } from "../../../../components/ui/Button.tsx";
 import Footer from "../../../../components/layout/Footer.tsx";
-
-interface Profile {
-  email: string;
-  role: "superadmin" | "psychologist";
-}
+import { Icon } from "../../../../components/ui/Icon.tsx";
 
 // Data passed from handler to component
 interface Data {
-  profile?: Profile;
+  profile?: UserProfile;
   error?: string;
 }
 
@@ -46,10 +42,12 @@ export const handler: Handlers<Data, AppState> = {
       });
     }
 
-    const user = userEntry.value as Profile;
-    const profile: Profile = {
+    const user = userEntry.value as UserProfile & { passwordHash: string };
+    const profile: UserProfile = {
       email: user.email,
       role: user.role,
+      createdAt: user.createdAt,
+      isActive: user.isActive,
     };
 
     return ctx.render({ profile });
@@ -71,7 +69,10 @@ export const handler: Handlers<Data, AppState> = {
     }
 
     const kv = await Deno.openKv();
-    const userEntry = await kv.get<Profile>(["users", email]);
+    const userEntry = await kv.get<UserProfile & { passwordHash: string }>([
+      "users",
+      email,
+    ]);
 
     if (!userEntry.value) {
       kv.close();
@@ -114,12 +115,10 @@ export default function DeleteProfilePage({ data }: PageProps<Data>) {
           <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8">
             <div class="text-center">
               <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/50">
-                <img
-                  src="/icons/file-warning.svg"
-                  alt="Advertencia"
-                  width="24"
-                  height="24"
-                  class="text-red-600 dark:text-red-400"
+                <Icon
+                  name="file-warning"
+                  size={24}
+                  className="text-red-600 dark:text-red-400"
                 />
               </div>
               <h1 class="mt-4 text-2xl font-bold text-gray-900 dark:text-white">
@@ -170,13 +169,7 @@ export default function DeleteProfilePage({ data }: PageProps<Data>) {
                     Cancelar
                   </a>
                   <Button type="submit" variant="danger">
-                    <img
-                      src="/icons/trash-2.svg"
-                      alt="Eliminar"
-                      width="20"
-                      height="20"
-                      class="mr-2"
-                    />
+                    <Icon name="trash-2" size={20} className="mr-2" />
                     Sí, eliminar perfil
                   </Button>
                 </form>

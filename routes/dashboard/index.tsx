@@ -1,15 +1,9 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
-import type { AppState } from "../_middleware.ts";
+import type { AppState, DashboardData } from "../../types/index.ts";
 import Header from "../../islands/Header.tsx";
 import Footer from "../../components/layout/Footer.tsx";
 import DashboardStats from "../../islands/DashboardStats.tsx";
-
-// Data that the handler calculates and passes to the component
-interface DashboardData {
-  totalUsers: number;
-  totalPsychologists: number;
-  totalAppointments: number;
-}
+import { Icon } from "../../components/ui/Icon.tsx";
 
 export const handler: Handlers<DashboardData, AppState> = {
   async GET(_req, ctx) {
@@ -117,11 +111,10 @@ export default function DashboardPage(
                 >
                   <div class="flex items-center gap-4">
                     <div class="rounded-xl bg-white/20 p-3 backdrop-blur-sm">
-                      <img
-                        src="/icons/user-plus.svg"
-                        alt="Usuarios"
-                        width={24}
-                        height={24}
+                      <Icon
+                        name="user-plus"
+                        size={24}
+                        className="text-white filter brightness-0 invert"
                       />
                     </div>
                     <div>
@@ -142,11 +135,10 @@ export default function DashboardPage(
               >
                 <div class="flex items-center gap-4">
                   <div class="rounded-xl bg-white/20 p-3 backdrop-blur-sm">
-                    <img
-                      src="/icons/activity.svg"
-                      alt="Ver Citas"
-                      width={24}
-                      height={24}
+                    <Icon
+                      name="calendar"
+                      size={24}
+                      className="text-white filter brightness-0 invert"
                     />
                   </div>
                   <div>
@@ -164,11 +156,10 @@ export default function DashboardPage(
               >
                 <div class="flex items-center gap-4">
                   <div class="rounded-xl bg-white/20 p-3 backdrop-blur-sm">
-                    <img
-                      src="/icons/activity.svg"
-                      alt="Nueva Cita"
-                      width={24}
-                      height={24}
+                    <Icon
+                      name="calendar-plus"
+                      size={24}
+                      className="text-white filter brightness-0 invert"
                     />
                   </div>
                   <div>

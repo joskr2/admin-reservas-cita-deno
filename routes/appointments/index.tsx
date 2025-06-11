@@ -1,18 +1,8 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import Header from "../../islands/Header.tsx";
 import Footer from "../../components/layout/Footer.tsx";
-import type { AppState } from "../_middleware.ts";
-
-// Define the shape of an appointment record
-interface Appointment {
-  id: string;
-  psychologistEmail: string;
-  patientName: string;
-  appointmentDate: string; // YYYY-MM-DD
-  appointmentTime: string; // HH:MM
-  status: "scheduled" | "completed" | "cancelled";
-  createdAt: string;
-}
+import type { AppState, Appointment } from "../../types/index.ts";
+import { Icon } from "../../components/ui/Icon.tsx";
 
 // Data passed from the handler to the component
 interface Data {
@@ -94,12 +84,10 @@ export default function AppointmentsPage(props: PageProps<Data, AppState>) {
                 href="/appointments/new"
                 class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:ring-offset-gray-800"
               >
-                <img
-                  src="/icons/calendar-plus.svg"
-                  alt="Agendar"
-                  width="20"
-                  height="20"
-                  class="mr-2 text-white"
+                <Icon
+                  name="calendar-plus"
+                  size={20}
+                  className="mr-2 text-white"
                 />
                 Agendar Nueva Cita
               </a>
@@ -110,10 +98,10 @@ export default function AppointmentsPage(props: PageProps<Data, AppState>) {
           <div class="mt-8">
             {appointments.length === 0 ? (
               <div class="text-center py-16 px-4 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg">
-                <img
-                  src="/icons/calendar.svg"
-                  alt="Sin citas"
-                  class="mx-auto h-12 w-12 text-gray-400"
+                <Icon
+                  name="calendar"
+                  size={48}
+                  className="mx-auto text-gray-400 dark:text-gray-500"
                 />
                 <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">
                   No hay citas agendadas
@@ -154,12 +142,10 @@ export default function AppointmentsPage(props: PageProps<Data, AppState>) {
                         )}
                         <div class="mt-2 space-y-1 text-sm text-gray-500 dark:text-gray-400">
                           <p class="flex items-center gap-2">
-                            <img
-                              src="/icons/calendar.svg"
-                              alt="Fecha"
-                              width="16"
-                              height="16"
-                              class="text-gray-400"
+                            <Icon
+                              name="calendar"
+                              size={16}
+                              className="text-gray-400 dark:text-gray-500"
                             />
                             {new Date(appt.appointmentDate).toLocaleDateString(
                               "es-PE",
@@ -167,12 +153,10 @@ export default function AppointmentsPage(props: PageProps<Data, AppState>) {
                             )}
                           </p>
                           <p class="flex items-center gap-2">
-                            <img
-                              src="/icons/clock.svg"
-                              alt="Hora"
-                              width="16"
-                              height="16"
-                              class="text-gray-400"
+                            <Icon
+                              name="clock"
+                              size={16}
+                              className="text-gray-400 dark:text-gray-500"
                             />
                             {appt.appointmentTime}
                           </p>

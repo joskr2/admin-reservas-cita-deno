@@ -1,3 +1,5 @@
+import { Icon } from "../ui/Icon.tsx";
+
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
@@ -8,12 +10,10 @@ export default function Footer() {
           {/* Logo y descripción */}
           <div class="flex items-center space-x-3">
             <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-500 to-purple-600">
-              <img
-                src="/icons/logo.svg"
-                alt="Logo"
-                width={20}
-                height={20}
-                class="text-white"
+              <Icon
+                name="heart-handshake"
+                size={20}
+                className="text-white filter brightness-0 invert"
               />
             </div>
             <div>
@@ -30,13 +30,7 @@ export default function Footer() {
           <div class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
             <p>© {currentYear} Horizonte.</p>
             <span>Hecho con</span>
-            <img
-              src="/icons/logo.svg"
-              alt="Corazón"
-              width={14}
-              height={14}
-              class="text-red-500"
-            />
+            <Icon name="heart" size={14} className="text-red-500" />
             <span>para el bienestar mental</span>
           </div>
         </div>

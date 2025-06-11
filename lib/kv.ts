@@ -1,4 +1,13 @@
 // Database helper functions for Deno KV
+import type {
+  User,
+  Appointment,
+  KVUserKey,
+  KVUserByRoleKey,
+  KVAppointmentKey,
+  KVAppointmentByPsychologistKey,
+  KVSessionKey,
+} from "../types/index.ts";
 
 let kv: Deno.Kv | null = null;
 
@@ -23,16 +32,9 @@ export function closeKv(): void {
 }
 
 // User-related functions
-export interface User {
-  email: string;
-  passwordHash: string;
-  role: "superadmin" | "psychologist";
-  createdAt: string;
-}
-
 export async function getUserByEmail(email: string): Promise<User | null> {
   const kv = await getKv();
-  const result = await kv.get<User>(["users", email]);
+  const result = await kv.get<User>(["users", email] as KVUserKey);
   return result.value;
 }
 
@@ -40,8 +42,8 @@ export async function createUser(user: User): Promise<boolean> {
   const kv = await getKv();
   const result = await kv
     .atomic()
-    .set(["users", user.email], user)
-    .set(["users_by_role", user.role, user.email], user)
+    .set(["users", user.email] as KVUserKey, user)
+    .set(["users_by_role", user.role, user.email] as KVUserByRoleKey, user)
     .commit();
   return result.ok;
 }
@@ -57,29 +59,19 @@ export async function getAllUsers(): Promise<User[]> {
 }
 
 // Appointment-related functions
-export interface Appointment {
-  id: string;
-  psychologistEmail: string;
-  patientName: string;
-  appointmentDate: string;
-  appointmentTime: string;
-  status: "scheduled" | "completed" | "cancelled";
-  createdAt: string;
-}
-
 export async function createAppointment(
   appointment: Appointment
 ): Promise<boolean> {
   const kv = await getKv();
   const result = await kv
     .atomic()
-    .set(["appointments", appointment.id], appointment)
+    .set(["appointments", appointment.id] as KVAppointmentKey, appointment)
     .set(
       [
         "appointments_by_psychologist",
         appointment.psychologistEmail,
         appointment.id,
-      ],
+      ] as KVAppointmentByPsychologistKey,
       appointment
     )
     .commit();
@@ -90,7 +82,10 @@ export async function getAppointmentById(
   id: string
 ): Promise<Appointment | null> {
   const kv = await getKv();
-  const result = await kv.get<Appointment>(["appointments", id]);
+  const result = await kv.get<Appointment>([
+    "appointments",
+    id,
+  ] as KVAppointmentKey);
   return result.value;
 }
 
@@ -126,11 +121,17 @@ export async function updateAppointment(
   updates: Partial<Appointment>
 ): Promise<boolean> {
   const kv = await getKv();
-  const current = await kv.get<Appointment>(["appointments", id]);
+  const current = await kv.get<Appointment>([
+    "appointments",
+    id,
+  ] as KVAppointmentKey);
   if (!current.value) return false;
 
   const updated = { ...current.value, ...updates };
-  const result = await kv.set(["appointments", id], updated);
+  const result = await kv.set(
+    ["appointments", id] as KVAppointmentKey,
+    updated
+  );
   return result.ok;
 }
 
@@ -141,9 +142,13 @@ export async function createSession(
   expiresIn: number
 ): Promise<boolean> {
   const kv = await getKv();
-  const result = await kv.set(["sessions", sessionId], userKey, {
-    expireIn: expiresIn,
-  });
+  const result = await kv.set(
+    ["sessions", sessionId] as KVSessionKey,
+    userKey,
+    {
+      expireIn: expiresIn,
+    }
+  );
   return result.ok;
 }
 
@@ -151,11 +156,11 @@ export async function getSession(
   sessionId: string
 ): Promise<Deno.KvKey | null> {
   const kv = await getKv();
-  const result = await kv.get(["sessions", sessionId]);
+  const result = await kv.get(["sessions", sessionId] as KVSessionKey);
   return result.value as Deno.KvKey | null;
 }
 
 export async function deleteSession(sessionId: string): Promise<void> {
   const kv = await getKv();
-  await kv.delete(["sessions", sessionId]);
+  await kv.delete(["sessions", sessionId] as KVSessionKey);
 }

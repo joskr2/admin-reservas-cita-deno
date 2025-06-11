@@ -1,16 +1,7 @@
 import { useState, useEffect } from "preact/hooks";
-
 import ThemeToggle from "./ThemeToggle.tsx";
-
-interface HeaderProps {
-  currentPath?: string;
-  user?: {
-    email: string;
-    role: "superadmin" | "psychologist";
-  } | null;
-  showBackButton?: boolean;
-  title?: string;
-}
+import { Icon } from "../components/ui/Icon.tsx";
+import type { HeaderProps } from "../types/index.ts";
 
 export default function Header({
   currentPath = "/",
@@ -44,75 +35,35 @@ export default function Header({
     {
       href: "/",
       label: "Inicio",
-      icon: () => (
-        <img
-          src="/icons/home.svg"
-          alt="Inicio"
-          width={16}
-          height={16}
-          class="inline-block"
-        />
-      ),
+      icon: "home",
       active: isHomePage,
       showWhen: "always" as const,
     },
     {
       href: "/dashboard",
       label: "Dashboard",
-      icon: () => (
-        <img
-          src="/icons/bar-chart-3.svg"
-          alt="Dashboard"
-          width={16}
-          height={16}
-          class="inline-block"
-        />
-      ),
+      icon: "dashboard",
       active: isDashboardPage,
       showWhen: "authenticated" as const,
     },
     {
       href: "/appointments",
       label: "Citas",
-      icon: () => (
-        <img
-          src="/icons/calendar.svg"
-          alt="Citas"
-          width={16}
-          height={16}
-          class="inline-block"
-        />
-      ),
+      icon: "calendar",
       active: isAppointmentsPage,
       showWhen: "authenticated" as const,
     },
     {
       href: "/appointments/new",
       label: "Nueva Cita",
-      icon: () => (
-        <img
-          src="/icons/plus.svg"
-          alt="Nueva Cita"
-          width={16}
-          height={16}
-          class="inline-block"
-        />
-      ),
+      icon: "calendar-plus",
       active: isNewAppointmentPage,
       showWhen: "authenticated" as const,
     },
     {
       href: "/profiles",
       label: "Usuarios",
-      icon: () => (
-        <img
-          src="/icons/user-plus.svg"
-          alt="Usuarios"
-          width={16}
-          height={16}
-          class="inline-block"
-        />
-      ),
+      icon: "user-plus",
       active: isProfilesPage,
       showWhen: "superadmin" as const,
     },
@@ -146,23 +97,19 @@ export default function Header({
                 onClick={() => globalThis.history.back()}
                 class="p-2 hover:bg-blue-50 dark:hover:bg-blue-950/50 rounded-lg transition-colors"
               >
-                <img
-                  src="/icons/arrow-left.svg"
-                  alt="Volver"
-                  width={20}
-                  height={20}
-                  class="text-gray-600 dark:text-gray-300"
+                <Icon
+                  name="arrow-left"
+                  size={20}
+                  className="text-gray-600 dark:text-gray-300"
                 />
               </button>
             ) : (
               <a href="/" class="flex items-center gap-2 sm:gap-3">
                 <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
-                  <img
-                    src="/icons/heart-handshake.svg"
-                    alt="Logo"
-                    width={28}
-                    height={28}
-                    class="text-white"
+                  <Icon
+                    name="heart-handshake"
+                    size={28}
+                    className="text-white filter brightness-0 invert"
                   />
                 </div>
                 <div class="hidden sm:block">
@@ -190,7 +137,6 @@ export default function Header({
           {isAuthenticated && (
             <nav class="hidden md:flex items-center gap-2">
               {visibleItems.slice(1).map((item) => {
-                const Icon = item.icon;
                 const linkClasses = [
                   "flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200",
                   item.active
@@ -200,7 +146,15 @@ export default function Header({
 
                 return (
                   <a key={item.href} href={item.href} class={linkClasses}>
-                    {Icon()}
+                    <Icon
+                      name={item.icon}
+                      size={16}
+                      className={
+                        item.active
+                          ? "text-blue-600 dark:text-blue-400"
+                          : "text-gray-600 dark:text-gray-300"
+                      }
+                    />
                     {item.label}
                   </a>
                 );
@@ -232,12 +186,10 @@ export default function Header({
                   href="/api/auth/logout"
                   class="inline-flex items-center h-10 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-blue-500/25"
                 >
-                  <img
-                    src="/icons/logout.svg"
-                    alt="Salir"
-                    width={16}
-                    height={16}
-                    class="mr-2"
+                  <Icon
+                    name="logout"
+                    size={16}
+                    className="mr-2 text-white filter brightness-0 invert"
                   />
                   Salir
                 </a>
@@ -248,12 +200,10 @@ export default function Header({
                   type="button"
                   class="hidden sm:inline-flex items-center h-10 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-blue-500/25"
                 >
-                  <img
-                    src="/icons/login.svg"
-                    alt="Inicio de sesión"
-                    width={20}
-                    height={20}
-                    class="mr-3"
+                  <Icon
+                    name="login"
+                    size={20}
+                    className="mr-3 text-white filter brightness-0 invert"
                   />
                   Inicio de sesión
                 </button>
@@ -263,26 +213,15 @@ export default function Header({
             {/* Menú hamburguesa para mobile */}
             <button
               type="button"
+              title={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
               class="md:hidden p-2 hover:bg-blue-50 dark:hover:bg-blue-950/50 rounded-lg"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? (
-                <img
-                  src="/icons/x.svg"
-                  alt="Cerrar menú"
-                  width={20}
-                  height={20}
-                  class="text-gray-600 dark:text-gray-300"
-                />
-              ) : (
-                <img
-                  src="/icons/menu.svg"
-                  alt="Abrir menú"
-                  width={20}
-                  height={20}
-                  class="text-gray-600 dark:text-gray-300"
-                />
-              )}
+              <Icon
+                name={isMenuOpen ? "x" : "menu"}
+                size={20}
+                className="text-gray-600 dark:text-gray-300"
+              />
             </button>
           </div>
         </div>
@@ -293,7 +232,6 @@ export default function Header({
             {isAuthenticated && (
               <nav class="flex flex-col gap-2 mb-4">
                 {visibleItems.slice(1).map((item) => {
-                  const Icon = item.icon;
                   const linkClasses = [
                     "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full text-left",
                     item.active
@@ -308,7 +246,15 @@ export default function Header({
                       class={linkClasses}
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      {Icon()}
+                      <Icon
+                        name={item.icon}
+                        size={16}
+                        className={
+                          item.active
+                            ? "text-blue-700 dark:text-blue-400"
+                            : "text-gray-600 dark:text-gray-300"
+                        }
+                      />
                       {item.label}
                     </a>
                   );
@@ -337,12 +283,10 @@ export default function Header({
                   class="flex items-center justify-center w-full h-10 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <img
-                    src="/icons/logout.svg"
-                    alt="Salir"
-                    width={16}
-                    height={16}
-                    class="mr-2"
+                  <Icon
+                    name="logout"
+                    size={16}
+                    className="mr-2 text-white filter brightness-0 invert"
                   />
                   Salir
                 </a>
@@ -354,12 +298,10 @@ export default function Header({
                   class="flex items-center justify-center w-full h-10 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <img
-                    src="/icons/login.svg"
-                    alt="Inicio de sesión"
-                    width={20}
-                    height={20}
-                    class="mr-3"
+                  <Icon
+                    name="login"
+                    size={20}
+                    className="mr-3 text-white filter brightness-0 invert"
                   />
                   Inicio de sesión
                 </button>

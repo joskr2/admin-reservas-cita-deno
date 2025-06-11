@@ -4,17 +4,13 @@ import Header from "../../../../islands/Header.tsx";
 import { Button } from "../../../../components/ui/Button.tsx";
 import { Input } from "../../../../components/ui/Input.tsx";
 import { Select } from "../../../../components/ui/Select.tsx";
+import { Icon } from "../../../../components/ui/Icon.tsx";
 
-import type { AppState } from "../../../_middleware.ts";
-
-interface Profile {
-  email: string;
-  role: "superadmin" | "psychologist";
-}
+import type { AppState, UserProfile } from "../../../../types/index.ts";
 
 // Data passed from handler to component
 interface Data {
-  profile: Profile;
+  profile: UserProfile;
   error?: string;
 }
 
@@ -30,7 +26,10 @@ export const handler: Handlers<Data, AppState> = {
 
     const { email } = ctx.params;
     const kv = await Deno.openKv();
-    const userEntry = await kv.get<Profile>(["users", email]);
+    const userEntry = await kv.get<UserProfile & { passwordHash: string }>([
+      "users",
+      email,
+    ]);
     kv.close();
 
     if (!userEntry.value) {
@@ -40,7 +39,14 @@ export const handler: Handlers<Data, AppState> = {
       });
     }
 
-    return ctx.render({ profile: userEntry.value });
+    const profile: UserProfile = {
+      email: userEntry.value.email,
+      role: userEntry.value.role,
+      createdAt: userEntry.value.createdAt,
+      isActive: userEntry.value.isActive,
+    };
+
+    return ctx.render({ profile });
   },
 
   // --- HANDLE EDIT SUBMISSION (SERVER-SIDE) ---
@@ -51,24 +57,40 @@ export const handler: Handlers<Data, AppState> = {
 
     const { email } = ctx.params;
     const form = await req.formData();
-    const newRole = form.get("role")?.toString() as Profile["role"];
+    const newRole = form.get("role")?.toString() as UserProfile["role"];
 
     if (!newRole || !["superadmin", "psychologist"].includes(newRole)) {
       // Re-fetch profile to render the page again with an error
       const kv = await Deno.openKv();
-      const userEntry = await kv.get<Profile>(["users", email]);
+      const userEntry = await kv.get<UserProfile & { passwordHash: string }>([
+        "users",
+        email,
+      ]);
       kv.close();
       if (!userEntry.value) {
         return ctx.render({
-          profile: { email, role: "psychologist" },
+          profile: {
+            email,
+            role: "psychologist",
+            createdAt: new Date().toISOString(),
+          },
           error: "Rol no válido.",
         });
       }
-      return ctx.render({ profile: userEntry.value, error: "Rol no válido." });
+      const profile: UserProfile = {
+        email: userEntry.value.email,
+        role: userEntry.value.role,
+        createdAt: userEntry.value.createdAt,
+        isActive: userEntry.value.isActive,
+      };
+      return ctx.render({ profile, error: "Rol no válido." });
     }
 
     const kv = await Deno.openKv();
-    const userEntry = await kv.get<Profile>(["users", email]);
+    const userEntry = await kv.get<UserProfile & { passwordHash: string }>([
+      "users",
+      email,
+    ]);
     const oldRole = userEntry.value?.role;
 
     // --- CRITICAL VALIDATION: Prevent removing the last superadmin ---
@@ -82,8 +104,14 @@ export const handler: Handlers<Data, AppState> = {
       }
       if (adminCount <= 1) {
         kv.close();
+        const profile: UserProfile = {
+          email: userEntry.value?.email || email,
+          role: userEntry.value?.role || "psychologist",
+          createdAt: userEntry.value?.createdAt || new Date().toISOString(),
+          isActive: userEntry.value?.isActive,
+        };
         return ctx.render({
-          profile: userEntry.value ?? { email, role: "psychologist" },
+          profile,
           error:
             "No se puede eliminar el último superadministrador del sistema.",
         });
@@ -91,12 +119,18 @@ export const handler: Handlers<Data, AppState> = {
     }
 
     // --- Update user in an atomic transaction ---
-    const updatedProfile = { ...userEntry.value, role: newRole };
+    const updatedUser = { ...userEntry.value, role: newRole };
 
     if (!oldRole) {
       kv.close();
+      const profile: UserProfile = {
+        email: userEntry.value?.email || email,
+        role: userEntry.value?.role || "psychologist",
+        createdAt: userEntry.value?.createdAt || new Date().toISOString(),
+        isActive: userEntry.value?.isActive,
+      };
       return ctx.render({
-        profile: userEntry.value ?? { email, role: "psychologist" },
+        profile,
         error: "El rol anterior no está definido.",
       });
     }
@@ -105,15 +139,21 @@ export const handler: Handlers<Data, AppState> = {
       .atomic()
       .check(userEntry) // Ensure the entry hasn't changed since we read it
       .delete(["users_by_role", oldRole, email])
-      .set(["users", email], updatedProfile)
-      .set(["users_by_role", newRole, email], updatedProfile)
+      .set(["users", email], updatedUser)
+      .set(["users_by_role", newRole, email], updatedUser)
       .commit();
 
     kv.close();
 
     if (!res.ok) {
+      const profile: UserProfile = {
+        email: userEntry.value?.email || email,
+        role: userEntry.value?.role || "psychologist",
+        createdAt: userEntry.value?.createdAt || new Date().toISOString(),
+        isActive: userEntry.value?.isActive,
+      };
       return ctx.render({
-        profile: userEntry.value ?? { email, role: "psychologist" },
+        profile,
         error: "Error al actualizar el perfil.",
       });
     }
@@ -136,12 +176,10 @@ export default function EditProfilePage({ data }: PageProps<Data>) {
         <div class="mx-auto max-w-2xl py-12 px-4 sm:px-6 lg:px-8">
           <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8">
             <div class="flex items-center gap-4 mb-6">
-              <img
-                src="/icons/user-cog.svg"
-                alt="Editar perfil"
-                width="32"
-                height="32"
-                class="text-indigo-600 dark:text-indigo-400"
+              <Icon
+                name="user-cog"
+                size={32}
+                className="text-indigo-600 dark:text-indigo-400"
               />
               <div>
                 <h1 class="text-2xl font-bold text-gray-900 dark:text-white">

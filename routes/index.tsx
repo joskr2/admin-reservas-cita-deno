@@ -1,7 +1,8 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
-import type { AppState } from "./_middleware.ts";
+import type { AppState } from "../types/index.ts";
 import Header from "../islands/Header.tsx";
 import Footer from "../components/layout/Footer.tsx";
+import { Icon } from "../components/ui/Icon.tsx";
 
 export const handler: Handlers<unknown, AppState> = {
   GET(_req, ctx) {
@@ -63,12 +64,10 @@ export default function HomePage(props: PageProps<unknown, AppState>) {
                     href="/login"
                     class="inline-flex items-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-4 text-lg font-semibold text-white shadow-xl hover:from-blue-700 hover:to-purple-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25"
                   >
-                    <img
-                      src="/icons/login.svg"
-                      alt="Iniciar Sesión"
-                      width={20}
-                      height={20}
-                      class="mr-3"
+                    <Icon
+                      name="login"
+                      size={20}
+                      className="mr-3 text-white filter brightness-0 invert"
                     />
                     Iniciar Sesión
                   </a>
@@ -102,11 +101,10 @@ export default function HomePage(props: PageProps<unknown, AppState>) {
               {/* Feature 1 */}
               <div class="relative group">
                 <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                  <img
-                    src="/icons/heart.svg"
-                    alt="Enfoque Humano"
-                    width={32}
-                    height={32}
+                  <Icon
+                    name="heart"
+                    size={32}
+                    className="text-white filter brightness-0 invert"
                   />
                 </div>
                 <h3 class="mt-6 text-xl font-semibold text-gray-900 dark:text-white">
@@ -121,11 +119,10 @@ export default function HomePage(props: PageProps<unknown, AppState>) {
               {/* Feature 2 */}
               <div class="relative group">
                 <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                  <img
-                    src="/icons/shield.svg"
-                    alt="Seguridad Total"
-                    width={32}
-                    height={32}
+                  <Icon
+                    name="shield"
+                    size={32}
+                    className="text-white filter brightness-0 invert"
                   />
                 </div>
                 <h3 class="mt-6 text-xl font-semibold text-gray-900 dark:text-white">
@@ -140,11 +137,10 @@ export default function HomePage(props: PageProps<unknown, AppState>) {
               {/* Feature 3 */}
               <div class="relative group">
                 <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 text-white shadow-lg group-hover:shadow-xl transition-shadow duration-300">
-                  <img
-                    src="/icons/clock.svg"
-                    alt="Gestión Eficiente"
-                    width={32}
-                    height={32}
+                  <Icon
+                    name="clock"
+                    size={32}
+                    className="text-white filter brightness-0 invert"
                   />
                 </div>
                 <h3 class="mt-6 text-xl font-semibold text-gray-900 dark:text-white">
@@ -176,12 +172,10 @@ export default function HomePage(props: PageProps<unknown, AppState>) {
                     href="/login"
                     class="inline-flex items-center rounded-xl bg-white px-8 py-4 text-lg font-semibold text-blue-600 shadow-lg hover:bg-gray-50 transition-all duration-300 transform hover:scale-105"
                   >
-                    <img
-                      src="/icons/login.svg"
-                      alt="Acceder al Sistema"
-                      width={20}
-                      height={20}
-                      class="mr-3"
+                    <Icon
+                      name="login"
+                      size={20}
+                      className="mr-3 text-blue-600"
                     />
                     Acceder al Sistema
                   </a>
