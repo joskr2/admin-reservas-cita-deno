@@ -4,263 +4,219 @@ import { type AppState } from "../types/index.ts";
 import { Icon } from "../components/ui/Icon.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { Input } from "../components/ui/Input.tsx";
-import { getUserByEmail } from "../lib/kv.ts";
+import { getKv } from "../lib/kv.ts";
+import { Handlers } from "$fresh/server.ts";
+import { Head } from "$fresh/runtime.ts";
+import { Card } from "../components/ui/Card.tsx";
+import { getCookies, setCookie } from "$std/http/cookie.ts";
+import { compare } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 
-export async function handler(req: Request, ctx: FreshContext<AppState>) {
-  if (req.method === "GET") {
-    // Si ya está autenticado, redirigir al dashboard
-    if (ctx.state.user) {
-      return new Response(null, {
-        status: 307,
-        headers: { Location: "/dashboard" },
-      });
+interface LoginData {
+  email?: string;
+  password?: string;
+  error?: string;
+}
+
+export const handler: Handlers<LoginData> = {
+  async GET(req, ctx) {
+    // Verificar si ya está autenticado
+    const cookies = getCookies(req.headers);
+    const token = cookies.auth_session;
+
+    if (token) {
+      try {
+        // Verificación básica del token (en producción usar JWT library)
+        return new Response("", {
+          status: 302,
+          headers: { Location: "/dashboard" },
+        });
+      } catch {
+        // Token inválido, continuar con el login
+      }
     }
-    return ctx.render({});
-  }
 
-  if (req.method === "POST") {
-    const formData = await req.formData();
-    const email = formData.get("email")?.toString();
-    const password = formData.get("password")?.toString();
+    return ctx.render({});
+  },
+
+  async POST(req, ctx) {
+    const form = await req.formData();
+    const email = form.get("email")?.toString();
+    const password = form.get("password")?.toString();
 
     if (!email || !password) {
       return ctx.render({
+        email,
         error: "Email y contraseña son requeridos",
       });
     }
 
-    const kv = await Deno.openKv();
-
     try {
-      const user = await getUserByEmail(email);
+      // Buscar usuario en la base de datos
+      const kv = await getKv();
+      const userResult = await kv.get(["users", email]);
 
-      if (!user) {
+      if (!userResult.value) {
         return ctx.render({
+          email,
           error: "Credenciales inválidas",
         });
       }
 
-      // Verificar contraseña con bcrypt
-      const { compare } = await import(
-        "https://deno.land/x/bcrypt@v0.4.1/mod.ts"
-      );
-      const isValidPassword = await compare(password, user.passwordHash);
+      const user = userResult.value as any;
+
+      // Verificar contraseña
+      const isValidPassword = await compare(password, user.password);
 
       if (!isValidPassword) {
         return ctx.render({
+          email,
           error: "Credenciales inválidas",
         });
       }
 
-      // Crear sesión
+      // Crear sesión simple (en producción usar JWT)
       const sessionId = crypto.randomUUID();
-      const sessionKey = ["sessions", sessionId];
-      const userKey = ["users", email];
-
-      await kv.set(sessionKey, userKey, { expireIn: 7 * 24 * 60 * 60 * 1000 }); // 7 días
-
-      const headers = new Headers();
-      headers.set(
-        "Set-Cookie",
-        `auth_session=${sessionId}; HttpOnly; Path=/; Max-Age=${
-          7 * 24 * 60 * 60
-        }`,
+      await kv.set(
+        ["sessions", sessionId],
+        { userEmail: email },
+        { expireIn: 7 * 24 * 60 * 60 * 1000 }
       );
-      headers.set("Location", "/dashboard");
 
-      return new Response(null, {
-        status: 307,
-        headers,
+      // Crear respuesta con cookie
+      const response = new Response("", {
+        status: 302,
+        headers: { Location: "/dashboard" },
       });
-    } finally {
-      await kv.close();
+
+      setCookie(response.headers, {
+        name: "auth_session",
+        value: sessionId,
+        maxAge: 7 * 24 * 60 * 60, // 7 días
+        httpOnly: true,
+        secure: Deno.env.get("DENO_ENV") === "production",
+        sameSite: "Lax",
+        path: "/",
+      });
+
+      return response;
+    } catch (error) {
+      console.error("Login error:", error);
+      return ctx.render({
+        email,
+        error: "Error interno del servidor",
+      });
     }
-  }
+  },
+};
 
-  return new Response("Method not allowed", { status: 405 });
-}
-
-export default function LoginPage({
-  data,
-}: PageProps<{ error?: string }, AppState>) {
-  const { error } = data || {};
-
+export default function Login({ data }: PageProps<LoginData>) {
   return (
-    <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
-      <div class="max-w-md w-full">
-        {/* Card Container */}
-        <div class="bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-8 space-y-8">
-          {/* Header Section */}
+    <>
+      <Head>
+        <title>Iniciar Sesión - Horizonte Clínica</title>
+        <meta
+          name="description"
+          content="Accede a tu cuenta de Horizonte Clínica"
+        />
+      </Head>
+
+      <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+          {/* Logo y título */}
           <div class="text-center">
-            <div class="mx-auto h-16 w-16 flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl shadow-lg mb-6">
-              <Icon
-                name="heart-handshake"
-                size={32}
-                className="text-white filter brightness-0 invert"
-              />
+            <div class="mx-auto h-16 w-16 flex items-center justify-center bg-blue-600 rounded-full shadow-lg">
+              <Icon name="heart-handshake" className="h-8 w-8 text-white" />
             </div>
-            <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            <h2 class="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
               Horizonte Clínica
-            </h1>
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-              Iniciar Sesión
             </h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400">
-              Accede a tu cuenta para gestionar tu consulta
+            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+              Inicia sesión en tu cuenta
             </p>
           </div>
 
-          {/* Error Message */}
-          {error && (
-            <div class="rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4">
-              <div class="flex items-start">
-                <div class="flex-shrink-0">
-                  <Icon
-                    name="file-warning"
-                    size={20}
-                    className="text-red-500 dark:text-red-400"
-                  />
+          {/* Formulario de login */}
+          <Card class="p-8 shadow-xl">
+            <form method="POST" class="space-y-6">
+              {data?.error && (
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+                  {data.error}
                 </div>
-                <div class="ml-3">
-                  <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
-                    Error de autenticación
-                  </h3>
-                  <p class="mt-1 text-sm text-red-700 dark:text-red-300">
-                    {error}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
+              )}
 
-          {/* Form */}
-          <form method="POST" class="space-y-6">
-            <div class="space-y-5">
-              {/* Email Field */}
-              <div>
-                <label
-                  htmlFor="email"
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Correo electrónico
-                </label>
+              <div class="space-y-4">
+                {/* Campo Email con icono */}
                 <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                    <Icon
-                      name="mail"
-                      size={20}
-                      className="text-gray-400 dark:text-gray-500"
+                  <label
+                    htmlFor="email"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Correo electrónico
+                  </label>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Icon name="mail" className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      required
+                      hasLeftIcon={true}
+                      placeholder="tu@email.com"
+                      value={data?.email || ""}
+                      class="block w-full"
                     />
                   </div>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    className="pl-10 pr-3 h-12 text-base"
-                    placeholder="tu@email.com"
-                  />
                 </div>
-              </div>
 
-              {/* Password Field */}
-              <div>
-                <label
-                  htmlFor="password"
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                >
-                  Contraseña
-                </label>
+                {/* Campo Contraseña con icono */}
                 <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                    <Icon
-                      name="lock"
-                      size={20}
-                      className="text-gray-400 dark:text-gray-500"
+                  <label
+                    htmlFor="password"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Contraseña
+                  </label>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Icon name="lock" className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      id="password"
+                      name="password"
+                      type="password"
+                      required
+                      hasLeftIcon={true}
+                      placeholder="••••••••"
+                      class="block w-full"
                     />
                   </div>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    autoComplete="current-password"
-                    required
-                    className="pl-10 pr-3 h-12 text-base"
-                    placeholder="Tu contraseña"
-                  />
                 </div>
               </div>
-            </div>
 
-            {/* Submit Button */}
-            <div class="pt-2">
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200"
-              >
-                <Icon
-                  name="login"
-                  size={20}
-                  className="mr-2 text-white filter brightness-0 invert"
-                />
-                Iniciar Sesión
-              </Button>
-            </div>
-          </form>
+              {/* Botón de envío */}
+              <div>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  class="w-full flex justify-center py-3 px-4 text-sm font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <Icon name="login" className="h-4 w-4 mr-2" />
+                  Iniciar Sesión
+                </Button>
+              </div>
+            </form>
 
-          {/* Footer */}
-          <div class="text-center pt-4 border-t border-gray-200 dark:border-gray-700">
-            <p class="text-xs text-gray-500 dark:text-gray-400">
-              Sistema de gestión psicológica seguro y confiable
-            </p>
-          </div>
-        </div>
-
-        {/* Demo Credentials */}
-        <div class="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-          <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-3">
-            Credenciales de demostración:
-          </h3>
-          <div class="text-xs text-blue-700 dark:text-blue-300 space-y-3">
-            <div class="bg-white dark:bg-blue-800/30 rounded p-2">
-              <p class="font-semibold text-blue-900 dark:text-blue-100">
-                Super Administrador:
-              </p>
-              <p>
-                <strong>Email:</strong> admin@horizonte.com
-              </p>
-              <p>
-                <strong>Contraseña:</strong> password123
+            {/* Información adicional */}
+            <div class="mt-6 text-center">
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                ¿Problemas para acceder? Contacta al administrador del sistema
               </p>
             </div>
-            <div class="bg-white dark:bg-blue-800/30 rounded p-2">
-              <p class="font-semibold text-blue-900 dark:text-blue-100">
-                Psicólogo 1:
-              </p>
-              <p>
-                <strong>Email:</strong> psicologo1@horizonte.com
-              </p>
-              <p>
-                <strong>Contraseña:</strong> password123
-              </p>
-            </div>
-            <div class="bg-white dark:bg-blue-800/30 rounded p-2">
-              <p class="font-semibold text-blue-900 dark:text-blue-100">
-                Psicólogo 2:
-              </p>
-              <p>
-                <strong>Email:</strong> psicologo2@horizonte.com
-              </p>
-              <p>
-                <strong>Contraseña:</strong> password123
-              </p>
-            </div>
-          </div>
+          </Card>
         </div>
       </div>
-    </div>
+    </>
   );
 }

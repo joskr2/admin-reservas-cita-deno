@@ -135,7 +135,6 @@ function AppointmentFilters({
         {currentUser.role === "superadmin" && (
           <div class="space-y-2 md:col-span-2 lg:col-span-1">
             <label class="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              <Icon name="hash" size={16} className="text-gray-500" />
               <span>Buscar por ID</span>
             </label>
             <form class="relative" onSubmit={handleSearchSubmit}>

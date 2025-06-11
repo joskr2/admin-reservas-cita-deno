@@ -5,6 +5,8 @@ export interface InputProps extends JSX.HTMLAttributes<HTMLInputElement> {
   disabled?: boolean;
   error?: boolean;
   helperText?: string;
+  hasLeftIcon?: boolean; // Nueva prop para indicar si hay icono a la izquierda
+  hasRightIcon?: boolean; // Nueva prop para indicar si hay icono a la derecha
 }
 
 // Estilos base para el input
@@ -21,11 +23,32 @@ const stateClasses = {
     "bg-gray-100 dark:bg-gray-800 opacity-70 cursor-not-allowed border-gray-200 dark:border-gray-700",
 };
 
-// Función para determinar si se debe aplicar padding horizontal por defecto
-const shouldApplyDefaultPadding = (className?: string) => {
-  if (!className) return true;
-  // Si la clase personalizada incluye padding left o right, no aplicar el padding por defecto
-  return !/(^|\s)(pl-|pr-|px-)/i.test(className);
+// Función para determinar el padding basado en iconos y clases personalizadas
+const getPaddingClasses = (
+  className?: string,
+  hasLeftIcon?: boolean,
+  hasRightIcon?: boolean
+) => {
+  const classNameStr = typeof className === "string" ? className : "";
+
+  // Si ya hay clases de padding personalizadas, no aplicar padding por defecto
+  if (/(^|\s)(pl-|pr-|px-)/i.test(classNameStr)) {
+    return "";
+  }
+
+  // Aplicar padding basado en la presencia de iconos
+  let paddingLeft = "pl-3";
+  let paddingRight = "pr-3";
+
+  if (hasLeftIcon) {
+    paddingLeft = "pl-10"; // Espacio para icono izquierdo
+  }
+
+  if (hasRightIcon) {
+    paddingRight = "pr-10"; // Espacio para icono derecho
+  }
+
+  return `${paddingLeft} ${paddingRight}`;
 };
 
 export function Input({
@@ -33,21 +56,26 @@ export function Input({
   disabled = false,
   error = false,
   helperText,
+  hasLeftIcon = false,
+  hasRightIcon = false,
   ...props
 }: InputProps) {
-  // Aplicar padding horizontal por defecto solo si no se especifica uno personalizado
   const classNameStr = typeof className === "string" ? className : "";
-  const paddingClass = shouldApplyDefaultPadding(classNameStr) ? "px-3" : "";
+  const paddingClasses = getPaddingClasses(
+    classNameStr,
+    hasLeftIcon,
+    hasRightIcon
+  );
 
   const finalClasses = [
     baseClasses,
-    paddingClass,
+    paddingClasses,
     disabled
       ? stateClasses.disabled
       : error
       ? stateClasses.error
       : stateClasses.normal,
-    className,
+    classNameStr,
   ]
     .filter(Boolean)
     .join(" ");
