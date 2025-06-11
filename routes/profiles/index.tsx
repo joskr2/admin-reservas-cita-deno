@@ -1,10 +1,11 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
-import { getAllUsers, getUsersByRole } from "../../../lib/kv.ts";
-import { Button } from "../../../components/ui/Button.tsx";
-import { Icon } from "../../../components/ui/Icon.tsx";
-import { Badge } from "../../../components/ui/Badge.tsx";
-import type { UserProfile, UserRole } from "../../../types/index.ts";
+import { getAllUsers, getUsersByRole } from "../../lib/kv.ts";
+import { Button } from "../../components/ui/Button.tsx";
+import { Icon } from "../../components/ui/Icon.tsx";
+import { Badge } from "../../components/ui/Badge.tsx";
+import type { UserProfile, UserRole, AppState } from "../../types/index.ts";
+import ProfilesFilters from "../../islands/ProfilesFilters.tsx";
 
 interface ProfilesPageData {
   profiles: UserProfile[];
@@ -15,6 +16,11 @@ interface ProfilesPageData {
     search?: string;
     role?: UserRole;
     status?: string;
+  };
+  currentUser: {
+    email: string;
+    role: UserRole;
+    name?: string;
   };
 }
 
@@ -27,13 +33,31 @@ export const handler: Handlers<ProfilesPageData> = {
     const role = (url.searchParams.get("role") as UserRole) || "";
     const status = url.searchParams.get("status") || "";
 
+    // Obtener usuario actual del estado
+    const state = ctx.state as unknown as AppState;
+    const currentUser = state.user;
+
+    if (!currentUser) {
+      return new Response("Unauthorized", { status: 401 });
+    }
+
     try {
       let allProfiles: UserProfile[] = [];
 
-      if (role) {
-        allProfiles = await getUsersByRole(role);
+      // Los psicólogos solo pueden ver otros psicólogos
+      if (currentUser.role === "psychologist") {
+        allProfiles = await getUsersByRole("psychologist");
+        // Filtrar para no mostrar al usuario actual
+        allProfiles = allProfiles.filter(
+          (profile) => profile.email !== currentUser.email
+        );
       } else {
-        allProfiles = await getAllUsers();
+        // Superadmin puede ver todos
+        if (role) {
+          allProfiles = await getUsersByRole(role);
+        } else {
+          allProfiles = await getAllUsers();
+        }
       }
 
       // Aplicar filtros
@@ -65,6 +89,7 @@ export const handler: Handlers<ProfilesPageData> = {
         currentPage: page,
         totalPages,
         filters: { search, role, status },
+        currentUser,
       });
     } catch (error) {
       console.error("Error loading profiles:", error);
@@ -74,13 +99,21 @@ export const handler: Handlers<ProfilesPageData> = {
         currentPage: 1,
         totalPages: 1,
         filters: {},
+        currentUser,
       });
     }
   },
 };
 
 export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
-  const { profiles, totalCount, currentPage, totalPages, filters } = data;
+  const {
+    profiles,
+    totalCount,
+    currentPage,
+    totalPages,
+    filters,
+    currentUser,
+  } = data;
 
   const buildUrl = (params: Record<string, string | number | undefined>) => {
     const url = new URL(
@@ -132,14 +165,25 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
     return role === "superadmin" ? "warning" : "default";
   };
 
+  const getPageTitle = () => {
+    if (currentUser.role === "psychologist") {
+      return "Directorio de Psicólogos";
+    }
+    return "Gestión de Usuarios";
+  };
+
+  const getPageDescription = () => {
+    if (currentUser.role === "psychologist") {
+      return "Consulta el directorio de psicólogos de la clínica";
+    }
+    return "Administra y supervisa todos los usuarios del sistema";
+  };
+
   return (
     <>
       <Head>
-        <title>Gestión de Usuarios - Horizonte Clínica</title>
-        <meta
-          name="description"
-          content="Gestiona todos los usuarios del sistema"
-        />
+        <title>{getPageTitle()} - Horizonte Clínica</title>
+        <meta name="description" content={getPageDescription()} />
       </Head>
 
       {/* Usar el mismo container que header/footer */}
@@ -151,154 +195,27 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
               <div>
                 <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                   <Icon name="users" className="h-8 w-8 text-blue-600" />
-                  Gestión de Usuarios
+                  {getPageTitle()}
                 </h1>
                 <p class="mt-2 text-gray-600 dark:text-gray-400">
-                  Administra y supervisa todos los usuarios del sistema
+                  {getPageDescription()}
                 </p>
               </div>
-              <Button
-                variant="primary"
-                class="flex items-center gap-2 px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-200"
-                onClick={() => (globalThis.location.href = "/profiles/new")}
-              >
-                <Icon name="user-plus" className="h-5 w-5" />
-                Nuevo Usuario
-              </Button>
+              {currentUser.role === "superadmin" && (
+                <Button
+                  variant="primary"
+                  class="flex items-center gap-2 px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-200"
+                  onClick={() => (globalThis.location.href = "/profiles/new")}
+                >
+                  <Icon name="user-plus" className="h-5 w-5" />
+                  Nuevo Usuario
+                </Button>
+              )}
             </div>
           </div>
 
           {/* Filtros */}
-          <div class="mb-8">
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center space-x-2">
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                    Filtros de Búsqueda
-                  </h3>
-                </div>
-                {(filters.search || filters.role || filters.status) && (
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                    Filtros activos
-                  </span>
-                )}
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Búsqueda general */}
-                <div class="space-y-2">
-                  <label class="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <Icon name="user" className="h-4 w-4 text-gray-500" />
-                    <span>Buscar Usuario</span>
-                  </label>
-                  <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Icon name="user" className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Nombre o email..."
-                      value={filters.search || ""}
-                      onInput={(e) => {
-                        const value = (e.target as HTMLInputElement).value;
-                        const url = buildUrl({
-                          ...filters,
-                          search: value || undefined,
-                          page: 1,
-                        });
-                        globalThis.location.href = url;
-                      }}
-                      class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Filtro por rol */}
-                <div class="space-y-2">
-                  <label class="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <Icon name="shield" className="h-4 w-4 text-gray-500" />
-                    <span>Rol</span>
-                  </label>
-                  <select
-                    value={filters.role || ""}
-                    onChange={(e) => {
-                      const value = (e.target as HTMLSelectElement).value;
-                      const url = buildUrl({
-                        ...filters,
-                        role: value || undefined,
-                        page: 1,
-                      });
-                      globalThis.location.href = url;
-                    }}
-                    title="Filtrar por rol de usuario"
-                    aria-label="Filtrar por rol de usuario"
-                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                  >
-                    <option value="">Todos los roles</option>
-                    <option value="psychologist">👨‍⚕️ Psicólogos</option>
-                    <option value="superadmin">👑 Administradores</option>
-                  </select>
-                </div>
-
-                {/* Filtro por estado */}
-                <div class="space-y-2">
-                  <label class="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <Icon name="activity" className="h-4 w-4 text-gray-500" />
-                    <span>Estado</span>
-                  </label>
-                  <select
-                    value={filters.status || ""}
-                    onChange={(e) => {
-                      const value = (e.target as HTMLSelectElement).value;
-                      const url = buildUrl({
-                        ...filters,
-                        status: value || undefined,
-                        page: 1,
-                      });
-                      globalThis.location.href = url;
-                    }}
-                    title="Filtrar por estado de usuario"
-                    aria-label="Filtrar por estado de usuario"
-                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                  >
-                    <option value="">Todos los estados</option>
-                    <option value="active">✅ Activos</option>
-                    <option value="inactive">❌ Inactivos</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Limpiar filtros */}
-              {(filters.search || filters.role || filters.status) && (
-                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                      <Icon name="check" className="h-4 w-4 text-green-500" />
-                      <span>
-                        Filtros aplicados:{" "}
-                        {[
-                          filters.search && "Búsqueda",
-                          filters.role && "Rol",
-                          filters.status && "Estado",
-                        ]
-                          .filter(Boolean)
-                          .join(", ")}
-                      </span>
-                    </div>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => (globalThis.location.href = "/profiles")}
-                      class="inline-flex items-center gap-1"
-                    >
-                      <Icon name="x" className="h-3 w-3" />
-                      Limpiar Filtros
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
+          <ProfilesFilters currentUser={currentUser} filters={filters} />
 
           {/* Estadísticas rápidas */}
           <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -306,7 +223,10 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Total de Usuarios
+                    Total de{" "}
+                    {currentUser.role === "psychologist"
+                      ? "Psicólogos"
+                      : "Usuarios"}
                   </p>
                   <p class="text-2xl font-bold text-gray-900 dark:text-white">
                     {totalCount}
@@ -344,25 +264,6 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
               <div class="flex items-center justify-between">
                 <div>
                   <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Psicólogos
-                  </p>
-                  <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                    {profiles.filter((p) => p.role === "psychologist").length}
-                  </p>
-                </div>
-                <div class="h-12 w-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-                  <Icon
-                    name="briefcase"
-                    className="h-6 w-6 text-purple-600 dark:text-purple-400"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
                     Activos
                   </p>
                   <p class="text-2xl font-bold text-gray-900 dark:text-white">
@@ -377,6 +278,25 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                 </div>
               </div>
             </div>
+
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Página Actual
+                  </p>
+                  <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                    {currentPage}
+                  </p>
+                </div>
+                <div class="h-12 w-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
+                  <Icon
+                    name="file-digit"
+                    className="h-6 w-6 text-purple-600 dark:text-purple-400"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Contenido principal */}
@@ -387,21 +307,34 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                 className="h-16 w-16 text-gray-400 mx-auto mb-4"
               />
               <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                No se encontraron usuarios
+                No se encontraron{" "}
+                {currentUser.role === "psychologist"
+                  ? "psicólogos"
+                  : "usuarios"}
               </h3>
               <p class="text-gray-600 dark:text-gray-400 mb-6">
                 {totalCount === 0
-                  ? "Aún no hay usuarios registrados en el sistema."
-                  : "No hay usuarios que coincidan con los filtros aplicados."}
+                  ? `Aún no hay ${
+                      currentUser.role === "psychologist"
+                        ? "otros psicólogos"
+                        : "usuarios"
+                    } registrados en el sistema.`
+                  : `No hay ${
+                      currentUser.role === "psychologist"
+                        ? "psicólogos"
+                        : "usuarios"
+                    } que coincidan con los filtros aplicados.`}
               </p>
-              <Button
-                variant="primary"
-                onClick={() => (globalThis.location.href = "/profiles/new")}
-                class="inline-flex items-center gap-2"
-              >
-                <Icon name="user-plus" className="h-5 w-5" />
-                Crear Primer Usuario
-              </Button>
+              {currentUser.role === "superadmin" && (
+                <Button
+                  variant="primary"
+                  onClick={() => (globalThis.location.href = "/profiles/new")}
+                  class="inline-flex items-center gap-2"
+                >
+                  <Icon name="user-plus" className="h-5 w-5" />
+                  Crear Primer Usuario
+                </Button>
+              )}
             </div>
           ) : (
             <>
@@ -412,20 +345,26 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                     <thead class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800">
                       <tr>
                         <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Usuario
+                          {currentUser.role === "psychologist"
+                            ? "Psicólogo"
+                            : "Usuario"}
                         </th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Rol
-                        </th>
+                        {currentUser.role === "superadmin" && (
+                          <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Rol
+                          </th>
+                        )}
                         <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Estado
                         </th>
                         <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Fecha de Creación
                         </th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Acciones
-                        </th>
+                        {currentUser.role === "superadmin" && (
+                          <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Acciones
+                          </th>
+                        )}
                       </tr>
                     </thead>
                     <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -457,14 +396,16 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                               </div>
                             </div>
                           </td>
-                          <td class="px-6 py-4 whitespace-nowrap">
-                            <Badge
-                              variant={getRoleBadgeVariant(profile.role)}
-                              size="sm"
-                            >
-                              {getRoleText(profile.role)}
-                            </Badge>
-                          </td>
+                          {currentUser.role === "superadmin" && (
+                            <td class="px-6 py-4 whitespace-nowrap">
+                              <Badge
+                                variant={getRoleBadgeVariant(profile.role)}
+                                size="sm"
+                              >
+                                {getRoleText(profile.role)}
+                              </Badge>
+                            </td>
+                          )}
                           <td class="px-6 py-4 whitespace-nowrap">
                             <Badge
                               variant={
@@ -482,42 +423,28 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                               "es-ES"
                             )}
                           </td>
-                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              onClick={() =>
-                                (globalThis.location.href = `/profiles/edit/${encodeURIComponent(
+                          {currentUser.role === "superadmin" && (
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                              <a
+                                href={`/profiles/edit/${encodeURIComponent(
                                   profile.email
-                                )}`)
-                              }
-                              class="inline-flex items-center gap-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
-                            >
-                              <Icon name="edit" className="h-3 w-3" />
-                              Editar
-                            </Button>
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              onClick={() => {
-                                if (
-                                  confirm(
-                                    `¿Estás seguro de que quieres eliminar el usuario ${
-                                      profile.name || profile.email
-                                    }?`
-                                  )
-                                ) {
-                                  globalThis.location.href = `/(admin)/profiles/delete/${encodeURIComponent(
-                                    profile.email
-                                  )}`;
-                                }
-                              }}
-                              class="inline-flex items-center gap-1"
-                            >
-                              <Icon name="trash-2" className="h-3 w-3" />
-                              Eliminar
-                            </Button>
-                          </td>
+                                )}`}
+                                class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                              >
+                                <Icon name="edit" className="h-3 w-3" />
+                                Editar
+                              </a>
+                              <a
+                                href={`/profiles/delete/${encodeURIComponent(
+                                  profile.email
+                                )}`}
+                                class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                              >
+                                <Icon name="trash-2" className="h-3 w-3" />
+                                Eliminar
+                              </a>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>
@@ -551,12 +478,14 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                         </div>
                       </div>
                       <div class="flex flex-col gap-2">
-                        <Badge
-                          variant={getRoleBadgeVariant(profile.role)}
-                          size="sm"
-                        >
-                          {getRoleText(profile.role)}
-                        </Badge>
+                        {currentUser.role === "superadmin" && (
+                          <Badge
+                            variant={getRoleBadgeVariant(profile.role)}
+                            size="sm"
+                          >
+                            {getRoleText(profile.role)}
+                          </Badge>
+                        )}
                         <Badge
                           variant={
                             profile.isActive !== false ? "success" : "error"
@@ -579,42 +508,28 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                       </p>
                     </div>
 
-                    <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() =>
-                          (globalThis.location.href = `/(admin)/profiles/edit/${encodeURIComponent(
+                    {currentUser.role === "superadmin" && (
+                      <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <a
+                          href={`/profiles/edit/${encodeURIComponent(
                             profile.email
-                          )}`)
-                        }
-                        class="inline-flex items-center gap-1"
-                      >
-                        <Icon name="edit" className="h-3 w-3" />
-                        Editar
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => {
-                          if (
-                            confirm(
-                              `¿Estás seguro de que quieres eliminar el usuario ${
-                                profile.name || profile.email
-                              }?`
-                            )
-                          ) {
-                            globalThis.location.href = `/(admin)/profiles/delete/${encodeURIComponent(
-                              profile.email
-                            )}`;
-                          }
-                        }}
-                        class="inline-flex items-center gap-1"
-                      >
-                        <Icon name="trash-2" className="h-3 w-3" />
-                        Eliminar
-                      </Button>
-                    </div>
+                          )}`}
+                          class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                          <Icon name="edit" className="h-3 w-3" />
+                          Editar
+                        </a>
+                        <a
+                          href={`/profiles/delete/${encodeURIComponent(
+                            profile.email
+                          )}`}
+                          class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                        >
+                          <Icon name="trash-2" className="h-3 w-3" />
+                          Eliminar
+                        </a>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -627,7 +542,9 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                       <span>
                         Mostrando {(currentPage - 1) * 10 + 1} -{" "}
                         {Math.min(currentPage * 10, totalCount)} de {totalCount}{" "}
-                        usuarios
+                        {currentUser.role === "psychologist"
+                          ? "psicólogos"
+                          : "usuarios"}
                       </span>
                     </div>
 

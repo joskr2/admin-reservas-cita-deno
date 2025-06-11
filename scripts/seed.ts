@@ -4,7 +4,9 @@ import {
   type AppointmentStatus,
   type Room,
   type RoomId,
+  type User,
 } from "../types/index.ts";
+import { createUser, createAppointment } from "../lib/kv.ts";
 
 // Define all users to be seeded
 const usersToSeed = [
@@ -279,6 +281,12 @@ async function seedDatabase() {
       await kv.delete(entry.key);
     }
 
+    // Delete all existing users_by_role indexes
+    const existingUsersByRole = kv.list({ prefix: ["users_by_role"] });
+    for await (const entry of existingUsersByRole) {
+      await kv.delete(entry.key);
+    }
+
     // Delete all existing sessions
     const existingSessions = kv.list({ prefix: ["sessions"] });
     for await (const entry of existingSessions) {
@@ -291,27 +299,41 @@ async function seedDatabase() {
       await kv.delete(entry.key);
     }
 
+    // Delete all existing appointments_by_psychologist indexes
+    const existingAppointmentsByPsychologist = kv.list({
+      prefix: ["appointments_by_psychologist"],
+    });
+    for await (const entry of existingAppointmentsByPsychologist) {
+      await kv.delete(entry.key);
+    }
+
     // Delete all existing rooms
     const existingRooms = kv.list({ prefix: ["rooms"] });
     for await (const entry of existingRooms) {
       await kv.delete(entry.key);
     }
 
-    // Seed users
+    // Seed users using the createUser function to ensure proper indexing
     console.log("👥 Creando usuarios...");
-    for (const user of usersToSeed) {
-      const passwordHash = await hash(user.password);
-      const userData = {
-        email: user.email,
+    for (const userSeed of usersToSeed) {
+      const passwordHash = await hash(userSeed.password);
+      const userData: User = {
+        email: userSeed.email,
         passwordHash,
-        role: user.role,
-        name: user.name,
+        role: userSeed.role,
+        name: userSeed.name,
         createdAt: new Date().toISOString(),
         isActive: true,
       };
 
-      await kv.set(["users", user.email], userData);
-      console.log(`   ✅ Usuario creado: ${user.name} (${user.email})`);
+      const success = await createUser(userData);
+      if (success) {
+        console.log(
+          `   ✅ Usuario creado: ${userSeed.name} (${userSeed.email})`
+        );
+      } else {
+        console.log(`   ❌ Error creando usuario: ${userSeed.email}`);
+      }
     }
 
     // Seed rooms
@@ -321,13 +343,17 @@ async function seedDatabase() {
       console.log(`   ✅ Sala creada: ${room.name}`);
     }
 
-    // Seed appointments
+    // Seed appointments using the createAppointment function to ensure proper indexing
     console.log("📅 Creando citas...");
     for (const appointment of appointmentsToSeed) {
-      await kv.set(["appointments", appointment.id], appointment);
-      console.log(
-        `   ✅ Cita creada: ${appointment.patientName} - ${appointment.appointmentDate} ${appointment.appointmentTime}`
-      );
+      const success = await createAppointment(appointment);
+      if (success) {
+        console.log(
+          `   ✅ Cita creada: ${appointment.patientName} - ${appointment.appointmentDate} ${appointment.appointmentTime}`
+        );
+      } else {
+        console.log(`   ❌ Error creando cita: ${appointment.id}`);
+      }
     }
 
     console.log("\n🎉 ¡Seed completado exitosamente!");

@@ -15,7 +15,7 @@ export async function handler(_req: Request, ctx: FreshContext<AppState>) {
 
     const totalUsers = users.length;
     const totalPsychologists = users.filter(
-      (user) => user.role === "psychologist",
+      (user) => user.role === "psychologist"
     ).length;
     const totalAppointments = appointments.length;
 
@@ -79,7 +79,7 @@ export default function Dashboard({
               </a>
 
               <a
-                href="/(admin)/profiles/new"
+                href="/profiles/new"
                 class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700"
               >
                 <div class="flex items-center">

@@ -21,6 +21,7 @@ import * as $api_appointments_id_update from "./routes/api/appointments/[id]/upd
 import * as $api_appointments_create from "./routes/api/appointments/create.ts";
 import * as $api_appointments_index from "./routes/api/appointments/index.ts";
 import * as $api_auth_check from "./routes/api/auth/check.ts";
+import * as $api_auth_clear_cookies from "./routes/api/auth/clear-cookies.ts";
 import * as $api_auth_logout from "./routes/api/auth/logout.ts";
 import * as $api_profiles_id_delete from "./routes/api/profiles/[id]/delete.ts";
 import * as $api_profiles_id_update from "./routes/api/profiles/[id]/update.ts";
@@ -38,6 +39,7 @@ import * as $patients_delete_id_ from "./routes/patients/delete/[id].tsx";
 import * as $patients_edit_id_ from "./routes/patients/edit/[id].tsx";
 import * as $patients_index from "./routes/patients/index.tsx";
 import * as $patients_new from "./routes/patients/new.tsx";
+import * as $profiles_index from "./routes/profiles/index.tsx";
 import * as $AppointmentCalendar from "./islands/AppointmentCalendar.tsx";
 import * as $AppointmentDetailsDropdown from "./islands/AppointmentDetailsDropdown.tsx";
 import * as $AppointmentDetailsModal from "./islands/AppointmentDetailsModal.tsx";
@@ -50,6 +52,8 @@ import * as $DashboardStats from "./islands/DashboardStats.tsx";
 import * as $DeleteAppointmentButton from "./islands/DeleteAppointmentButton.tsx";
 import * as $Header from "./islands/Header.tsx";
 import * as $PatientSearchSelect from "./islands/PatientSearchSelect.tsx";
+import * as $ProfileFilters from "./islands/ProfileFilters.tsx";
+import * as $ProfilesFilters from "./islands/ProfilesFilters.tsx";
 import * as $ThemeToggle from "./islands/ThemeToggle.tsx";
 import type { Manifest } from "$fresh/server.ts";
 
@@ -75,6 +79,7 @@ const manifest = {
     "./routes/api/appointments/create.ts": $api_appointments_create,
     "./routes/api/appointments/index.ts": $api_appointments_index,
     "./routes/api/auth/check.ts": $api_auth_check,
+    "./routes/api/auth/clear-cookies.ts": $api_auth_clear_cookies,
     "./routes/api/auth/logout.ts": $api_auth_logout,
     "./routes/api/profiles/[id]/delete.ts": $api_profiles_id_delete,
     "./routes/api/profiles/[id]/update.ts": $api_profiles_id_update,
@@ -92,6 +97,7 @@ const manifest = {
     "./routes/patients/edit/[id].tsx": $patients_edit_id_,
     "./routes/patients/index.tsx": $patients_index,
     "./routes/patients/new.tsx": $patients_new,
+    "./routes/profiles/index.tsx": $profiles_index,
   },
   islands: {
     "./islands/AppointmentCalendar.tsx": $AppointmentCalendar,
@@ -106,6 +112,8 @@ const manifest = {
     "./islands/DeleteAppointmentButton.tsx": $DeleteAppointmentButton,
     "./islands/Header.tsx": $Header,
     "./islands/PatientSearchSelect.tsx": $PatientSearchSelect,
+    "./islands/ProfileFilters.tsx": $ProfileFilters,
+    "./islands/ProfilesFilters.tsx": $ProfilesFilters,
     "./islands/ThemeToggle.tsx": $ThemeToggle,
   },
   baseUrl: import.meta.url,

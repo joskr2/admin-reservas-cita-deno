@@ -72,12 +72,10 @@ export default function AppointmentStatusSelector({
           border border-transparent rounded-md
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
           transition-all duration-200
+          min-w-[120px]
           ${statusColorClass}
           ${isUpdating ? "opacity-50 cursor-not-allowed" : "hover:shadow-md"}
         `}
-        style={{
-          minWidth: "120px", // Ancho mínimo para evitar truncamiento
-        }}
       >
         <option value={currentStatus} class="bg-white text-gray-900 py-2">
           {getStatusText(currentStatus)}

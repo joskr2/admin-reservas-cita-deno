@@ -1,6 +1,5 @@
 /// <reference lib="deno.unstable" />
-import { type FreshContext, type PageProps } from "$fresh/server.ts";
-import { type AppState } from "../types/index.ts";
+import { type PageProps } from "$fresh/server.ts";
 import { Icon } from "../components/ui/Icon.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { Input } from "../components/ui/Input.tsx";
@@ -8,8 +7,9 @@ import { getKv } from "../lib/kv.ts";
 import { Handlers } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import { Card } from "../components/ui/Card.tsx";
-import { getCookies, setCookie } from "$std/http/cookie.ts";
+import { setCookie } from "$std/http/cookie.ts";
 import { compare } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import type { User } from "../types/index.ts";
 
 interface LoginData {
   email?: string;
@@ -18,23 +18,9 @@ interface LoginData {
 }
 
 export const handler: Handlers<LoginData> = {
-  async GET(req, ctx) {
-    // Verificar si ya está autenticado
-    const cookies = getCookies(req.headers);
-    const token = cookies.auth_session;
-
-    if (token) {
-      try {
-        // Verificación básica del token (en producción usar JWT library)
-        return new Response("", {
-          status: 302,
-          headers: { Location: "/dashboard" },
-        });
-      } catch {
-        // Token inválido, continuar con el login
-      }
-    }
-
+  GET(_req, ctx) {
+    // Simplemente renderizar la página de login
+    // El middleware ya maneja las redirecciones si el usuario está autenticado
     return ctx.render({});
   },
 
@@ -62,10 +48,10 @@ export const handler: Handlers<LoginData> = {
         });
       }
 
-      const user = userResult.value as any;
+      const user = userResult.value as User;
 
       // Verificar contraseña
-      const isValidPassword = await compare(password, user.password);
+      const isValidPassword = await compare(password, user.passwordHash);
 
       if (!isValidPassword) {
         return ctx.render({
@@ -162,7 +148,7 @@ export default function Login({ data }: PageProps<LoginData>) {
                       name="email"
                       type="email"
                       required
-                      hasLeftIcon={true}
+                      hasLeftIcon
                       placeholder="tu@email.com"
                       value={data?.email || ""}
                       class="block w-full"
@@ -187,7 +173,7 @@ export default function Login({ data }: PageProps<LoginData>) {
                       name="password"
                       type="password"
                       required
-                      hasLeftIcon={true}
+                      hasLeftIcon
                       placeholder="••••••••"
                       class="block w-full"
                     />

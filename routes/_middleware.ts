@@ -35,9 +35,9 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       const sessionEntry = await kv.get(["sessions", sessionId]);
 
       if (sessionEntry.value) {
-        // Si la sesión es válida, obtener la clave primaria del usuario
-        const userKey = sessionEntry.value as Deno.KvKey;
-        const userResult = await kv.get(userKey);
+        // Si la sesión es válida, obtener el usuario por email
+        const sessionData = sessionEntry.value as { userEmail: string };
+        const userResult = await kv.get(["users", sessionData.userEmail]);
 
         if (userResult.value) {
           // Almacenar información del usuario en el estado del contexto

@@ -1,17 +1,24 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
-import { getAllAppointments } from "../../lib/kv.ts";
+import { getAllAppointments, getUsersByRole } from "../../lib/kv.ts";
 import AppointmentDetailsModal from "../../islands/AppointmentDetailsModal.tsx";
 import AppointmentStatusSelector from "../../islands/AppointmentStatusSelector.tsx";
+import AppointmentFilters from "../../islands/AppointmentFilters.tsx";
 import { Button } from "../../components/ui/Button.tsx";
 import { Icon } from "../../components/ui/Icon.tsx";
-import type { Appointment, AppointmentStatus } from "../../types/index.ts";
+import type {
+  Appointment,
+  AppointmentStatus,
+  UserProfile,
+} from "../../types/index.ts";
 
 interface AppointmentsPageData {
   appointments: Appointment[];
   totalCount: number;
   currentPage: number;
   totalPages: number;
+  psychologists: UserProfile[];
+  currentUser: UserProfile | null;
   filters: {
     search?: string;
     status?: AppointmentStatus;
@@ -32,6 +39,8 @@ export const handler: Handlers<AppointmentsPageData> = {
 
     try {
       let allAppointments = await getAllAppointments();
+      const psychologists = await getUsersByRole("psychologist");
+      const currentUser = ctx.state.user as UserProfile | null;
 
       // Aplicar filtros
       if (search) {
@@ -77,6 +86,8 @@ export const handler: Handlers<AppointmentsPageData> = {
         totalCount,
         currentPage: page,
         totalPages,
+        psychologists,
+        currentUser,
         filters: { search, status, psychologist, date },
       });
     } catch (error) {
@@ -86,6 +97,8 @@ export const handler: Handlers<AppointmentsPageData> = {
         totalCount: 0,
         currentPage: 1,
         totalPages: 1,
+        psychologists: [],
+        currentUser: null,
         filters: {},
       });
     }
@@ -95,7 +108,15 @@ export const handler: Handlers<AppointmentsPageData> = {
 export default function AppointmentsPage({
   data,
 }: PageProps<AppointmentsPageData>) {
-  const { appointments, totalCount, currentPage, totalPages, filters } = data;
+  const {
+    appointments,
+    totalCount,
+    currentPage,
+    totalPages,
+    psychologists,
+    currentUser,
+    filters,
+  } = data;
 
   const buildUrl = (params: Record<string, string | number | undefined>) => {
     const url = new URL(
@@ -177,166 +198,13 @@ export default function AppointmentsPage({
 
           {/* Filtros */}
           <div class="mb-8">
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-              <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center space-x-2">
-                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                    Filtros de Búsqueda
-                  </h3>
-                </div>
-                {(filters.search ||
-                  filters.status ||
-                  filters.psychologist ||
-                  filters.date) && (
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                    Filtros activos
-                  </span>
-                )}
-              </div>
-
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Búsqueda general */}
-                <div class="space-y-2">
-                  <label class="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <Icon name="hash" className="h-4 w-4 text-gray-500" />
-                    <span>Buscar</span>
-                  </label>
-                  <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Icon name="hash" className="h-4 w-4 text-gray-400" />
-                    </div>
-                    <input
-                      type="text"
-                      placeholder="Paciente, psicólogo o ID..."
-                      value={filters.search || ""}
-                      onInput={(e) => {
-                        const value = (e.target as HTMLInputElement).value;
-                        const url = buildUrl({
-                          ...filters,
-                          search: value || undefined,
-                          page: 1,
-                        });
-                        globalThis.location.href = url;
-                      }}
-                      class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                    />
-                  </div>
-                </div>
-
-                {/* Filtro por estado */}
-                <div class="space-y-2">
-                  <label class="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <Icon name="circle" className="h-4 w-4 text-gray-500" />
-                    <span>Estado</span>
-                  </label>
-                  <select
-                    value={filters.status || ""}
-                    onChange={(e) => {
-                      const value = (e.target as HTMLSelectElement).value;
-                      const url = buildUrl({
-                        ...filters,
-                        status: value || undefined,
-                        page: 1,
-                      });
-                      globalThis.location.href = url;
-                    }}
-                    title="Filtrar por estado de cita"
-                    aria-label="Filtrar por estado de cita"
-                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                  >
-                    <option value="">Todos los estados</option>
-                    <option value="pending">🟡 Pendiente</option>
-                    <option value="scheduled">🔵 Programada</option>
-                    <option value="in_progress">🟣 En Progreso</option>
-                    <option value="completed">🟢 Completada</option>
-                    <option value="cancelled">🔴 Cancelada</option>
-                  </select>
-                </div>
-
-                {/* Filtro por psicólogo */}
-                <div class="space-y-2">
-                  <label class="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <Icon name="user-cog" className="h-4 w-4 text-gray-500" />
-                    <span>Psicólogo</span>
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Email del psicólogo..."
-                    value={filters.psychologist || ""}
-                    onInput={(e) => {
-                      const value = (e.target as HTMLInputElement).value;
-                      const url = buildUrl({
-                        ...filters,
-                        psychologist: value || undefined,
-                        page: 1,
-                      });
-                      globalThis.location.href = url;
-                    }}
-                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                  />
-                </div>
-
-                {/* Filtro por fecha */}
-                <div class="space-y-2">
-                  <label class="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-                    <Icon name="calendar" className="h-4 w-4 text-gray-500" />
-                    <span>Fecha</span>
-                  </label>
-                  <input
-                    type="date"
-                    value={filters.date || ""}
-                    onChange={(e) => {
-                      const value = (e.target as HTMLInputElement).value;
-                      const url = buildUrl({
-                        ...filters,
-                        date: value || undefined,
-                        page: 1,
-                      });
-                      globalThis.location.href = url;
-                    }}
-                    title="Filtrar por fecha de cita"
-                    aria-label="Filtrar por fecha de cita"
-                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                  />
-                </div>
-              </div>
-
-              {/* Limpiar filtros */}
-              {(filters.search ||
-                filters.status ||
-                filters.psychologist ||
-                filters.date) && (
-                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                      <Icon name="check" className="h-4 w-4 text-green-500" />
-                      <span>
-                        Filtros aplicados:{" "}
-                        {[
-                          filters.search && "Búsqueda",
-                          filters.status && "Estado",
-                          filters.psychologist && "Psicólogo",
-                          filters.date && "Fecha",
-                        ]
-                          .filter(Boolean)
-                          .join(", ")}
-                      </span>
-                    </div>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() =>
-                        (globalThis.location.href = "/appointments")
-                      }
-                      class="inline-flex items-center gap-1"
-                    >
-                      <Icon name="x" className="h-3 w-3" />
-                      Limpiar Filtros
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </div>
+            {currentUser && (
+              <AppointmentFilters
+                psychologists={psychologists}
+                currentUser={currentUser}
+                filters={filters}
+              />
+            )}
           </div>
 
           {/* Estadísticas rápidas */}
