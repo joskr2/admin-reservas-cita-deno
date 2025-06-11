@@ -30,12 +30,13 @@ export const handler: Handlers<Data, AppState> = {
     }
 
     const form = await req.formData();
+    const name = form.get("name")?.toString();
     const email = form.get("email")?.toString();
     const password = form.get("password")?.toString();
     const role = form.get("role")?.toString() as "psychologist" | "superadmin";
 
     // --- Validation ---
-    if (!email || !password || !role) {
+    if (!name || !email || !password || !role) {
       return ctx.render({ error: "Todos los campos son requeridos." });
     }
     if (password.length < 8) {
@@ -55,6 +56,7 @@ export const handler: Handlers<Data, AppState> = {
     // --- User Creation ---
     const passwordHash = await hash(password);
     const newUser = {
+      name,
       email,
       passwordHash,
       role,
@@ -104,6 +106,18 @@ export default function NewProfilePage({ data }: PageProps<Data>) {
               <p>{data.error}</p>
             </div>
           )}
+
+          <div>
+            <label
+              for="name"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Nombre Completo
+            </label>
+            <div class="mt-1">
+              <Input type="text" name="name" id="name" required />
+            </div>
+          </div>
 
           <div>
             <label

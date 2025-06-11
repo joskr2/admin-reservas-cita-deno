@@ -510,7 +510,7 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                           </td>
                           <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                             <a
-                              href={`/(admin)/profiles/edit/${encodeURIComponent(
+                              href={`/profiles/edit/${encodeURIComponent(
                                 profile.email
                               )}`}
                               class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -519,7 +519,7 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                               Editar
                             </a>
                             <a
-                              href={`/(admin)/profiles/delete/${encodeURIComponent(
+                              href={`/profiles/delete/${encodeURIComponent(
                                 profile.email
                               )}`}
                               class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
@@ -591,7 +591,7 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
 
                     <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                       <a
-                        href={`/(admin)/profiles/edit/${encodeURIComponent(
+                        href={`/profiles/edit/${encodeURIComponent(
                           profile.email
                         )}`}
                         class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -600,7 +600,7 @@ export default function ProfilesPage({ data }: PageProps<ProfilesPageData>) {
                         Editar
                       </a>
                       <a
-                        href={`/(admin)/profiles/delete/${encodeURIComponent(
+                        href={`/profiles/delete/${encodeURIComponent(
                           profile.email
                         )}`}
                         class="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-red-700 bg-red-50 border border-red-200 rounded-md hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"

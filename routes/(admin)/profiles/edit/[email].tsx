@@ -39,6 +39,7 @@ export const handler: Handlers<Data, AppState> = {
 
     const profile: UserProfile = {
       email: userEntry.value.email,
+      name: userEntry.value.name,
       role: userEntry.value.role,
       createdAt: userEntry.value.createdAt,
       isActive: userEntry.value.isActive,
@@ -55,6 +56,7 @@ export const handler: Handlers<Data, AppState> = {
 
     const { email } = ctx.params;
     const form = await req.formData();
+    const newName = form.get("name")?.toString();
     const newRole = form.get("role")?.toString() as UserProfile["role"];
 
     if (!newRole || !["superadmin", "psychologist"].includes(newRole)) {
@@ -77,6 +79,7 @@ export const handler: Handlers<Data, AppState> = {
       }
       const profile: UserProfile = {
         email: userEntry.value.email,
+        name: userEntry.value.name,
         role: userEntry.value.role,
         createdAt: userEntry.value.createdAt,
         isActive: userEntry.value.isActive,
@@ -104,6 +107,7 @@ export const handler: Handlers<Data, AppState> = {
         kv.close();
         const profile: UserProfile = {
           email: userEntry.value?.email || email,
+          name: userEntry.value?.name,
           role: userEntry.value?.role || "psychologist",
           createdAt: userEntry.value?.createdAt || new Date().toISOString(),
           isActive: userEntry.value?.isActive,
@@ -117,12 +121,13 @@ export const handler: Handlers<Data, AppState> = {
     }
 
     // --- Update user in an atomic transaction ---
-    const updatedUser = { ...userEntry.value, role: newRole };
+    const updatedUser = { ...userEntry.value, name: newName, role: newRole };
 
     if (!oldRole) {
       kv.close();
       const profile: UserProfile = {
         email: userEntry.value?.email || email,
+        name: userEntry.value?.name,
         role: userEntry.value?.role || "psychologist",
         createdAt: userEntry.value?.createdAt || new Date().toISOString(),
         isActive: userEntry.value?.isActive,
@@ -146,6 +151,7 @@ export const handler: Handlers<Data, AppState> = {
     if (!res.ok) {
       const profile: UserProfile = {
         email: userEntry.value?.email || email,
+        name: userEntry.value?.name,
         role: userEntry.value?.role || "psychologist",
         createdAt: userEntry.value?.createdAt || new Date().toISOString(),
         isActive: userEntry.value?.isActive,
@@ -196,6 +202,24 @@ export default function EditProfilePage({ data }: PageProps<Data>) {
               <p>{error}</p>
             </div>
           )}
+
+          <div>
+            <label
+              for="name"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Nombre Completo
+            </label>
+            <div class="mt-1">
+              <Input
+                type="text"
+                name="name"
+                id="name"
+                value={profile.name || ""}
+                required
+              />
+            </div>
+          </div>
 
           <div>
             <label
