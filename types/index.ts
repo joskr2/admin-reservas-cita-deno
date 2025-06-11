@@ -4,7 +4,7 @@
 export interface BaseEntity {
   id: string;
   createdAt: string;
-  updatedAt?: string;
+  updatedAt?: string | undefined;
 }
 
 // === TIPOS DE USUARIO ===
@@ -14,23 +14,23 @@ export interface User {
   email: string;
   passwordHash: string;
   role: UserRole;
-  name?: string; // Nombre completo del usuario
+  name?: string | undefined; // Nombre completo del usuario
   createdAt: string;
-  isActive?: boolean;
+  isActive?: boolean | undefined;
 }
 
 export interface UserProfile {
   email: string;
   role: UserRole;
-  name?: string; // Nombre completo del usuario
+  name?: string | undefined; // Nombre completo del usuario
   createdAt: string;
-  isActive?: boolean;
+  isActive?: boolean | undefined;
 }
 
 export interface SessionUser {
   email: string;
   role: UserRole;
-  name?: string; // Nombre completo del usuario
+  name?: string | undefined; // Nombre completo del usuario
 }
 
 // === TIPOS DE SALAS ===
@@ -40,7 +40,7 @@ export interface Room {
   id: RoomId;
   name: string;
   isAvailable: boolean;
-  equipment?: string[];
+  equipment?: string[] | undefined;
 }
 
 // === TIPOS DE CITAS ===
@@ -55,23 +55,23 @@ export type AppointmentStatus =
 export interface AppointmentStatusHistory {
   status: AppointmentStatus;
   changedAt: string; // ISO string
-  changedBy?: string; // Email del usuario que hizo el cambio
-  notes?: string; // Notas del cambio
+  changedBy?: string | undefined; // Email del usuario que hizo el cambio
+  notes?: string | undefined; // Notas del cambio
 }
 
 export interface Appointment {
   id: string;
   psychologistEmail: string;
-  psychologistName?: string; // Nombre del psicólogo para mostrar
+  psychologistName?: string | undefined; // Nombre del psicólogo para mostrar
   patientName: string;
   appointmentDate: string; // YYYY-MM-DD
   appointmentTime: string; // HH:MM
   roomId: RoomId; // Sala de atención asignada
   status: AppointmentStatus;
-  statusHistory?: AppointmentStatusHistory[]; // Historial de cambios
+  statusHistory?: AppointmentStatusHistory[] | undefined; // Historial de cambios
   createdAt: string;
-  updatedAt?: string;
-  notes?: string;
+  updatedAt?: string | undefined;
+  notes?: string | undefined;
 }
 
 // === TIPOS DE ESTADO DE LA APLICACIÓN ===
@@ -82,9 +82,9 @@ export interface AppState {
 // === TIPOS DE RESPUESTA API ===
 export interface ApiResponse<T = unknown> {
   success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
+  data?: T | undefined;
+  error?: string | undefined;
+  message?: string | undefined;
 }
 
 // === TIPOS DE FORMULARIOS ===
@@ -96,7 +96,7 @@ export interface LoginForm {
 export interface CreateUserForm {
   email: string;
   password: string;
-  name?: string; // Nombre completo
+  name?: string | undefined; // Nombre completo
   role: UserRole;
 }
 
@@ -110,17 +110,17 @@ export interface CreateAppointmentForm {
 
 // === TIPOS DE COMPONENTES ===
 export interface HeaderProps {
-  currentPath?: string;
-  user?: SessionUser | null;
-  showBackButton?: boolean;
-  title?: string;
+  currentPath?: string | undefined;
+  user?: SessionUser | null | undefined;
+  showBackButton?: boolean | undefined;
+  title?: string | undefined;
 }
 
 export interface StatsCardProps {
   title: string;
   value: string | number;
   icon: string; // Nombre del icono del componente Icon
-  colorClass?: string;
+  colorClass?: string | undefined;
 }
 
 // === TIPOS DE DATOS DEL DASHBOARD ===
@@ -146,7 +146,7 @@ export type KVRoomKey = ["rooms", RoomId];
 export interface PaginationParams {
   page: number;
   limit: number;
-  search?: string;
+  search?: string | undefined;
 }
 
 export interface PaginatedResponse<T> {
@@ -167,17 +167,17 @@ export type Theme = "light" | "dark";
 // === TIPOS DE ICONOS ===
 export interface IconProps {
   name: string;
-  size?: number;
-  className?: string;
+  size?: number | undefined;
+  className?: string | undefined;
 }
 
 // Nuevo: Filtros de búsqueda para citas
 export interface AppointmentFilters {
-  psychologistEmail?: string;
-  patientName?: string;
-  appointmentId?: string; // Solo para superadmin
-  status?: AppointmentStatus;
-  dateFrom?: string;
-  dateTo?: string;
-  roomId?: RoomId;
+  psychologistEmail?: string | undefined;
+  patientName?: string | undefined;
+  appointmentId?: string | undefined; // Solo para superadmin
+  status?: AppointmentStatus | undefined;
+  dateFrom?: string | undefined;
+  dateTo?: string | undefined;
+  roomId?: RoomId | undefined;
 }

@@ -50,9 +50,11 @@ export function Badge({
 
   return (
     <span
-      class={`inline-flex items-center font-medium rounded-full ${getVariantClasses(
-        variant
-      )} ${getSizeClasses(size)} ${className}`}
+      class={`inline-flex items-center font-medium rounded-full ${
+        getVariantClasses(
+          variant,
+        )
+      } ${getSizeClasses(size)} ${className}`}
     >
       {children}
     </span>

@@ -1,8 +1,8 @@
 import { useState } from "preact/hooks";
 import {
   type Appointment,
-  type AppointmentStatusHistory,
   type AppointmentStatus,
+  type AppointmentStatusHistory,
 } from "../types/index.ts";
 import { Icon } from "../components/ui/Icon.tsx";
 import Modal from "../components/ui/Modal.tsx";
@@ -36,14 +36,14 @@ export default function AppointmentDetailsModal({
     ...(appointment.statusHistory?.some((h) => h.status === appointment.status)
       ? []
       : [
-          {
-            status: appointment.status,
-            changedAt: appointment.updatedAt || appointment.createdAt,
-            notes: "Estado actual",
-          },
-        ]),
+        {
+          status: appointment.status,
+          changedAt: appointment.updatedAt || appointment.createdAt,
+          notes: "Estado actual",
+        },
+      ]),
   ].sort(
-    (a, b) => new Date(a.changedAt).getTime() - new Date(b.changedAt).getTime()
+    (a, b) => new Date(a.changedAt).getTime() - new Date(b.changedAt).getTime(),
   );
 
   const formatDateTime = (dateString: string) => {
@@ -104,9 +104,11 @@ export default function AppointmentDetailsModal({
               </div>
               <div class="flex items-center">
                 <span
-                  class={`inline-flex px-3 py-1.5 text-sm font-medium rounded-full ${getStatusColor(
-                    appointment.status
-                  )}`}
+                  class={`inline-flex px-3 py-1.5 text-sm font-medium rounded-full ${
+                    getStatusColor(
+                      appointment.status,
+                    )
+                  }`}
                 >
                   {getStatusText(appointment.status)}
                 </span>
@@ -184,7 +186,7 @@ export default function AppointmentDetailsModal({
                           year: "numeric",
                           month: "long",
                           day: "numeric",
-                        }
+                        },
                       )}
                     </p>
                   </div>
@@ -262,9 +264,11 @@ export default function AppointmentDetailsModal({
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between mb-2">
                       <span
-                        class={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${getStatusColor(
-                          historyItem.status
-                        )}`}
+                        class={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${
+                          getStatusColor(
+                            historyItem.status,
+                          )
+                        }`}
                       >
                         {getStatusText(historyItem.status)}
                       </span>
@@ -274,10 +278,11 @@ export default function AppointmentDetailsModal({
                     </div>
 
                     <p class="text-sm text-gray-700 dark:text-gray-300 mb-1">
-                      <strong>{getStatusText(historyItem.status)}</strong> -{" "}
+                      <strong>{getStatusText(historyItem.status)}</strong> -
+                      {" "}
                       {appointment.psychologistName ||
-                        appointment.psychologistEmail}{" "}
-                      con {appointment.patientName} en Sala {appointment.roomId}
+                        appointment.psychologistEmail} con{" "}
+                      {appointment.patientName} en Sala {appointment.roomId}
                     </p>
 
                     {historyItem.notes && (

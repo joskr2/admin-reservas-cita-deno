@@ -27,7 +27,7 @@ const stateClasses = {
 const getPaddingClasses = (
   className?: string,
   hasLeftIcon?: boolean,
-  hasRightIcon?: boolean
+  hasRightIcon?: boolean,
 ) => {
   const classNameStr = typeof className === "string" ? className : "";
 
@@ -64,7 +64,7 @@ export function Input({
   const paddingClasses = getPaddingClasses(
     classNameStr,
     hasLeftIcon,
-    hasRightIcon
+    hasRightIcon,
   );
 
   const finalClasses = [

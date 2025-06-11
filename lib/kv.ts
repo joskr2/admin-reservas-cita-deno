@@ -1,3 +1,6 @@
+/// <reference lib="deno.ns" />
+/// <reference lib="deno.unstable" />
+
 // Database helper functions for Deno KV
 import type {
   Appointment,
@@ -36,9 +39,20 @@ export function closeKv(): void {
 
 // User-related functions
 export async function getUserByEmail(email: string): Promise<User | null> {
-  const kv = await getKv();
-  const result = await kv.get<User>(["users", email] as KVUserKey);
-  return result.value;
+  try {
+    // Verificar que el email sea una cadena válida
+    if (typeof email !== "string" || !email) {
+      console.warn("Invalid email provided to getUserByEmail:", email);
+      return null;
+    }
+
+    const kv = await getKv();
+    const result = await kv.get<User>(["users", email] as KVUserKey);
+    return result.value;
+  } catch (error) {
+    console.error(`Error getting user by email ${email}:`, error);
+    return null;
+  }
 }
 
 export async function createUser(user: User): Promise<boolean> {
@@ -48,7 +62,7 @@ export async function createUser(user: User): Promise<boolean> {
     .set(["users", user.email] as KVUserKey, user)
     .set(
       ["users_by_role", user.role, user.email] as KVUserByRoleKey,
-      user.email,
+      user.email
     )
     .commit();
   return result.ok;
@@ -61,13 +75,21 @@ export async function getAllUsers(): Promise<UserProfile[]> {
 
   for await (const entry of iter) {
     const user = entry.value as User;
-    users.push({
+    const userProfile: UserProfile = {
       email: user.email,
       role: user.role,
-      name: user.name,
       createdAt: user.createdAt,
-      isActive: user.isActive,
-    });
+    };
+
+    // Solo agregar propiedades opcionales si tienen valor
+    if (user.name !== undefined) {
+      userProfile.name = user.name;
+    }
+    if (user.isActive !== undefined) {
+      userProfile.isActive = user.isActive;
+    }
+
+    users.push(userProfile);
   }
 
   return users.sort((a, b) =>
@@ -81,16 +103,38 @@ export async function getUsersByRole(role: string): Promise<UserProfile[]> {
   const iter = kv.list<string>({ prefix: ["users_by_role", role] });
 
   for await (const entry of iter) {
-    const email = entry.value;
-    const user = await getUserByEmail(email);
-    if (user) {
-      users.push({
-        email: user.email,
-        role: user.role,
-        name: user.name,
-        createdAt: user.createdAt,
-        isActive: user.isActive,
-      });
+    try {
+      const email = entry.value;
+      // Verificar que el email sea una cadena válida
+      if (typeof email !== "string" || !email) {
+        console.warn(
+          `Invalid email value in users_by_role for role ${role}:`,
+          email
+        );
+        continue;
+      }
+
+      const user = await getUserByEmail(email);
+      if (user) {
+        const userProfile: UserProfile = {
+          email: user.email,
+          role: user.role,
+          createdAt: user.createdAt,
+        };
+
+        // Solo agregar propiedades opcionales si tienen valor
+        if (user.name !== undefined) {
+          userProfile.name = user.name;
+        }
+        if (user.isActive !== undefined) {
+          userProfile.isActive = user.isActive;
+        }
+
+        users.push(userProfile);
+      }
+    } catch (error) {
+      console.error(`Error processing user entry for role ${role}:`, error);
+      continue;
     }
   }
 
@@ -101,7 +145,7 @@ export async function getUsersByRole(role: string): Promise<UserProfile[]> {
 
 export async function updateUser(
   email: string,
-  updates: Partial<User>,
+  updates: Partial<User>
 ): Promise<boolean> {
   const existingUser = await getUserByEmail(email);
   if (!existingUser) return false;
@@ -127,7 +171,7 @@ export async function deleteUser(email: string): Promise<boolean> {
 
 // Appointment-related functions
 export async function createAppointment(
-  appointment: Appointment,
+  appointment: Appointment
 ): Promise<boolean> {
   const kv = await getKv();
   const result = await kv
@@ -139,14 +183,14 @@ export async function createAppointment(
         appointment.psychologistEmail,
         appointment.id,
       ] as KVAppointmentByPsychologistKey,
-      appointment,
+      appointment
     )
     .commit();
   return result.ok;
 }
 
 export async function getAppointmentById(
-  id: string,
+  id: string
 ): Promise<Appointment | null> {
   const kv = await getKv();
   const result = await kv.get<Appointment>([
@@ -157,17 +201,16 @@ export async function getAppointmentById(
 }
 
 export async function getAppointmentsByPsychologist(
-  email: string,
+  email: string
 ): Promise<Appointment[]> {
   const kv = await getKv();
   const appointments: Appointment[] = [];
   const entries = kv.list({ prefix: ["appointments_by_psychologist", email] });
 
   for await (const entry of entries) {
-    const appointmentKey = entry.value as unknown as Deno.KvKey;
-    const appointmentResult = await kv.get<Appointment>(appointmentKey);
-    if (appointmentResult.value) {
-      appointments.push(appointmentResult.value);
+    // El valor almacenado es directamente el appointment, no una clave
+    if (entry.value && typeof entry.value === "object") {
+      appointments.push(entry.value as Appointment);
     }
   }
   return appointments;
@@ -188,13 +231,13 @@ export async function getAllAppointments(): Promise<Appointment[]> {
   return appointments.sort(
     (a, b) =>
       new Date(a.appointmentDate + " " + a.appointmentTime).getTime() -
-      new Date(b.appointmentDate + " " + b.appointmentTime).getTime(),
+      new Date(b.appointmentDate + " " + b.appointmentTime).getTime()
   );
 }
 
 export async function updateAppointment(
   id: string,
-  updates: Partial<Appointment>,
+  updates: Partial<Appointment>
 ): Promise<boolean> {
   const kv = await getKv();
   const current = await kv.get<Appointment>([
@@ -206,7 +249,7 @@ export async function updateAppointment(
   const updated = { ...current.value, ...updates };
   const result = await kv.set(
     ["appointments", id] as KVAppointmentKey,
-    updated,
+    updated
   );
 
   // Si cambió el psicólogo, actualizar índices
@@ -221,7 +264,7 @@ export async function updateAppointment(
     ]);
     await kv.set(
       ["appointments_by_psychologist", updates.psychologistEmail, id],
-      id,
+      id
     );
   }
 
@@ -309,7 +352,7 @@ export async function getRoomById(id: RoomId): Promise<Room | null> {
 
 export async function updateRoomAvailability(
   id: RoomId,
-  isAvailable: boolean,
+  isAvailable: boolean
 ): Promise<boolean> {
   const kv = await getKv();
   const room = await getRoomById(id);
@@ -323,7 +366,7 @@ export async function updateRoomAvailability(
 export async function getAvailableRooms(
   date: string,
   time: string,
-  excludeAppointmentId?: string,
+  excludeAppointmentId?: string
 ): Promise<Room[]> {
   const allRooms = await getAllRooms();
   const appointments = await getAllAppointments();
@@ -334,20 +377,20 @@ export async function getAvailableRooms(
       apt.appointmentDate === date &&
       apt.appointmentTime === time &&
       apt.status !== "cancelled" &&
-      apt.id !== excludeAppointmentId,
+      apt.id !== excludeAppointmentId
   );
 
   const occupiedRoomIds = conflictingAppointments.map((apt) => apt.roomId);
 
   return allRooms.filter(
-    (room) => room.isAvailable && !occupiedRoomIds.includes(room.id),
+    (room) => room.isAvailable && !occupiedRoomIds.includes(room.id)
   );
 }
 
 // Session management
 export async function createSession(
   sessionId: string,
-  userEmail: string,
+  userEmail: string
 ): Promise<void> {
   const session = {
     userEmail,
@@ -359,7 +402,7 @@ export async function createSession(
 }
 
 export async function getSession(
-  sessionId: string,
+  sessionId: string
 ): Promise<{ userEmail: string } | null> {
   const kv = await getKv();
   const result = await kv.get(["sessions", sessionId] as KVSessionKey);

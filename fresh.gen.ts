@@ -2,20 +2,10 @@
 // This file SHOULD be checked into source version control.
 // This file is automatically updated during development when running `dev.ts`.
 
-import * as $_admin_profiles_delete_email_ from "./routes/(admin)/profiles/delete/[email].tsx";
-import * as $_admin_profiles_edit_email_ from "./routes/(admin)/profiles/edit/[email].tsx";
-import * as $_admin_profiles_index from "./routes/(admin)/profiles/index.tsx";
-import * as $_admin_profiles_new from "./routes/(admin)/profiles/new.tsx";
-import * as $_admin_rooms_delete_id_ from "./routes/(admin)/rooms/delete/[id].tsx";
-import * as $_admin_rooms_index from "./routes/(admin)/rooms/index.tsx";
-import * as $_admin_rooms_schedule from "./routes/(admin)/rooms/schedule.tsx";
 import * as $_404 from "./routes/_404.tsx";
 import * as $_app from "./routes/_app.tsx";
 import * as $_layout from "./routes/_layout.tsx";
 import * as $_middleware from "./routes/_middleware.ts";
-import * as $admin_profiles_delete_email_ from "./routes/admin/profiles/delete/[email].tsx";
-import * as $admin_profiles_edit_email_ from "./routes/admin/profiles/edit/[email].tsx";
-import * as $admin_profiles_index from "./routes/admin/profiles/index.tsx";
 import * as $api_appointments_id_delete from "./routes/api/appointments/[id]/delete.ts";
 import * as $api_appointments_id_update from "./routes/api/appointments/[id]/update.ts";
 import * as $api_appointments_create from "./routes/api/appointments/create.ts";
@@ -23,23 +13,21 @@ import * as $api_appointments_index from "./routes/api/appointments/index.ts";
 import * as $api_auth_check from "./routes/api/auth/check.ts";
 import * as $api_auth_clear_cookies from "./routes/api/auth/clear-cookies.ts";
 import * as $api_auth_logout from "./routes/api/auth/logout.ts";
-import * as $api_profiles_id_delete from "./routes/api/profiles/[id]/delete.ts";
-import * as $api_profiles_id_update from "./routes/api/profiles/[id]/update.ts";
-import * as $api_profiles_create from "./routes/api/profiles/create.ts";
-import * as $api_profiles_index from "./routes/api/profiles/index.ts";
 import * as $appointments_id_ from "./routes/appointments/[id].tsx";
 import * as $appointments_edit_id_ from "./routes/appointments/edit/[id].tsx";
 import * as $appointments_index from "./routes/appointments/index.tsx";
 import * as $appointments_new from "./routes/appointments/new.tsx";
 import * as $dashboard_index from "./routes/dashboard/index.tsx";
-import * as $dashboard_profiles from "./routes/dashboard/profiles.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login from "./routes/login.tsx";
 import * as $patients_delete_id_ from "./routes/patients/delete/[id].tsx";
 import * as $patients_edit_id_ from "./routes/patients/edit/[id].tsx";
 import * as $patients_index from "./routes/patients/index.tsx";
 import * as $patients_new from "./routes/patients/new.tsx";
-import * as $profiles_index from "./routes/profiles/index.tsx";
+import * as $psychologists_delete_email_ from "./routes/psychologists/delete/[email].tsx";
+import * as $psychologists_edit_email_ from "./routes/psychologists/edit/[email].tsx";
+import * as $psychologists_index from "./routes/psychologists/index.tsx";
+import * as $psychologists_new from "./routes/psychologists/new.tsx";
 import * as $AppointmentCalendar from "./islands/AppointmentCalendar.tsx";
 import * as $AppointmentDetailsDropdown from "./islands/AppointmentDetailsDropdown.tsx";
 import * as $AppointmentDetailsModal from "./islands/AppointmentDetailsModal.tsx";
@@ -52,28 +40,16 @@ import * as $DashboardStats from "./islands/DashboardStats.tsx";
 import * as $DeleteAppointmentButton from "./islands/DeleteAppointmentButton.tsx";
 import * as $Header from "./islands/Header.tsx";
 import * as $PatientSearchSelect from "./islands/PatientSearchSelect.tsx";
-import * as $ProfileFilters from "./islands/ProfileFilters.tsx";
-import * as $ProfilesFilters from "./islands/ProfilesFilters.tsx";
+import * as $PsychologistFilters from "./islands/PsychologistFilters.tsx";
 import * as $ThemeToggle from "./islands/ThemeToggle.tsx";
-import type { Manifest } from "$fresh/server.ts";
+import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
   routes: {
-    "./routes/(admin)/profiles/delete/[email].tsx":
-      $_admin_profiles_delete_email_,
-    "./routes/(admin)/profiles/edit/[email].tsx": $_admin_profiles_edit_email_,
-    "./routes/(admin)/profiles/index.tsx": $_admin_profiles_index,
-    "./routes/(admin)/profiles/new.tsx": $_admin_profiles_new,
-    "./routes/(admin)/rooms/delete/[id].tsx": $_admin_rooms_delete_id_,
-    "./routes/(admin)/rooms/index.tsx": $_admin_rooms_index,
-    "./routes/(admin)/rooms/schedule.tsx": $_admin_rooms_schedule,
     "./routes/_404.tsx": $_404,
     "./routes/_app.tsx": $_app,
     "./routes/_layout.tsx": $_layout,
     "./routes/_middleware.ts": $_middleware,
-    "./routes/admin/profiles/delete/[email].tsx": $admin_profiles_delete_email_,
-    "./routes/admin/profiles/edit/[email].tsx": $admin_profiles_edit_email_,
-    "./routes/admin/profiles/index.tsx": $admin_profiles_index,
     "./routes/api/appointments/[id]/delete.ts": $api_appointments_id_delete,
     "./routes/api/appointments/[id]/update.ts": $api_appointments_id_update,
     "./routes/api/appointments/create.ts": $api_appointments_create,
@@ -81,23 +57,21 @@ const manifest = {
     "./routes/api/auth/check.ts": $api_auth_check,
     "./routes/api/auth/clear-cookies.ts": $api_auth_clear_cookies,
     "./routes/api/auth/logout.ts": $api_auth_logout,
-    "./routes/api/profiles/[id]/delete.ts": $api_profiles_id_delete,
-    "./routes/api/profiles/[id]/update.ts": $api_profiles_id_update,
-    "./routes/api/profiles/create.ts": $api_profiles_create,
-    "./routes/api/profiles/index.ts": $api_profiles_index,
     "./routes/appointments/[id].tsx": $appointments_id_,
     "./routes/appointments/edit/[id].tsx": $appointments_edit_id_,
     "./routes/appointments/index.tsx": $appointments_index,
     "./routes/appointments/new.tsx": $appointments_new,
     "./routes/dashboard/index.tsx": $dashboard_index,
-    "./routes/dashboard/profiles.tsx": $dashboard_profiles,
     "./routes/index.tsx": $index,
     "./routes/login.tsx": $login,
     "./routes/patients/delete/[id].tsx": $patients_delete_id_,
     "./routes/patients/edit/[id].tsx": $patients_edit_id_,
     "./routes/patients/index.tsx": $patients_index,
     "./routes/patients/new.tsx": $patients_new,
-    "./routes/profiles/index.tsx": $profiles_index,
+    "./routes/psychologists/delete/[email].tsx": $psychologists_delete_email_,
+    "./routes/psychologists/edit/[email].tsx": $psychologists_edit_email_,
+    "./routes/psychologists/index.tsx": $psychologists_index,
+    "./routes/psychologists/new.tsx": $psychologists_new,
   },
   islands: {
     "./islands/AppointmentCalendar.tsx": $AppointmentCalendar,
@@ -112,8 +86,7 @@ const manifest = {
     "./islands/DeleteAppointmentButton.tsx": $DeleteAppointmentButton,
     "./islands/Header.tsx": $Header,
     "./islands/PatientSearchSelect.tsx": $PatientSearchSelect,
-    "./islands/ProfileFilters.tsx": $ProfileFilters,
-    "./islands/ProfilesFilters.tsx": $ProfilesFilters,
+    "./islands/PsychologistFilters.tsx": $PsychologistFilters,
     "./islands/ThemeToggle.tsx": $ThemeToggle,
   },
   baseUrl: import.meta.url,

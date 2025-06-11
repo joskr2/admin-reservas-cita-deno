@@ -170,7 +170,8 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         id: crypto.randomUUID(),
         patientName,
         psychologistEmail,
-        psychologistName: psychologist?.name || psychologist?.email,
+        psychologistName:
+          psychologist?.name || psychologist?.email || undefined,
         appointmentDate,
         appointmentTime,
         roomId,

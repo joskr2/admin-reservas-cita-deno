@@ -21,6 +21,8 @@ export default function Header({
       globalThis.addEventListener("scroll", handleScroll);
       return () => globalThis.removeEventListener("scroll", handleScroll);
     }
+
+    return undefined;
   }, []);
 
   const isAuthenticated = !!user;
@@ -28,7 +30,7 @@ export default function Header({
   const isDashboardPage = currentPath === "/dashboard";
   const isAppointmentsPage = currentPath === "/appointments";
   const isNewAppointmentPage = currentPath === "/appointments/new";
-  const isProfilesPage = currentPath.startsWith("/profiles");
+  const isProfilesPage = currentPath.startsWith("/psychologists");
 
   // Items de navegación
   const navigationItems = [
@@ -61,7 +63,7 @@ export default function Header({
       showWhen: "authenticated" as const,
     },
     {
-      href: "/profiles",
+      href: "/psychologists",
       label: user?.role === "psychologist" ? "Psicólogos" : "Usuarios",
       icon: "users",
       active: isProfilesPage,

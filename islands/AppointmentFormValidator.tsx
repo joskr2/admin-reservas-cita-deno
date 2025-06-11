@@ -15,7 +15,7 @@ export default function AppointmentFormValidator({
   action,
   method = "POST",
 }: AppointmentFormValidatorProps) {
-  const handleSubmit = (e: Event) => {
+  const handleSubmit = (e: Event): boolean => {
     // Validación adicional en el frontend para psicólogos
     if (currentUserRole === "psychologist") {
       const formData = new FormData(e.target as HTMLFormElement);
@@ -40,6 +40,7 @@ export default function AppointmentFormValidator({
         return false;
       }
     }
+    return true;
   };
 
   return (

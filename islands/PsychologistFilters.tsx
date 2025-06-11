@@ -3,11 +3,11 @@ import { type UserRole } from "../types/index.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { Icon } from "../components/ui/Icon.tsx";
 
-interface ProfilesFiltersProps {
+interface PsychologistFiltersProps {
   currentUser: {
     email: string;
     role: UserRole;
-    name?: string;
+    name?: string | undefined;
   };
   filters: {
     search?: string;
@@ -16,15 +16,15 @@ interface ProfilesFiltersProps {
   };
 }
 
-export default function ProfilesFilters({
+export default function PsychologistFilters({
   currentUser,
   filters,
-}: ProfilesFiltersProps) {
+}: PsychologistFiltersProps) {
   const [search, setSearch] = useState(filters.search || "");
 
   const buildUrl = (params: Record<string, string | number | undefined>) => {
     const url = new URL(
-      "/profiles",
+      "/psychologists",
       globalThis.location?.origin || "http://localhost:8000"
     );
     Object.entries(params).forEach(([key, value]) => {
@@ -185,7 +185,7 @@ export default function ProfilesFilters({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => (globalThis.location.href = "/profiles")}
+                onClick={() => (globalThis.location.href = "/psychologists")}
                 class="inline-flex items-center gap-1"
               >
                 <Icon name="x" className="h-3 w-3" />

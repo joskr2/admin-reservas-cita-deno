@@ -3,10 +3,10 @@ import { getCookies } from "$std/http/cookie.ts";
 import type { AppState, SessionUser } from "../types/index.ts";
 
 // Lista de rutas que requieren autenticación
-const PROTECTED_ROUTES = ["/dashboard", "/profiles", "/appointments"];
+const PROTECTED_ROUTES = ["/dashboard", "/psychologists", "/appointments"];
 
 // Lista de rutas que requieren rol de superadmin
-const SUPERADMIN_ROUTES = ["/profiles", "/admin"];
+const SUPERADMIN_ROUTES = ["/psychologists", "/admin"];
 
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
   const url = new URL(req.url);

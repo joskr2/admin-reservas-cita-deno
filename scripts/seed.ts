@@ -6,7 +6,7 @@ import {
   type RoomId,
   type User,
 } from "../types/index.ts";
-import { createUser, createAppointment } from "../lib/kv.ts";
+import { createAppointment, createUser } from "../lib/kv.ts";
 
 // Define all users to be seeded
 const usersToSeed = [
@@ -329,7 +329,7 @@ async function seedDatabase() {
       const success = await createUser(userData);
       if (success) {
         console.log(
-          `   ✅ Usuario creado: ${userSeed.name} (${userSeed.email})`
+          `   ✅ Usuario creado: ${userSeed.name} (${userSeed.email})`,
         );
       } else {
         console.log(`   ❌ Error creando usuario: ${userSeed.email}`);
@@ -349,7 +349,7 @@ async function seedDatabase() {
       const success = await createAppointment(appointment);
       if (success) {
         console.log(
-          `   ✅ Cita creada: ${appointment.patientName} - ${appointment.appointmentDate} ${appointment.appointmentTime}`
+          `   ✅ Cita creada: ${appointment.patientName} - ${appointment.appointmentDate} ${appointment.appointmentTime}`,
         );
       } else {
         console.log(`   ❌ Error creando cita: ${appointment.id}`);

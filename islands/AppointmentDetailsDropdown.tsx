@@ -1,8 +1,8 @@
 import { useState } from "preact/hooks";
 import {
   type Appointment,
-  type AppointmentStatusHistory,
   type AppointmentStatus,
+  type AppointmentStatusHistory,
 } from "../types/index.ts";
 import { Icon } from "../components/ui/Icon.tsx";
 import {
@@ -35,14 +35,14 @@ export default function AppointmentDetailsDropdown({
     ...(appointment.statusHistory?.some((h) => h.status === appointment.status)
       ? []
       : [
-          {
-            status: appointment.status,
-            changedAt: appointment.updatedAt || appointment.createdAt,
-            notes: "Estado actual",
-          },
-        ]),
+        {
+          status: appointment.status,
+          changedAt: appointment.updatedAt || appointment.createdAt,
+          notes: "Estado actual",
+        },
+      ]),
   ].sort(
-    (a, b) => new Date(a.changedAt).getTime() - new Date(b.changedAt).getTime()
+    (a, b) => new Date(a.changedAt).getTime() - new Date(b.changedAt).getTime(),
   );
 
   const formatDateTime = (dateString: string) => {
@@ -109,9 +109,8 @@ export default function AppointmentDetailsDropdown({
                 <strong>Sala:</strong> {appointment.roomId}
               </p>
               <p>
-                <strong>Fecha:</strong>{" "}
-                {new Date(
-                  `${appointment.appointmentDate}T${appointment.appointmentTime}`
+                <strong>Fecha:</strong> {new Date(
+                  `${appointment.appointmentDate}T${appointment.appointmentTime}`,
                 ).toLocaleString("es-ES", {
                   weekday: "long",
                   year: "numeric",
@@ -149,9 +148,11 @@ export default function AppointmentDetailsDropdown({
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center space-x-2 mb-1">
                       <span
-                        class={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${getStatusColor(
-                          historyItem.status
-                        )}`}
+                        class={`inline-flex px-2 py-0.5 text-xs font-medium rounded-full ${
+                          getStatusColor(
+                            historyItem.status,
+                          )
+                        }`}
                       >
                         {getStatusText(historyItem.status)}
                       </span>
@@ -161,10 +162,11 @@ export default function AppointmentDetailsDropdown({
                     </div>
 
                     <p class="text-xs text-gray-600 dark:text-gray-300 mb-1">
-                      <strong>{getStatusText(historyItem.status)}</strong> de{" "}
+                      <strong>{getStatusText(historyItem.status)}</strong> de
+                      {" "}
                       {appointment.psychologistName ||
-                        appointment.psychologistEmail}{" "}
-                      con el paciente {appointment.patientName}, en la sala{" "}
+                        appointment.psychologistEmail} con el paciente{" "}
+                      {appointment.patientName}, en la sala{" "}
                       {appointment.roomId}, a las{" "}
                       {formatTime(historyItem.changedAt)}
                     </p>

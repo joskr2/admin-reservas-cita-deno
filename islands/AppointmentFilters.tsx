@@ -1,5 +1,5 @@
 import { useState } from "preact/hooks";
-import { type UserProfile, type AppointmentStatus } from "../types/index.ts";
+import { type AppointmentStatus, type UserProfile } from "../types/index.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { Icon } from "../components/ui/Icon.tsx";
 
@@ -53,37 +53,49 @@ function AppointmentFilters({
 
   const handleSearchSubmit = (e: Event) => {
     e.preventDefault();
-    globalThis.location.href = buildFilterUrl({
-      search: search || undefined,
-    });
+    const newFilters: Partial<typeof filters> = { ...filters };
+    if (search) {
+      newFilters.search = search;
+    } else {
+      delete newFilters.search;
+    }
+    globalThis.location.href = buildFilterUrl(newFilters);
   };
 
   const handlePsychologistSubmit = (e: Event) => {
     e.preventDefault();
-    globalThis.location.href = buildFilterUrl({
-      psychologist: psychologist || undefined,
-    });
+    const newFilters: Partial<typeof filters> = { ...filters };
+    if (psychologist) {
+      newFilters.psychologist = psychologist;
+    } else {
+      delete newFilters.psychologist;
+    }
+    globalThis.location.href = buildFilterUrl(newFilters);
   };
 
   const handleDateChange = (e: Event) => {
     const value = (e.target as HTMLInputElement).value;
-    globalThis.location.href = buildFilterUrl({
-      date: value || undefined,
-    });
+    const newFilters: Partial<typeof filters> = { ...filters };
+    if (value) {
+      newFilters.date = value;
+    } else {
+      delete newFilters.date;
+    }
+    globalThis.location.href = buildFilterUrl(newFilters);
   };
 
   const clearSearch = () => {
     setSearch("");
-    globalThis.location.href = buildFilterUrl({
-      search: undefined,
-    });
+    const newFilters: Partial<typeof filters> = { ...filters };
+    delete newFilters.search;
+    globalThis.location.href = buildFilterUrl(newFilters);
   };
 
   const clearPsychologist = () => {
     setPsychologist("");
-    globalThis.location.href = buildFilterUrl({
-      psychologist: undefined,
-    });
+    const newFilters: Partial<typeof filters> = { ...filters };
+    delete newFilters.psychologist;
+    globalThis.location.href = buildFilterUrl(newFilters);
   };
 
   return (

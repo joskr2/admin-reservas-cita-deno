@@ -2,9 +2,9 @@ import type { IconProps } from "../../types/index.ts";
 
 interface IconComponentProps extends Omit<IconProps, "name"> {
   name: string;
-  size?: number;
-  className?: string;
-  alt?: string;
+  size?: number | undefined;
+  className?: string | undefined;
+  alt?: string | undefined;
 }
 
 export function Icon({

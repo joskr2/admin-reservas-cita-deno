@@ -35,7 +35,7 @@ export default function AppointmentStatusSelector({
             body: JSON.stringify({
               status: newStatus,
             }),
-          }
+          },
         );
 
         if (response.ok) {
@@ -113,7 +113,8 @@ export default function AppointmentStatusSelector({
       {/* Indicador de carga */}
       {isUpdating && (
         <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded-md">
-          <div class="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent"></div>
+          <div class="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent">
+          </div>
         </div>
       )}
     </div>

@@ -12,9 +12,9 @@ import { compare } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
 import type { User } from "../types/index.ts";
 
 interface LoginData {
-  email?: string;
-  password?: string;
-  error?: string;
+  email?: string | undefined;
+  password?: string | undefined;
+  error?: string | undefined;
 }
 
 export const handler: Handlers<LoginData> = {
