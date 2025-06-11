@@ -1,5 +1,9 @@
 import { type PageProps, type FreshContext } from "$fresh/server.ts";
-import { type AppState, type UserProfile } from "../../types/index.ts";
+import {
+  type AppState,
+  type UserProfile,
+  type Appointment,
+} from "../../types/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
 import { Button } from "../../components/ui/Button.tsx";
 import { Input } from "../../components/ui/Input.tsx";
@@ -59,13 +63,15 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         users.find((user) => user.email === psychologistEmail)
       );
 
-      const appointmentData = {
+      const appointmentData: Appointment = {
+        id: crypto.randomUUID(),
         patientName,
         psychologistEmail,
         psychologistName: psychologist?.name,
         appointmentDate,
         appointmentTime,
         status: "scheduled" as const,
+        createdAt: new Date().toISOString(),
       };
 
       await createAppointment(appointmentData);

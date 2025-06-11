@@ -150,6 +150,11 @@ export default function LoginPage({
                 </label>
                 <div class="relative">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                    <Icon
+                      name="mail"
+                      size={20}
+                      className="text-gray-400 dark:text-gray-500"
+                    />
                   </div>
                   <Input
                     id="email"
@@ -173,7 +178,11 @@ export default function LoginPage({
                 </label>
                 <div class="relative">
                   <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-
+                    <Icon
+                      name="lock"
+                      size={20}
+                      className="text-gray-400 dark:text-gray-500"
+                    />
                   </div>
                   <Input
                     id="password"
