@@ -149,12 +149,7 @@ export default function LoginPage({
                   Correo electrónico
                 </label>
                 <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Icon
-                      name="mail"
-                      size={20}
-                      className="text-gray-400 dark:text-gray-500"
-                    />
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
                   </div>
                   <Input
                     id="email"
@@ -162,7 +157,7 @@ export default function LoginPage({
                     type="email"
                     autoComplete="email"
                     required
-                    className="pl-10 h-12 text-base"
+                    className="pl-10 pr-3 h-12 text-base"
                     placeholder="tu@email.com"
                   />
                 </div>
@@ -177,12 +172,8 @@ export default function LoginPage({
                   Contraseña
                 </label>
                 <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Icon
-                      name="lock"
-                      size={20}
-                      className="text-gray-400 dark:text-gray-500"
-                    />
+                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+
                   </div>
                   <Input
                     id="password"
@@ -190,7 +181,7 @@ export default function LoginPage({
                     type="password"
                     autoComplete="current-password"
                     required
-                    className="pl-10 h-12 text-base"
+                    className="pl-10 pr-3 h-12 text-base"
                     placeholder="Tu contraseña"
                   />
                 </div>
@@ -225,16 +216,43 @@ export default function LoginPage({
 
         {/* Demo Credentials */}
         <div class="mt-6 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-          <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-2">
+          <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200 mb-3">
             Credenciales de demostración:
           </h3>
-          <div class="text-xs text-blue-700 dark:text-blue-300 space-y-1">
-            <p>
-              <strong>Email:</strong> admin@horizonte.com
-            </p>
-            <p>
-              <strong>Contraseña:</strong> password123
-            </p>
+          <div class="text-xs text-blue-700 dark:text-blue-300 space-y-3">
+            <div class="bg-white dark:bg-blue-800/30 rounded p-2">
+              <p class="font-semibold text-blue-900 dark:text-blue-100">
+                Super Administrador:
+              </p>
+              <p>
+                <strong>Email:</strong> admin@horizonte.com
+              </p>
+              <p>
+                <strong>Contraseña:</strong> password123
+              </p>
+            </div>
+            <div class="bg-white dark:bg-blue-800/30 rounded p-2">
+              <p class="font-semibold text-blue-900 dark:text-blue-100">
+                Psicólogo 1:
+              </p>
+              <p>
+                <strong>Email:</strong> psicologo1@horizonte.com
+              </p>
+              <p>
+                <strong>Contraseña:</strong> password123
+              </p>
+            </div>
+            <div class="bg-white dark:bg-blue-800/30 rounded p-2">
+              <p class="font-semibold text-blue-900 dark:text-blue-100">
+                Psicólogo 2:
+              </p>
+              <p>
+                <strong>Email:</strong> psicologo2@horizonte.com
+              </p>
+              <p>
+                <strong>Contraseña:</strong> password123
+              </p>
+            </div>
           </div>
         </div>
       </div>

@@ -5,17 +5,32 @@ const usersToSeed = [
   {
     email: "admin@horizonte.com",
     password: "password123",
-    role: "superadmin" as const, // Use 'as const' for strict typing
+    role: "superadmin" as const,
+    name: "Administrador Principal",
+  },
+  {
+    email: "psicologo1@horizonte.com",
+    password: "password123",
+    role: "psychologist" as const,
+    name: "Dr. Carlos Mendoza",
+  },
+  {
+    email: "psicologo2@horizonte.com",
+    password: "password123",
+    role: "psychologist" as const,
+    name: "Dra. Laura Jiménez",
   },
   {
     email: "carlos.mendoza@horizonte.com",
     password: "password123",
     role: "psychologist" as const,
+    name: "Dr. Carlos Mendoza (Legacy)",
   },
   {
     email: "laura.jimenez@horizonte.com",
     password: "password123",
     role: "psychologist" as const,
+    name: "Dra. Laura Jiménez (Legacy)",
   },
 ];
 
@@ -24,7 +39,7 @@ async function seedDatabase() {
   const kv = await Deno.openKv();
 
   for (const userData of usersToSeed) {
-    const { email, password, role } = userData;
+    const { email, password, role, name } = userData;
 
     // Check if the user already exists to prevent overwriting
     const existingUser = await kv.get(["users", email]);
@@ -40,7 +55,9 @@ async function seedDatabase() {
       email: email,
       passwordHash: passwordHash,
       role: role,
+      name: name,
       createdAt: new Date().toISOString(),
+      isActive: true,
     };
 
     // Atomically set the user and index it by role

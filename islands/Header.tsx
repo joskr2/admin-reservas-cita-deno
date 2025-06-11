@@ -72,7 +72,11 @@ export default function Header({
   // Filtrar items según autenticación y rol
   const visibleItems = navigationItems.filter((item) => {
     if (item.showWhen === "always") return true;
-    if (item.showWhen === "authenticated") return isAuthenticated;
+    if (item.showWhen === "authenticated") {
+      // Ocultar Dashboard si ya estamos en esa página
+      if (item.href === "/dashboard" && isDashboardPage) return false;
+      return isAuthenticated;
+    }
     if (item.showWhen === "superadmin") return user?.role === "superadmin";
     return false;
   });
