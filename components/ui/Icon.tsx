@@ -74,7 +74,7 @@ export function Icon({
       alt={iconAlt}
       width={size}
       height={size}
-      className={`inline-block ${className}`}
+      className={`inline-block ${className} dark:filter dark:invert dark:brightness-0 dark:contrast-100`}
     />
   );
 }
