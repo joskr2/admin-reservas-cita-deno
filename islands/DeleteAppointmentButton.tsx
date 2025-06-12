@@ -21,11 +21,11 @@ export default function DeleteAppointmentButton({
           `/api/appointments/${appointmentId}/delete`,
           {
             method: "DELETE",
-          },
+          }
         );
 
         if (response.ok) {
-          globalThis.location.reload();
+          globalThis.location.href = "/appointments";
         } else {
           alert("Error al eliminar la cita");
         }
@@ -46,6 +46,7 @@ export default function DeleteAppointmentButton({
       class={`${className} ${
         isDeleting ? "opacity-50 cursor-not-allowed" : ""
       }`}
+      title="Eliminar cita"
     >
       {children}
     </button>
