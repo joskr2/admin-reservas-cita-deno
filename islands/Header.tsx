@@ -151,15 +151,7 @@ export default function Header({
 
                 return (
                   <a key={item.href} href={item.href} class={linkClasses}>
-                    <Icon
-                      name={item.icon}
-                      size={16}
-                      className={
-                        item.active
-                          ? "text-blue-600 dark:text-blue-400"
-                          : "text-gray-600 dark:text-gray-300"
-                      }
-                    />
+                    <Icon name={item.icon} size={16} className="text-current" />
                     {item.label}
                   </a>
                 );
@@ -191,11 +183,7 @@ export default function Header({
                   href="/api/auth/logout"
                   class="inline-flex items-center h-10 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-blue-500/25"
                 >
-                  <Icon
-                    name="logout"
-                    size={16}
-                    className="mr-2 text-white filter brightness-0 invert"
-                  />
+                  <Icon name="logout" size={16} className="mr-2 text-current" />
                   Salir
                 </a>
               </div>
@@ -205,11 +193,7 @@ export default function Header({
                   type="button"
                   class="hidden sm:inline-flex items-center h-10 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-blue-500/25"
                 >
-                  <Icon
-                    name="login"
-                    size={20}
-                    className="mr-3 text-white filter brightness-0 invert"
-                  />
+                  <Icon name="login" size={20} className="mr-3 text-current" />
                   Inicio de sesión
                 </button>
               </a>
@@ -238,7 +222,7 @@ export default function Header({
               <nav class="flex flex-col gap-2 mb-4">
                 {visibleItems.slice(1).map((item) => {
                   const linkClasses = [
-                    "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full text-left",
+                    "px-4 py-3 rounded-lg transition-colors w-full text-left font-medium",
                     item.active
                       ? "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400"
                       : "text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50",
@@ -251,15 +235,6 @@ export default function Header({
                       class={linkClasses}
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      <Icon
-                        name={item.icon}
-                        size={16}
-                        className={
-                          item.active
-                            ? "text-blue-700 dark:text-blue-400"
-                            : "text-gray-600 dark:text-gray-300"
-                        }
-                      />
                       {item.label}
                     </a>
                   );
@@ -282,14 +257,9 @@ export default function Header({
                 </div>
                 <a
                   href="/api/auth/logout"
-                  class="flex items-center justify-center w-full h-10 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300"
+                  class="flex items-center justify-center w-full px-8 py-2 text-blue-600 dark:text-blue-400 bg-transparent border border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 font-semibold rounded-xl transition-all duration-300"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <Icon
-                    name="logout"
-                    size={16}
-                    className="mr-2 text-white filter brightness-0 invert"
-                  />
                   Salir
                 </a>
               </div>
@@ -297,17 +267,37 @@ export default function Header({
               <a href="/login">
                 <button
                   type="button"
-                  class="flex items-center justify-center w-full h-10 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300"
+                  class="flex items-center justify-center w-full px-8 py-2 text-blue-600 dark:text-blue-400 bg-transparent border border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 font-semibold rounded-xl transition-all duration-300"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  <Icon
-                    name="login"
-                    size={20}
-                    className="mr-3 text-white filter brightness-0 invert"
-                  />
                   Inicio de sesión
                 </button>
               </a>
+            )}
+
+            {/* Navegación móvil */}
+            {isAuthenticated && (
+              <nav class="flex md:hidden items-center gap-1">
+                {visibleItems.slice(1, 3).map((item) => {
+                  const linkClasses = [
+                    "flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
+                    item.active
+                      ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50"
+                      : "text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50",
+                  ].join(" ");
+
+                  return (
+                    <a key={item.href} href={item.href} class={linkClasses}>
+                      <Icon
+                        name={item.icon}
+                        size={14}
+                        className="text-current"
+                      />
+                      <span class="hidden sm:inline">{item.label}</span>
+                    </a>
+                  );
+                })}
+              </nav>
             )}
           </div>
         )}
