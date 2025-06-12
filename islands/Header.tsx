@@ -64,7 +64,7 @@ export default function Header({
     },
     {
       href: "/psychologists",
-      label: user?.role === "psychologist" ? "Psicólogos" : "Usuarios",
+      label: "Psicólogos",
       icon: "users",
       active: isProfilesPage,
       showWhen: "authenticated" as const,
@@ -177,7 +177,7 @@ export default function Header({
               <div class="hidden sm:flex items-center gap-3">
                 <div class="text-right">
                   <span class="text-gray-700 dark:text-gray-300 text-sm">
-                    Bienvenido/a
+                    Bienvenido/a {user?.name || user?.email}
                   </span>
                   {user?.role === "superadmin" && (
                     <div class="flex items-center gap-1">
@@ -272,10 +272,7 @@ export default function Header({
               <div class="space-y-3">
                 <div class="px-4">
                   <p class="text-gray-700 dark:text-gray-300 text-sm">
-                    Bienvenido/a
-                  </p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
-                    {user?.email}
+                    Bienvenido/a {user?.name || user?.email}
                   </p>
                   {user?.role === "superadmin" && (
                     <span class="inline-block mt-1 text-xs bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400 px-2 py-0.5 rounded-full font-medium">

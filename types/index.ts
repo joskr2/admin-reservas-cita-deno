@@ -11,6 +11,7 @@ export interface BaseEntity {
 export type UserRole = "superadmin" | "psychologist";
 
 export interface User {
+  id: string; // ID único generado (UUID)
   email: string;
   passwordHash: string;
   role: UserRole;
@@ -20,6 +21,7 @@ export interface User {
 }
 
 export interface UserProfile {
+  id: string; // ID único generado (UUID)
   email: string;
   role: UserRole;
   name?: string | undefined; // Nombre completo del usuario
@@ -28,6 +30,7 @@ export interface UserProfile {
 }
 
 export interface SessionUser {
+  id: string; // ID único generado (UUID)
   email: string;
   role: UserRole;
   name?: string | undefined; // Nombre completo del usuario
@@ -131,7 +134,8 @@ export interface DashboardData {
 }
 
 // === TIPOS DE CLAVES KV ===
-export type KVUserKey = ["users", string];
+export type KVUserKey = ["users", string]; // Mantener por email para compatibilidad
+export type KVUserByIdKey = ["users_by_id", string]; // Nueva clave por ID
 export type KVUserByRoleKey = ["users_by_role", UserRole, string];
 export type KVAppointmentKey = ["appointments", string];
 export type KVAppointmentByPsychologistKey = [

@@ -24,8 +24,8 @@ import * as $patients_delete_id_ from "./routes/patients/delete/[id].tsx";
 import * as $patients_edit_id_ from "./routes/patients/edit/[id].tsx";
 import * as $patients_index from "./routes/patients/index.tsx";
 import * as $patients_new from "./routes/patients/new.tsx";
-import * as $psychologists_delete_email_ from "./routes/psychologists/delete/[email].tsx";
-import * as $psychologists_edit_email_ from "./routes/psychologists/edit/[email].tsx";
+import * as $psychologists_delete_id_ from "./routes/psychologists/delete/[id].tsx";
+import * as $psychologists_edit_id_ from "./routes/psychologists/edit/[id].tsx";
 import * as $psychologists_index from "./routes/psychologists/index.tsx";
 import * as $psychologists_new from "./routes/psychologists/new.tsx";
 import * as $AppointmentCalendar from "./islands/AppointmentCalendar.tsx";
@@ -68,8 +68,8 @@ const manifest = {
     "./routes/patients/edit/[id].tsx": $patients_edit_id_,
     "./routes/patients/index.tsx": $patients_index,
     "./routes/patients/new.tsx": $patients_new,
-    "./routes/psychologists/delete/[email].tsx": $psychologists_delete_email_,
-    "./routes/psychologists/edit/[email].tsx": $psychologists_edit_email_,
+    "./routes/psychologists/delete/[id].tsx": $psychologists_delete_id_,
+    "./routes/psychologists/edit/[id].tsx": $psychologists_edit_id_,
     "./routes/psychologists/index.tsx": $psychologists_index,
     "./routes/psychologists/new.tsx": $psychologists_new,
   },

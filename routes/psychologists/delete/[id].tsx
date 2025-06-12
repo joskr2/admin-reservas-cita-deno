@@ -22,15 +22,15 @@ export const handler: Handlers<Data, AppState> = {
       });
     }
 
-    const { email } = ctx.params;
+    const { id } = ctx.params;
 
     // A user cannot delete themselves
-    if (ctx.state.user.email === email) {
+    if (ctx.state.user.id === id) {
       return ctx.render({ error: "No puedes eliminar tu propio perfil." });
     }
 
     const kv = await Deno.openKv();
-    const userEntry = await kv.get(["users", email as string]);
+    const userEntry = await kv.get(["users_by_id", id as string]);
     kv.close();
 
     if (!userEntry.value) {
@@ -43,6 +43,7 @@ export const handler: Handlers<Data, AppState> = {
 
     const user = userEntry.value as UserProfile & { passwordHash: string };
     const profile: UserProfile = {
+      id: user.id,
       email: user.email,
       name: user.name,
       role: user.role,
@@ -59,10 +60,10 @@ export const handler: Handlers<Data, AppState> = {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    const { email } = ctx.params;
+    const { id } = ctx.params;
 
     // Double-check to prevent self-deletion
-    if (ctx.state.user.email === email) {
+    if (ctx.state.user.id === id) {
       return ctx.render({
         error: "Acción no permitida: no puedes eliminar tu propio perfil.",
       });
@@ -70,8 +71,8 @@ export const handler: Handlers<Data, AppState> = {
 
     const kv = await Deno.openKv();
     const userEntry = await kv.get<UserProfile & { passwordHash: string }>([
-      "users",
-      email as string,
+      "users_by_id",
+      id as string,
     ]);
 
     if (!userEntry.value) {
@@ -81,11 +82,14 @@ export const handler: Handlers<Data, AppState> = {
       });
     }
 
+    const user = userEntry.value;
+
     // Use an atomic operation to ensure data consistency
     const res = await kv
       .atomic()
-      .delete(["users", email as string])
-      .delete(["users_by_role", userEntry.value.role, email as string])
+      .delete(["users", user.email]) // Eliminar por email
+      .delete(["users_by_id", id as string]) // Eliminar por ID
+      .delete(["users_by_role", user.role, user.email])
       .commit();
 
     kv.close();

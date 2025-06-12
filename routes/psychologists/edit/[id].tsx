@@ -23,8 +23,8 @@ export const handler: Handlers<EditPsychologistData, AppState> = {
       });
     }
 
-    const email = ctx.params.email;
-    if (!email) {
+    const id = ctx.params.id;
+    if (!id) {
       return new Response("", {
         status: 302,
         headers: { Location: "/psychologists" },
@@ -33,7 +33,7 @@ export const handler: Handlers<EditPsychologistData, AppState> = {
 
     try {
       const kv = await Deno.openKv();
-      const psychologistData = await kv.get(["users", email]);
+      const psychologistData = await kv.get(["users_by_id", id]);
 
       if (!psychologistData.value) {
         return new Response("", {
@@ -63,8 +63,8 @@ export const handler: Handlers<EditPsychologistData, AppState> = {
       });
     }
 
-    const email = ctx.params.email;
-    if (!email) {
+    const id = ctx.params.id;
+    if (!id) {
       return new Response("", {
         status: 302,
         headers: { Location: "/psychologists" },
@@ -78,7 +78,7 @@ export const handler: Handlers<EditPsychologistData, AppState> = {
 
     if (!name) {
       const kv = await Deno.openKv();
-      const psychologistData = await kv.get(["users", email]);
+      const psychologistData = await kv.get(["users_by_id", id]);
 
       return ctx.render({
         psychologist: psychologistData.value as UserProfile,
@@ -88,7 +88,7 @@ export const handler: Handlers<EditPsychologistData, AppState> = {
 
     try {
       const kv = await Deno.openKv();
-      const existingData = await kv.get(["users", email]);
+      const existingData = await kv.get(["users_by_id", id]);
 
       if (!existingData.value) {
         return new Response("", {
@@ -97,15 +97,17 @@ export const handler: Handlers<EditPsychologistData, AppState> = {
         });
       }
 
+      const existingUser = existingData.value as UserProfile;
       const updatedPsychologist = {
-        ...(existingData.value as UserProfile),
+        ...existingUser,
         name,
         role: role as "psychologist" | "superadmin",
         isActive,
         updatedAt: new Date().toISOString(),
       };
 
-      await kv.set(["users", email], updatedPsychologist);
+      await kv.set(["users_by_id", id], updatedPsychologist);
+      await kv.set(["users", existingUser.email], updatedPsychologist);
 
       return new Response("", {
         status: 302,
@@ -114,7 +116,7 @@ export const handler: Handlers<EditPsychologistData, AppState> = {
     } catch (error) {
       console.error("Error updating psychologist:", error);
       const kv = await Deno.openKv();
-      const psychologistData = await kv.get(["users", email]);
+      const psychologistData = await kv.get(["users_by_id", id]);
 
       return ctx.render({
         psychologist: psychologistData.value as UserProfile,
@@ -306,7 +308,7 @@ export default function EditPsychologistPage({
                           day: "numeric",
                           hour: "2-digit",
                           minute: "2-digit",
-                        },
+                        }
                       )}
                     </p>
                   </div>

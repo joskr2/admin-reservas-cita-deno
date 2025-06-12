@@ -49,6 +49,8 @@ export const handler: Handlers<AppointmentsPageData> = {
         allAppointments = allAppointments.filter(
           (apt) =>
             apt.patientName.toLowerCase().includes(searchLower) ||
+            (apt.psychologistName &&
+              apt.psychologistName.toLowerCase().includes(searchLower)) ||
             apt.psychologistEmail.toLowerCase().includes(searchLower) ||
             apt.id.toLowerCase().includes(searchLower)
         );
@@ -61,11 +63,14 @@ export const handler: Handlers<AppointmentsPageData> = {
       }
 
       if (psychologist) {
-        allAppointments = allAppointments.filter((apt) =>
-          apt.psychologistEmail
-            .toLowerCase()
-            .includes(psychologist.toLowerCase())
-        );
+        allAppointments = allAppointments.filter((apt) => {
+          const psychologistLower = psychologist.toLowerCase();
+          return (
+            (apt.psychologistName &&
+              apt.psychologistName.toLowerCase().includes(psychologistLower)) ||
+            apt.psychologistEmail.toLowerCase().includes(psychologistLower)
+          );
+        });
       }
 
       if (date) {
@@ -365,7 +370,8 @@ export default function AppointmentsPage({
                           </td>
                           <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-900 dark:text-white">
-                              {appointment.psychologistEmail}
+                              {appointment.psychologistName ||
+                                appointment.psychologistEmail}
                             </div>
                           </td>
                           <td class="px-6 py-4 whitespace-nowrap">
@@ -447,7 +453,8 @@ export default function AppointmentsPage({
                           Psicólogo
                         </p>
                         <p class="text-sm text-gray-900 dark:text-white mt-1">
-                          {appointment.psychologistEmail}
+                          {appointment.psychologistName ||
+                            appointment.psychologistEmail}
                         </p>
                       </div>
                       <div>

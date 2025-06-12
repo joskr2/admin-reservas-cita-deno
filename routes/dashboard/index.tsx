@@ -86,10 +86,10 @@ export default function Dashboard({
                   <Icon name="user-plus" className="h-8 w-8 text-green-500" />
                   <div class="ml-4">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                      Nuevo Usuario
+                      Nuevo Psicólogo
                     </h3>
                     <p class="text-gray-600 dark:text-gray-400">
-                      Crear perfil de usuario
+                      Crear perfil de Psicólogo
                     </p>
                   </div>
                 </div>

@@ -41,10 +41,17 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
         if (userResult.value) {
           // Almacenar información del usuario en el estado del contexto
-          const userData = userResult.value as { email: string; role: string };
+          const userData = userResult.value as {
+            id: string;
+            email: string;
+            role: string;
+            name?: string;
+          };
           ctx.state.user = {
+            id: userData.id,
             email: userData.email,
             role: userData.role as SessionUser["role"],
+            name: userData.name,
           };
         }
       }

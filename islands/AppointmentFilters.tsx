@@ -130,7 +130,7 @@ function AppointmentFilters({
               </div>
               <input
                 type="text"
-                placeholder="Paciente, psicólogo o ID..."
+                placeholder="Paciente, psicólogo (nombre/ID) o ID de cita..."
                 value={search}
                 onInput={(e) => setSearch((e.target as HTMLInputElement).value)}
                 class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
@@ -181,7 +181,7 @@ function AppointmentFilters({
             <div class="relative">
               <input
                 type="text"
-                placeholder="Email del psicólogo..."
+                placeholder="Nombre o ID del psicólogo..."
                 value={psychologist}
                 onInput={(e) =>
                   setPsychologist((e.target as HTMLInputElement).value)

@@ -48,10 +48,10 @@ export default function Navigation({
     if (user.role === "superadmin") {
       baseItems.push({
         href: "/psychologists",
-        label: "Usuarios",
+        label: "Psicólogos",
         icon: "users",
         active: currentPath.startsWith("/psychologists"),
-        description: "Gestión de psicólogos y usuarios",
+        description: "Gestión de psicólogos del sistema",
       });
     } else if (user.role === "psychologist") {
       baseItems.push({
@@ -131,9 +131,11 @@ export default function Navigation({
           <Icon
             name={item.icon}
             size={getIconSize()}
-            className={item.active
-              ? "text-blue-600 dark:text-blue-400"
-              : "text-gray-600 dark:text-gray-300"}
+            className={
+              item.active
+                ? "text-blue-600 dark:text-blue-400"
+                : "text-gray-600 dark:text-gray-300"
+            }
           />
           <span class={variant === "sidebar" ? "text-base" : "text-sm"}>
             {item.label}

@@ -62,10 +62,7 @@ export default function PsychologistFilters({
           <div class="space-y-2">
             <label class="flex items-center space-x-2 text-sm font-medium text-gray-700 dark:text-gray-300">
               <Icon name="user" className="h-4 w-4 text-gray-500" />
-              <span>
-                Buscar{" "}
-                {currentUser.role === "psychologist" ? "Psicólogo" : "Usuario"}
-              </span>
+              <span>Buscar Psicólogo</span>
             </label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

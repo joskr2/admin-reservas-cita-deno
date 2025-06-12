@@ -54,8 +54,8 @@ export const handler: Handlers<PsychologistsPageData, AppState> = {
       const allPsychologists = await getUsersByRole("psychologist");
       psychologists = allPsychologists.filter((p) => p.email !== user.email);
     } else if (user.role === "superadmin") {
-      // Los superadmins pueden ver todos los usuarios
-      psychologists = await getAllUsers();
+      // Los superadmins pueden ver todos los psicólogos (no superadmins)
+      psychologists = await getUsersByRole("psychologist");
     }
 
     // Aplicar filtros
@@ -113,15 +113,12 @@ export default function PsychologistsPage({
   } = data;
 
   // Título dinámico basado en el rol del usuario
-  const pageTitle =
-    currentUser.role === "psychologist"
-      ? "Directorio de Psicólogos"
-      : "Gestión de Psicólogos";
+  const pageTitle = "Psicólogos";
 
   const pageDescription =
     currentUser.role === "psychologist"
       ? "Encuentra y conecta con otros psicólogos de la clínica"
-      : "Administra los psicólogos y usuarios del sistema";
+      : "Administra los psicólogos del sistema";
 
   return (
     <>
@@ -286,14 +283,14 @@ export default function PsychologistsPage({
                           <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex items-center justify-end gap-2">
                               <a
-                                href={`/psychologists/edit/${psychologist.email}`}
+                                href={`/psychologists/edit/${psychologist.id}`}
                                 class="text-blue-600 hover:text-blue-900 p-1 rounded"
                                 title="Editar psicólogo"
                               >
                                 <Icon name="edit" className="w-4 h-4" />
                               </a>
                               <a
-                                href={`/psychologists/delete/${psychologist.email}`}
+                                href={`/psychologists/delete/${psychologist.id}`}
                                 class="text-red-600 hover:text-red-900 p-1 rounded"
                                 title="Eliminar psicólogo"
                               >
@@ -360,14 +357,14 @@ export default function PsychologistsPage({
                       {currentUser.role === "superadmin" && (
                         <div class="flex items-center gap-2">
                           <a
-                            href={`/psychologists/edit/${psychologist.email}`}
+                            href={`/psychologists/edit/${psychologist.id}`}
                             class="text-blue-600 hover:text-blue-900 p-2 rounded"
                             title="Editar psicólogo"
                           >
                             <Icon name="edit" className="w-4 h-4" />
                           </a>
                           <a
-                            href={`/psychologists/delete/${psychologist.email}`}
+                            href={`/psychologists/delete/${psychologist.id}`}
                             class="text-red-600 hover:text-red-900 p-2 rounded"
                             title="Eliminar psicólogo"
                           >

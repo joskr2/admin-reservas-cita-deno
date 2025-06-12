@@ -4,9 +4,12 @@
 // Database helper functions for Deno KV
 import type {
   Appointment,
+  AppointmentStatus,
   KVAppointmentByPsychologistKey,
   KVAppointmentKey,
+  KVRoomKey,
   KVSessionKey,
+  KVUserByIdKey,
   KVUserByRoleKey,
   KVUserKey,
   Room,
@@ -55,11 +58,34 @@ export async function getUserByEmail(email: string): Promise<User | null> {
   }
 }
 
+// Nueva función para obtener usuario por ID
+export async function getUserById(id: string): Promise<User | null> {
+  try {
+    if (typeof id !== "string" || !id) {
+      console.warn("Invalid id provided to getUserById:", id);
+      return null;
+    }
+
+    const kv = await getKv();
+    const result = await kv.get<User>(["users_by_id", id] as KVUserByIdKey);
+    return result.value;
+  } catch (error) {
+    console.error(`Error getting user by id ${id}:`, error);
+    return null;
+  }
+}
+
 export async function createUser(user: User): Promise<boolean> {
+  // Generar ID si no existe
+  if (!user.id) {
+    user.id = crypto.randomUUID();
+  }
+
   const kv = await getKv();
   const result = await kv
     .atomic()
-    .set(["users", user.email] as KVUserKey, user)
+    .set(["users", user.email] as KVUserKey, user) // Mantener por email
+    .set(["users_by_id", user.id] as KVUserByIdKey, user) // Nuevo por ID
     .set(
       ["users_by_role", user.role, user.email] as KVUserByRoleKey,
       user.email
@@ -76,6 +102,7 @@ export async function getAllUsers(): Promise<UserProfile[]> {
   for await (const entry of iter) {
     const user = entry.value as User;
     const userProfile: UserProfile = {
+      id: user.id || crypto.randomUUID(), // Generar ID si no existe
       email: user.email,
       role: user.role,
       createdAt: user.createdAt,
@@ -117,6 +144,7 @@ export async function getUsersByRole(role: string): Promise<UserProfile[]> {
       const user = await getUserByEmail(email);
       if (user) {
         const userProfile: UserProfile = {
+          id: user.id || crypto.randomUUID(), // Generar ID si no existe
           email: user.email,
           role: user.role,
           createdAt: user.createdAt,
