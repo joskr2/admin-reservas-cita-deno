@@ -84,7 +84,7 @@ async function verifyMigration(kv: Deno.Kv) {
   const usersById = kv.list<User>({ prefix: ["users_by_id"] });
   let idCount = 0;
 
-  for await (const entry of usersById) {
+  for await (const _entry of usersById) {
     idCount++;
   }
 
