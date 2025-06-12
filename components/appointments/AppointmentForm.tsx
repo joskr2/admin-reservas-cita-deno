@@ -3,10 +3,10 @@ import { Button } from "../ui/Button.tsx";
 import { Input } from "../ui/Input.tsx";
 import { Select } from "../ui/Select.tsx";
 import type {
-  UserProfile,
+  AppointmentStatus,
   Room,
   RoomId,
-  AppointmentStatus,
+  UserProfile,
 } from "../../types/index.ts";
 
 interface AppointmentFormProps {
@@ -46,9 +46,11 @@ export default function AppointmentForm({
     for (let hour = 8; hour <= 18; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         if (hour === 18 && minute > 0) break; // No permitir después de 18:00
-        const timeString = `${hour.toString().padStart(2, "0")}:${minute
-          .toString()
-          .padStart(2, "0")}`;
+        const timeString = `${hour.toString().padStart(2, "0")}:${
+          minute
+            .toString()
+            .padStart(2, "0")
+        }`;
         options.push(timeString);
       }
     }

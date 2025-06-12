@@ -86,7 +86,7 @@ export default function AppointmentsOverview({
       // Citas próximas (no canceladas y futuras)
       if (apt.status !== "cancelled" && apt.status !== "completed") {
         const aptDateTime = new Date(
-          `${apt.appointmentDate}T${apt.appointmentTime}`
+          `${apt.appointmentDate}T${apt.appointmentTime}`,
         );
         if (aptDateTime >= today) {
           summary.upcoming.push(apt);
@@ -255,47 +255,52 @@ export default function AppointmentsOverview({
           Próximas citas
         </h4>
 
-        {summary.upcoming.length === 0 ? (
-          <div class="text-center py-4">
-            <Icon
-              name="calendar"
-              size={32}
-              className="mx-auto text-gray-300 dark:text-gray-600 mb-2"
-            />
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-              No hay citas próximas programadas
-            </p>
-          </div>
-        ) : (
-          <div class="space-y-3">
-            {summary.upcoming.map((apt) => (
-              <div
-                key={apt.id}
-                class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div class="flex items-center space-x-3">
-                  <div class="w-2 h-2 rounded-full bg-blue-500"></div>
-                  <div>
-                    <p class="text-sm font-medium text-gray-900 dark:text-white">
-                      {apt.patientName}
-                    </p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
-                      {formatDateTime(apt.appointmentDate, apt.appointmentTime)}
-                    </p>
+        {summary.upcoming.length === 0
+          ? (
+            <div class="text-center py-4">
+              <Icon
+                name="calendar"
+                size={32}
+                className="mx-auto text-gray-300 dark:text-gray-600 mb-2"
+              />
+              <p class="text-sm text-gray-500 dark:text-gray-400">
+                No hay citas próximas programadas
+              </p>
+            </div>
+          )
+          : (
+            <div class="space-y-3">
+              {summary.upcoming.map((apt) => (
+                <div
+                  key={apt.id}
+                  class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <div class="flex items-center space-x-3">
+                    <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                    <div>
+                      <p class="text-sm font-medium text-gray-900 dark:text-white">
+                        {apt.patientName}
+                      </p>
+                      <p class="text-xs text-gray-500 dark:text-gray-400">
+                        {formatDateTime(
+                          apt.appointmentDate,
+                          apt.appointmentTime,
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-2">
+                    <Badge variant={apt.status} size="sm">
+                      {getStatusText(apt.status)}
+                    </Badge>
+                    <span class="text-xs text-gray-500 dark:text-gray-400">
+                      Sala {apt.roomId}
+                    </span>
                   </div>
                 </div>
-                <div class="flex items-center space-x-2">
-                  <Badge variant={apt.status} size="sm">
-                    {getStatusText(apt.status)}
-                  </Badge>
-                  <span class="text-xs text-gray-500 dark:text-gray-400">
-                    Sala {apt.roomId}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
 
         {summary.upcoming.length > 0 && (
           <div class="mt-4">

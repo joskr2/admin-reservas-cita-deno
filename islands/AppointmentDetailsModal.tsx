@@ -69,13 +69,9 @@ export default function AppointmentDetailsModal({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        class={`inline-flex items-center ${
-          isCompact ? "text-xs px-2 py-1" : "text-sm px-3 py-1.5"
-        } text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 dark:hover:bg-blue-900/50 rounded-lg transition-all duration-200 font-medium border border-blue-200 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700 shadow-sm hover:shadow-md`}
+
         title="Ver detalles de la cita"
       >
-        <Icon name="file-digit" size={isCompact ? 14 : 16} className="mr-1.5" />
-        Detalles
         <Icon
           name="eye"
           size={isCompact ? 12 : 14}

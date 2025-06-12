@@ -73,7 +73,7 @@ export default function AppointmentCalendar({
 
       const dateString = date.toISOString().split("T")[0];
       const dayAppointments = filteredAppointments.filter(
-        (apt) => apt.appointmentDate === dateString
+        (apt) => apt.appointmentDate === dateString,
       );
 
       days.push({
@@ -194,9 +194,11 @@ export default function AppointmentCalendar({
                     block text-xs p-1 rounded hover:opacity-80 transition-opacity
                     ${getStatusColor(appointment.status)}
                   `}
-                  title={`${appointment.patientName} - ${formatTime(
-                    appointment.appointmentTime
-                  )}`}
+                  title={`${appointment.patientName} - ${
+                    formatTime(
+                      appointment.appointmentTime,
+                    )
+                  }`}
                 >
                   <div class="truncate font-medium">
                     {appointment.patientName}
@@ -219,24 +221,28 @@ export default function AppointmentCalendar({
               <a
                 href={`/appointments/new?date=${day.dateString}`}
                 class="block w-full mt-2 p-1 text-xs text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 border border-dashed border-gray-300 dark:border-gray-600 rounded hover:border-blue-300 dark:hover:border-blue-600 transition-colors text-center"
-                title={`Crear nueva cita para el ${day.date.toLocaleDateString(
-                  "es-ES",
-                  {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  }
-                )}`}
-                aria-label={`Crear nueva cita para el ${day.date.toLocaleDateString(
-                  "es-ES",
-                  {
-                    weekday: "long",
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  }
-                )}`}
+                title={`Crear nueva cita para el ${
+                  day.date.toLocaleDateString(
+                    "es-ES",
+                    {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    },
+                  )
+                }`}
+                aria-label={`Crear nueva cita para el ${
+                  day.date.toLocaleDateString(
+                    "es-ES",
+                    {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    },
+                  )
+                }`}
               >
                 <Icon name="plus" size={12} className="mx-auto" />
               </a>

@@ -32,13 +32,13 @@ export default function RecentActivity({
     const recentAppointments = appointments
       .filter((apt) => {
         const createdDate = new Date(apt.createdAt);
-        const daysDiff =
-          (Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24);
+        const daysDiff = (Date.now() - createdDate.getTime()) /
+          (1000 * 60 * 60 * 24);
         return daysDiff <= 7; // Últimos 7 días
       })
       .sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       )
       .slice(0, maxItems);
 
@@ -48,9 +48,11 @@ export default function RecentActivity({
         id: `created-${apt.id}`,
         type: "appointment_created",
         title: "Nueva cita programada",
-        description: `Cita con ${apt.patientName} para el ${new Date(
-          apt.appointmentDate
-        ).toLocaleDateString("es-ES")}`,
+        description: `Cita con ${apt.patientName} para el ${
+          new Date(
+            apt.appointmentDate,
+          ).toLocaleDateString("es-ES")
+        }`,
         timestamp: apt.createdAt,
         status: apt.status,
         icon: "calendar-plus",
@@ -66,9 +68,11 @@ export default function RecentActivity({
             id: `updated-${apt.id}-${lastStatusChange.changedAt}`,
             type: "appointment_updated",
             title: "Estado de cita actualizado",
-            description: `Cita con ${apt.patientName} cambió a ${getStatusText(
-              lastStatusChange.status
-            )}`,
+            description: `Cita con ${apt.patientName} cambió a ${
+              getStatusText(
+                lastStatusChange.status,
+              )
+            }`,
             timestamp: lastStatusChange.changedAt,
             status: lastStatusChange.status,
             icon: "activity",
@@ -96,7 +100,7 @@ export default function RecentActivity({
     return items
       .sort(
         (a, b) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime(),
       )
       .slice(0, maxItems);
   };
@@ -139,20 +143,23 @@ export default function RecentActivity({
     const date = new Date(timestamp);
     const now = new Date();
     const diffInMinutes = Math.floor(
-      (now.getTime() - date.getTime()) / (1000 * 60)
+      (now.getTime() - date.getTime()) / (1000 * 60),
     );
 
     if (diffInMinutes < 1) return "Hace un momento";
-    if (diffInMinutes < 60)
+    if (diffInMinutes < 60) {
       return `Hace ${diffInMinutes} minuto${diffInMinutes > 1 ? "s" : ""}`;
+    }
 
     const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24)
+    if (diffInHours < 24) {
       return `Hace ${diffInHours} hora${diffInHours > 1 ? "s" : ""}`;
+    }
 
     const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7)
+    if (diffInDays < 7) {
       return `Hace ${diffInDays} día${diffInDays > 1 ? "s" : ""}`;
+    }
 
     return date.toLocaleDateString("es-ES");
   };

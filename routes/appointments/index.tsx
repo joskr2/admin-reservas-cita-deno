@@ -393,10 +393,10 @@ export default function AppointmentsPage({
                                 size="sm"
                                 onClick={() => (globalThis.location.href =
                                   `/appointments/edit/${appointment.id}`)}
-                                class="inline-flex items-center gap-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+      
                               >
                                 <Icon name="edit" className="h-3 w-3" />
-                                Editar
+                                
                               </Button>
                             </td>
                           </tr>

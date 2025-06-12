@@ -14,7 +14,7 @@ interface AppointmentModalProps {
   onDelete?: (appointment: Appointment) => void;
   onStatusChange?: (
     appointment: Appointment,
-    newStatus: AppointmentStatus
+    newStatus: AppointmentStatus,
   ) => void;
 }
 
@@ -137,6 +137,7 @@ export default function AppointmentModal({
           </div>
 
           <button
+            type="button"
             onClick={onClose}
             title="Cerrar modal"
             class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
@@ -267,11 +268,14 @@ export default function AppointmentModal({
             <div class="flex flex-wrap gap-2">
               {getAvailableStatusTransitions().map((status) => (
                 <button
+                  type="button"
                   key={status}
                   onClick={() => onStatusChange?.(appointment, status)}
-                  class={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${getStatusColor(
-                    status
-                  )} hover:opacity-80`}
+                  class={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                    getStatusColor(
+                      status,
+                    )
+                  } hover:opacity-80`}
                 >
                   {getStatusText(status)}
                 </button>
@@ -287,14 +291,20 @@ export default function AppointmentModal({
           </Button>
 
           {canEdit() && (
-            <Button variant="outline" onClick={() => onEdit?.(appointment)}>
+            <Button
+              variant="outline"
+              onClick={() => onEdit?.(appointment)}
+            >
               <Icon name="edit" size={16} className="mr-2" />
               Editar
             </Button>
           )}
 
           {canDelete() && (
-            <Button variant="danger" onClick={() => onDelete?.(appointment)}>
+            <Button
+              variant="danger"
+              onClick={() => onDelete?.(appointment)}
+            >
               <Icon name="trash-2" size={16} className="mr-2" />
               Eliminar
             </Button>

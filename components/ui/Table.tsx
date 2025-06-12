@@ -38,8 +38,9 @@ export function Table<T = Record<string, unknown>>({
   const handleSort = (columnKey: string) => {
     if (!onSort) return;
 
-    const newOrder =
-      sortBy === columnKey && sortOrder === "asc" ? "desc" : "asc";
+    const newOrder = sortBy === columnKey && sortOrder === "asc"
+      ? "desc"
+      : "asc";
     onSort(columnKey, newOrder);
   };
 
@@ -50,11 +51,9 @@ export function Table<T = Record<string, unknown>>({
       );
     }
 
-    return sortOrder === "asc" ? (
-      <Icon name="arrow-left" size={16} className="rotate-90" />
-    ) : (
-      <Icon name="arrow-left" size={16} className="-rotate-90" />
-    );
+    return sortOrder === "asc"
+      ? <Icon name="arrow-left" size={16} className="rotate-90" />
+      : <Icon name="arrow-left" size={16} className="-rotate-90" />;
   };
 
   if (loading) {
@@ -121,18 +120,20 @@ function TableHeader<T = Record<string, unknown>>({
             }`}
             {...(column.width ? { style: { width: column.width } } : {})}
           >
-            {column.sortable && onSort ? (
-              <button
-                type="button"
-                onClick={() => handleSort(column.key)}
-                class="group inline-flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-              >
-                <span>{column.title}</span>
-                {getSortIcon(column.key)}
-              </button>
-            ) : (
-              column.title
-            )}
+            {column.sortable && onSort
+              ? (
+                <button
+                  type="button"
+                  onClick={() => handleSort(column.key)}
+                  class="group inline-flex items-center space-x-1 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+                >
+                  <span>{column.title}</span>
+                  {getSortIcon(column.key)}
+                </button>
+              )
+              : (
+                column.title
+              )}
           </th>
         ))}
       </tr>
@@ -262,7 +263,9 @@ export function TableBadge({
 
   return (
     <span
-      class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${variantClasses[variant]}`}
+      class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+        variantClasses[variant]
+      }`}
     >
       {children}
     </span>

@@ -68,13 +68,10 @@ export default function AppointmentDetailsDropdown({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        class={`inline-flex items-center ${
-          isCompact ? "text-xs px-2 py-1" : "text-sm px-3 py-1.5"
-        } text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md transition-colors`}
+
         title="Ver detalles de la cita"
       >
-        <Icon name="file-digit" size={isCompact ? 14 : 16} className="mr-1" />
-        Detalles
+      
         <Icon
           name={isOpen ? "x" : "plus"}
           size={isCompact ? 12 : 14}
