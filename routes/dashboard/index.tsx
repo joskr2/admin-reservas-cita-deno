@@ -4,23 +4,26 @@ import {
   type AppState,
   type DashboardData,
   type PatientProfile,
+  type Room,
   type UserProfile,
 } from "../../types/index.ts";
-import { Icon } from "../../components/ui/Icon.tsx";
-import DashboardStats from "../../islands/DashboardStats.tsx";
 import GenericFilters from "../../islands/GenericFilters.tsx";
+import DashboardStats from "../../islands/DashboardStats.tsx";
 import {
   getAppointmentRepository,
   getDashboardService,
   getPatientRepository,
+  getRoomRepository,
   getUserRepository,
 } from "../../lib/database/index.ts";
+import { Icon } from "../../components/ui/Icon.tsx";
 
 interface DashboardPageData {
   dashboardData: DashboardData;
   recentAppointments: Appointment[];
   recentPatients: PatientProfile[];
   recentUsers: UserProfile[];
+  recentRooms: Room[];
   filters: {
     search?: string;
     type?: string;
@@ -39,6 +42,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     const appointmentRepository = getAppointmentRepository();
     const patientRepository = getPatientRepository();
     const userRepository = getUserRepository();
+    const roomRepository = getRoomRepository();
 
     const dashboardData = await dashboardService.getStats();
 
@@ -46,6 +50,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     let recentAppointments = await appointmentRepository.getAll();
     let recentPatients = await patientRepository.getAllPatientsAsProfiles();
     let recentUsers = await userRepository.getAllUsersAsProfiles();
+    let recentRooms = await roomRepository.getAll();
 
     // Filtrar por período
     const now = new Date();
@@ -83,6 +88,13 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
           (user.name && user.name.toLowerCase().includes(searchLower)) ||
           user.email.toLowerCase().includes(searchLower)
       );
+      recentRooms = recentRooms.filter(
+        (room) =>
+          room.name.toLowerCase().includes(searchLower) ||
+          room.id.toLowerCase().includes(searchLower) ||
+          (room.description &&
+            room.description.toLowerCase().includes(searchLower))
+      );
     }
 
     if (type) {
@@ -90,14 +102,22 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         case "appointments":
           recentPatients = [];
           recentUsers = [];
+          recentRooms = [];
           break;
         case "patients":
           recentAppointments = [];
           recentUsers = [];
+          recentRooms = [];
           break;
         case "users":
           recentAppointments = [];
           recentPatients = [];
+          recentRooms = [];
+          break;
+        case "rooms":
+          recentAppointments = [];
+          recentPatients = [];
+          recentUsers = [];
           break;
       }
     }
@@ -127,11 +147,20 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       )
       .slice(0, 10);
 
+    recentRooms = recentRooms
+      .filter((room) => new Date(room.createdAt) >= dateFilter)
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+      .slice(0, 10);
+
     return ctx.render({
       dashboardData,
       recentAppointments,
       recentPatients,
       recentUsers,
+      recentRooms,
       filters: { search, type, period },
     });
   } catch (error) {
@@ -150,6 +179,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       recentAppointments: [],
       recentPatients: [],
       recentUsers: [],
+      recentRooms: [],
       filters: {},
     });
   }
@@ -163,6 +193,7 @@ export default function Dashboard({
     recentAppointments,
     recentPatients,
     recentUsers,
+    recentRooms,
     filters,
   } = data;
 
@@ -184,6 +215,7 @@ export default function Dashboard({
         { value: "appointments", label: "Citas", emoji: "📅" },
         { value: "patients", label: "Pacientes", emoji: "👤" },
         { value: "users", label: "Usuarios", emoji: "👥" },
+        { value: "rooms", label: "Salas", emoji: "🏢" },
       ],
     },
     {
@@ -220,7 +252,7 @@ export default function Dashboard({
               basePath="/dashboard"
               filters={filters}
               fields={filterFields}
-              showActiveIndicator={true}
+              showActiveIndicator
             />
           </div>
 
@@ -345,217 +377,313 @@ export default function Dashboard({
               Actividad Reciente
             </h2>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-              {/* Citas Recientes */}
-              {(!filters.type || filters.type === "appointments") && (
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                  <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                      <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
-                        <Icon
-                          name="calendar"
-                          className="h-5 w-5 text-blue-500 mr-2"
-                        />
-                        Citas Recientes
-                      </h3>
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
-                        {recentAppointments.length}
-                      </span>
-                    </div>
-                    <div class="space-y-3 max-h-64 overflow-y-auto">
-                      {recentAppointments.length === 0 ? (
-                        <div class="text-center py-8">
-                          <Icon
-                            name="calendar"
-                            className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
-                          />
-                          <p class="text-gray-500 dark:text-gray-400 text-sm">
-                            No hay citas recientes
-                          </p>
+            {(() => {
+              // Calcular cuántas cards se van a mostrar
+              const visibleCards = [
+                (!filters.type || filters.type === "appointments") &&
+                  recentAppointments.length > 0,
+                (!filters.type || filters.type === "patients") &&
+                  recentPatients.length > 0,
+                (!filters.type || filters.type === "users") &&
+                  recentUsers.length > 0,
+                (!filters.type || filters.type === "rooms") &&
+                  recentRooms.length > 0,
+              ].filter(Boolean).length;
+
+              // Determinar las clases del grid basado en el número de cards
+              let gridClasses = "grid gap-6";
+              if (visibleCards === 1) {
+                gridClasses += " grid-cols-1 max-w-2xl mx-auto"; // Una card: centrada y más ancha
+              } else if (visibleCards === 2) {
+                gridClasses += " grid-cols-1 lg:grid-cols-2 max-w-4xl mx-auto"; // Dos cards: centradas
+              } else if (visibleCards === 3) {
+                gridClasses += " grid-cols-1 lg:grid-cols-2 xl:grid-cols-3"; // Tres cards: layout normal
+              } else {
+                gridClasses += " grid-cols-1 lg:grid-cols-2 xl:grid-cols-4"; // Cuatro cards: 4 columnas en XL
+              }
+
+              return (
+                <div class={gridClasses}>
+                  {/* Citas Recientes */}
+                  {(!filters.type || filters.type === "appointments") && (
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                      <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                          <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                            <Icon
+                              name="calendar"
+                              className="h-5 w-5 text-blue-500 mr-2"
+                            />
+                            Citas Recientes
+                          </h3>
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                            {recentAppointments.length}
+                          </span>
                         </div>
-                      ) : (
-                        recentAppointments.map((appointment) => (
-                          <div
-                            key={appointment.id}
-                            class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
+                        <div class="space-y-3 max-h-64 overflow-y-auto">
+                          {recentAppointments.length === 0 ? (
+                            <div class="text-center py-8">
                               <Icon
                                 name="calendar"
-                                className="h-4 w-4 text-blue-600 dark:text-blue-400"
+                                className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
                               />
-                            </div>
-                            <div class="flex-1 min-w-0">
-                              <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                {appointment.patientName}
-                              </p>
-                              <p class="text-xs text-gray-500 dark:text-gray-400">
-                                {appointment.appointmentDate} -{" "}
-                                {appointment.appointmentTime}
+                              <p class="text-gray-500 dark:text-gray-400 text-sm">
+                                No hay citas recientes
                               </p>
                             </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                    {recentAppointments.length > 0 && (
-                      <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <a
-                          href="/appointments"
-                          class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center"
-                        >
-                          Ver todas las citas
-                          <Icon
-                            name="arrow-left"
-                            className="h-4 w-4 ml-1 rotate-180"
-                          />
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Pacientes Recientes */}
-              {(!filters.type || filters.type === "patients") && (
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                  <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                      <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
-                        <Icon
-                          name="user"
-                          className="h-5 w-5 text-green-500 mr-2"
-                        />
-                        Pacientes Recientes
-                      </h3>
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
-                        {recentPatients.length}
-                      </span>
-                    </div>
-                    <div class="space-y-3 max-h-64 overflow-y-auto">
-                      {recentPatients.length === 0 ? (
-                        <div class="text-center py-8">
-                          <Icon
-                            name="user"
-                            className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
-                          />
-                          <p class="text-gray-500 dark:text-gray-400 text-sm">
-                            No hay pacientes recientes
-                          </p>
+                          ) : (
+                            recentAppointments.map((appointment) => (
+                              <div
+                                key={appointment.id}
+                                class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                              >
+                                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
+                                  <Icon
+                                    name="calendar"
+                                    className="h-4 w-4 text-blue-600 dark:text-blue-400"
+                                  />
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                    {appointment.patientName}
+                                  </p>
+                                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    {appointment.appointmentDate} -{" "}
+                                    {appointment.appointmentTime}
+                                  </p>
+                                </div>
+                              </div>
+                            ))
+                          )}
                         </div>
-                      ) : (
-                        recentPatients.map((patient) => (
-                          <div
-                            key={patient.id}
-                            class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <div class="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center">
-                              <span class="text-sm font-medium text-green-600 dark:text-green-400">
-                                {patient.name.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                              <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                {patient.name}
-                              </p>
-                              <p class="text-xs text-gray-500 dark:text-gray-400">
-                                {patient.email || "Sin email"}
-                              </p>
-                            </div>
+                        {recentAppointments.length > 0 && (
+                          <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <a
+                              href="/appointments"
+                              class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center"
+                            >
+                              Ver todas las citas
+                              <Icon
+                                name="arrow-left"
+                                className="h-4 w-4 ml-1 rotate-180"
+                              />
+                            </a>
                           </div>
-                        ))
-                      )}
-                    </div>
-                    {recentPatients.length > 0 && (
-                      <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <a
-                          href="/patients"
-                          class="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium flex items-center"
-                        >
-                          Ver todos los pacientes
-                          <Icon
-                            name="arrow-left"
-                            className="h-4 w-4 ml-1 rotate-180"
-                          />
-                        </a>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </div>
-              )}
+                    </div>
+                  )}
 
-              {/* Usuarios Recientes */}
-              {(!filters.type || filters.type === "users") && (
-                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                  <div class="p-6">
-                    <div class="flex items-center justify-between mb-4">
-                      <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
-                        <Icon
-                          name="users"
-                          className="h-5 w-5 text-purple-500 mr-2"
-                        />
-                        Usuarios Recientes
-                      </h3>
-                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
-                        {recentUsers.length}
-                      </span>
-                    </div>
-                    <div class="space-y-3 max-h-64 overflow-y-auto">
-                      {recentUsers.length === 0 ? (
-                        <div class="text-center py-8">
-                          <Icon
-                            name="users"
-                            className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
-                          />
-                          <p class="text-gray-500 dark:text-gray-400 text-sm">
-                            No hay usuarios recientes
-                          </p>
+                  {/* Pacientes Recientes */}
+                  {(!filters.type || filters.type === "patients") && (
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                      <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                          <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                            <Icon
+                              name="user"
+                              className="h-5 w-5 text-green-500 mr-2"
+                            />
+                            Pacientes Recientes
+                          </h3>
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                            {recentPatients.length}
+                          </span>
                         </div>
-                      ) : (
-                        recentUsers.map((user) => (
-                          <div
-                            key={user.id}
-                            class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                          >
-                            <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center">
-                              <span class="text-sm font-medium text-purple-600 dark:text-purple-400">
-                                {(user.name || user.email)
-                                  .charAt(0)
-                                  .toUpperCase()}
-                              </span>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                              <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                {user.name || user.email}
-                              </p>
-                              <p class="text-xs text-gray-500 dark:text-gray-400">
-                                {user.role === "psychologist"
-                                  ? "Psicólogo"
-                                  : "Administrador"}
+                        <div class="space-y-3 max-h-64 overflow-y-auto">
+                          {recentPatients.length === 0 ? (
+                            <div class="text-center py-8">
+                              <Icon
+                                name="user"
+                                className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
+                              />
+                              <p class="text-gray-500 dark:text-gray-400 text-sm">
+                                No hay pacientes recientes
                               </p>
                             </div>
+                          ) : (
+                            recentPatients.map((patient) => (
+                              <div
+                                key={patient.id}
+                                class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                              >
+                                <div class="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center">
+                                  <span class="text-sm font-medium text-green-600 dark:text-green-400">
+                                    {patient.name.charAt(0).toUpperCase()}
+                                  </span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                    {patient.name}
+                                  </p>
+                                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    {patient.email || "Sin email"}
+                                  </p>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        {recentPatients.length > 0 && (
+                          <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <a
+                              href="/patients"
+                              class="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium flex items-center"
+                            >
+                              Ver todos los pacientes
+                              <Icon
+                                name="arrow-left"
+                                className="h-4 w-4 ml-1 rotate-180"
+                              />
+                            </a>
                           </div>
-                        ))
-                      )}
-                    </div>
-                    {recentUsers.length > 0 && (
-                      <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <a
-                          href="/psychologists"
-                          class="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium flex items-center"
-                        >
-                          Ver todos los usuarios
-                          <Icon
-                            name="arrow-left"
-                            className="h-4 w-4 ml-1 rotate-180"
-                          />
-                        </a>
+                        )}
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
+
+                  {/* Usuarios Recientes */}
+                  {(!filters.type || filters.type === "users") && (
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                      <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                          <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                            <Icon
+                              name="users"
+                              className="h-5 w-5 text-purple-500 mr-2"
+                            />
+                            Usuarios Recientes
+                          </h3>
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
+                            {recentUsers.length}
+                          </span>
+                        </div>
+                        <div class="space-y-3 max-h-64 overflow-y-auto">
+                          {recentUsers.length === 0 ? (
+                            <div class="text-center py-8">
+                              <Icon
+                                name="users"
+                                className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
+                              />
+                              <p class="text-gray-500 dark:text-gray-400 text-sm">
+                                No hay usuarios recientes
+                              </p>
+                            </div>
+                          ) : (
+                            recentUsers.map((user) => (
+                              <div
+                                key={user.id}
+                                class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                              >
+                                <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center">
+                                  <span class="text-sm font-medium text-purple-600 dark:text-purple-400">
+                                    {(user.name || user.email)
+                                      .charAt(0)
+                                      .toUpperCase()}
+                                  </span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                    {user.name || user.email}
+                                  </p>
+                                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    {user.role === "psychologist"
+                                      ? "Psicólogo"
+                                      : "Administrador"}
+                                  </p>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        {recentUsers.length > 0 && (
+                          <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <a
+                              href="/psychologists"
+                              class="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium flex items-center"
+                            >
+                              Ver todos los usuarios
+                              <Icon
+                                name="arrow-left"
+                                className="h-4 w-4 ml-1 rotate-180"
+                              />
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Salas Recientes */}
+                  {(!filters.type || filters.type === "rooms") && (
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                      <div class="p-6">
+                        <div class="flex items-center justify-between mb-4">
+                          <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
+                            <Icon
+                              name="briefcase"
+                              className="h-5 w-5 text-orange-500 mr-2"
+                            />
+                            Salas Recientes
+                          </h3>
+                          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400">
+                            {recentRooms.length}
+                          </span>
+                        </div>
+                        <div class="space-y-3 max-h-64 overflow-y-auto">
+                          {recentRooms.length === 0 ? (
+                            <div class="text-center py-8">
+                              <Icon
+                                name="briefcase"
+                                className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
+                              />
+                              <p class="text-gray-500 dark:text-gray-400 text-sm">
+                                No hay salas recientes
+                              </p>
+                            </div>
+                          ) : (
+                            recentRooms.map((room) => (
+                              <div
+                                key={room.id}
+                                class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                              >
+                                <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900/50 rounded-full flex items-center justify-center">
+                                  <span class="text-sm font-medium text-orange-600 dark:text-orange-400">
+                                    {room.name.charAt(0).toUpperCase()}
+                                  </span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                    {room.name}
+                                  </p>
+                                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                                    {room.description || "Sin descripción"}
+                                  </p>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        {recentRooms.length > 0 && (
+                          <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <a
+                              href="/rooms"
+                              class="text-sm text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 font-medium flex items-center"
+                            >
+                              Ver todas las salas
+                              <Icon
+                                name="arrow-left"
+                                className="h-4 w-4 ml-1 rotate-180"
+                              />
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              );
+            })()}
           </div>
         </div>
       </main>
