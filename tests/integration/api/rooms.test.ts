@@ -1,7 +1,7 @@
 // tests/integration/api/rooms.test.ts - Tests de integración para API de salas
 import { assertEquals, assert } from "$std/testing/asserts.ts";
 import { describe, it, beforeEach } from "$std/testing/bdd.ts";
-import { testUtils, mockRequest } from "../../setup.ts";
+import { mockRequest } from "../../setup.ts";
 
 describe("Rooms API Integration Tests", () => {
   let _testServer: {
@@ -312,7 +312,7 @@ describe("Rooms API Integration Tests", () => {
 
   describe("GET /api/rooms", () => {
     it("should return list of rooms", () => {
-      const _mockRequest = testUtils.mockRequest({
+      const _mockRequest = mockRequest("http://localhost:8000/api/rooms", {
         method: "GET",
       });
 
@@ -351,10 +351,13 @@ describe("Rooms API Integration Tests", () => {
     });
 
     it("should handle filter parameters", () => {
-      const _mockRequest = testUtils.mockRequest({
-        method: "GET",
-        // Con parámetros de filtro: ?available=true&capacity=2
-      });
+      const _mockRequest = mockRequest(
+        "http://localhost:8000/api/rooms?available=true&capacity=2",
+        {
+          method: "GET",
+          // Con parámetros de filtro: ?available=true&capacity=2
+        }
+      );
 
       const mockFilteredRooms = [
         {
@@ -376,10 +379,13 @@ describe("Rooms API Integration Tests", () => {
     });
 
     it("should handle pagination", () => {
-      const _mockRequest = testUtils.mockRequest({
-        method: "GET",
-        // Con parámetros de paginación: ?page=1&limit=10
-      });
+      const _mockRequest = mockRequest(
+        "http://localhost:8000/api/rooms?page=1&limit=10",
+        {
+          method: "GET",
+          // Con parámetros de paginación: ?page=1&limit=10
+        }
+      );
 
       const mockResponse = {
         ok: true,
@@ -401,7 +407,7 @@ describe("Rooms API Integration Tests", () => {
     });
 
     it("should handle unauthorized access", () => {
-      const _mockRequest = testUtils.mockRequest({
+      const _mockRequest = mockRequest("http://localhost:8000/api/rooms", {
         method: "GET",
         // Sin autorización
       });
@@ -429,13 +435,16 @@ describe("Rooms API Integration Tests", () => {
         equipment: ["Sillas", "Mesa"],
       };
 
-      const _mockRequest = testUtils.mockRequest({
-        method: "POST",
-        body: JSON.stringify(roomData),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const _mockRequest = mockRequest(
+        "http://localhost:8000/api/rooms/create",
+        {
+          method: "POST",
+          body: JSON.stringify(roomData),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const mockResponse = {
         ok: true,
@@ -464,13 +473,16 @@ describe("Rooms API Integration Tests", () => {
         description: "Solo descripción",
       };
 
-      const _mockRequest = testUtils.mockRequest({
-        method: "POST",
-        body: JSON.stringify(invalidData),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const _mockRequest = mockRequest(
+        "http://localhost:8000/api/rooms/create",
+        {
+          method: "POST",
+          body: JSON.stringify(invalidData),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const mockResponse = {
         ok: false,
@@ -493,13 +505,16 @@ describe("Rooms API Integration Tests", () => {
         capacity: 2,
       };
 
-      const _mockRequest = testUtils.mockRequest({
-        method: "POST",
-        body: JSON.stringify(roomData),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const _mockRequest = mockRequest(
+        "http://localhost:8000/api/rooms/create",
+        {
+          method: "POST",
+          body: JSON.stringify(roomData),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const mockResponse = {
         ok: false,
@@ -515,13 +530,16 @@ describe("Rooms API Integration Tests", () => {
     });
 
     it("should handle malformed JSON", () => {
-      const _mockRequest = testUtils.mockRequest({
-        method: "POST",
-        body: "invalid json",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const _mockRequest = mockRequest(
+        "http://localhost:8000/api/rooms/create",
+        {
+          method: "POST",
+          body: "invalid json",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const mockResponse = {
         ok: false,
@@ -542,14 +560,17 @@ describe("Rooms API Integration Tests", () => {
         capacity: 2,
       };
 
-      const _mockRequest = testUtils.mockRequest({
-        method: "POST",
-        body: JSON.stringify(roomData),
-        headers: {
-          "Content-Type": "application/json",
-          // Sin token de autorización
-        },
-      });
+      const _mockRequest = mockRequest(
+        "http://localhost:8000/api/rooms/create",
+        {
+          method: "POST",
+          body: JSON.stringify(roomData),
+          headers: {
+            "Content-Type": "application/json",
+            // Sin token de autorización
+          },
+        }
+      );
 
       const mockResponse = {
         ok: false,
@@ -573,13 +594,16 @@ describe("Rooms API Integration Tests", () => {
         equipment: ["Sillas", "Mesa", "Proyector"],
       };
 
-      const _mockRequest = testUtils.mockRequest({
-        method: "PUT",
-        body: JSON.stringify(updateData),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const _mockRequest = mockRequest(
+        "http://localhost:8000/api/rooms/room-001/update",
+        {
+          method: "PUT",
+          body: JSON.stringify(updateData),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const mockResponse = {
         ok: true,
@@ -608,13 +632,16 @@ describe("Rooms API Integration Tests", () => {
         name: "Sala Actualizada",
       };
 
-      const _mockRequest = testUtils.mockRequest({
-        method: "PUT",
-        body: JSON.stringify(updateData),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const _mockRequest = mockRequest(
+        "http://localhost:8000/api/rooms/non-existent-room/update",
+        {
+          method: "PUT",
+          body: JSON.stringify(updateData),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const mockResponse = {
         ok: false,
@@ -635,13 +662,16 @@ describe("Rooms API Integration Tests", () => {
         capacity: -1, // Capacidad inválida
       };
 
-      const _mockRequest = testUtils.mockRequest({
-        method: "PUT",
-        body: JSON.stringify(invalidData),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const _mockRequest = mockRequest(
+        "http://localhost:8000/api/rooms/room-test-001/update",
+        {
+          method: "PUT",
+          body: JSON.stringify(invalidData),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const mockResponse = {
         ok: false,
