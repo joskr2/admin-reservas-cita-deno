@@ -3,9 +3,11 @@ import { Head } from "$fresh/runtime.ts";
 import { Button } from "../../../components/ui/Button.tsx";
 import { Input } from "../../../components/ui/Input.tsx";
 import { Select } from "../../../components/ui/Select.tsx";
+import { Textarea } from "../../../components/ui/Textarea.tsx";
 import { Icon } from "../../../components/ui/Icon.tsx";
 
 import type { AppState, UserProfile } from "../../../types/index.ts";
+import { getUserRepository } from "../../../lib/database/index.ts";
 
 interface EditPsychologistData {
   psychologist: UserProfile;
@@ -32,10 +34,10 @@ export const handler: Handlers<EditPsychologistData, AppState> = {
     }
 
     try {
-      const kv = await Deno.openKv();
-      const psychologistData = await kv.get(["users_by_id", id]);
+      const userRepository = getUserRepository();
+      const psychologist = await userRepository.getUserById(id);
 
-      if (!psychologistData.value) {
+      if (!psychologist) {
         return new Response("", {
           status: 302,
           headers: { Location: "/psychologists?error=not_found" },
@@ -43,7 +45,7 @@ export const handler: Handlers<EditPsychologistData, AppState> = {
       }
 
       return ctx.render({
-        psychologist: psychologistData.value as UserProfile,
+        psychologist: psychologist as UserProfile,
       });
     } catch (error) {
       console.error("Error loading psychologist:", error);
@@ -75,39 +77,53 @@ export const handler: Handlers<EditPsychologistData, AppState> = {
     const name = form.get("name")?.toString() || "";
     const role = form.get("role")?.toString() || "psychologist";
     const isActive = form.get("isActive") === "true";
+    const specialty = form.get("specialty")?.toString() || "";
+    const licenseNumber = form.get("licenseNumber")?.toString() || "";
+    const phone = form.get("phone")?.toString() || "";
+    const education = form.get("education")?.toString() || "";
+    const experience = form.get("experience")?.toString() || "";
+    const bio = form.get("bio")?.toString() || "";
 
-    if (!name) {
-      const kv = await Deno.openKv();
-      const psychologistData = await kv.get(["users_by_id", id]);
+    const userRepository = getUserRepository();
 
+    if (!name || !specialty) {
+      const psychologist = await userRepository.getUserById(id);
       return ctx.render({
-        psychologist: psychologistData.value as UserProfile,
-        error: "El nombre es obligatorio",
+        psychologist: psychologist as UserProfile,
+        error: "El nombre y la especialidad son obligatorios",
       });
     }
 
     try {
-      const kv = await Deno.openKv();
-      const existingData = await kv.get(["users_by_id", id]);
+      const existingUser = await userRepository.getUserById(id);
 
-      if (!existingData.value) {
+      if (!existingUser) {
         return new Response("", {
           status: 302,
           headers: { Location: "/psychologists?error=not_found" },
         });
       }
 
-      const existingUser = existingData.value as UserProfile;
-      const updatedPsychologist = {
-        ...existingUser,
+      const updates = {
         name,
         role: role as "psychologist" | "superadmin",
         isActive,
-        updatedAt: new Date().toISOString(),
+        specialty: specialty || undefined,
+        licenseNumber: licenseNumber || undefined,
+        phone: phone || undefined,
+        education: education || undefined,
+        experience: experience || undefined,
+        bio: bio || undefined,
       };
 
-      await kv.set(["users_by_id", id], updatedPsychologist);
-      await kv.set(["users", existingUser.email], updatedPsychologist);
+      const success = await userRepository.update(existingUser.email, updates);
+
+      if (!success) {
+        return ctx.render({
+          psychologist: existingUser as UserProfile,
+          error: "Error al actualizar el psicólogo",
+        });
+      }
 
       return new Response("", {
         status: 302,
@@ -115,11 +131,10 @@ export const handler: Handlers<EditPsychologistData, AppState> = {
       });
     } catch (error) {
       console.error("Error updating psychologist:", error);
-      const kv = await Deno.openKv();
-      const psychologistData = await kv.get(["users_by_id", id]);
+      const psychologist = await userRepository.getUserById(id);
 
       return ctx.render({
-        psychologist: psychologistData.value as UserProfile,
+        psychologist: psychologist as UserProfile,
         error: "Error interno del servidor",
       });
     }

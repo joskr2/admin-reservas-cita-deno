@@ -1,6 +1,6 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
-import { getUsersByRole } from "../../lib/kv.ts";
+import { getUserRepository } from "../../lib/database/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
 import { Badge } from "../../components/ui/Badge.tsx";
 import type { AppState, UserProfile, UserRole } from "../../types/index.ts";
@@ -41,14 +41,15 @@ export const handler: Handlers<PsychologistsPageData, AppState> = {
     const limit = 10;
 
     let psychologists: UserProfile[] = [];
+    const userRepository = getUserRepository();
 
     if (user.role === "psychologist") {
       // Los psicólogos solo pueden ver otros psicólogos (excluyendo su propio perfil)
-      const allPsychologists = await getUsersByRole("psychologist");
+      const allPsychologists = await userRepository.getUsersByRole("psychologist");
       psychologists = allPsychologists.filter((p) => p.email !== user.email);
     } else if (user.role === "superadmin") {
       // Los superadmins pueden ver todos los psicólogos (no superadmins)
-      psychologists = await getUsersByRole("psychologist");
+      psychologists = await userRepository.getUsersByRole("psychologist");
     }
 
     // Aplicar filtros

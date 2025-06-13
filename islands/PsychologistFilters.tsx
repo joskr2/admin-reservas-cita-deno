@@ -1,4 +1,4 @@
-import { useState } from "preact/hooks";
+import { useState, useEffect } from "preact/hooks";
 import { type UserRole } from "../types/index.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { Icon } from "../components/ui/Icon.tsx";
@@ -21,6 +21,7 @@ export default function PsychologistFilters({
   filters,
 }: PsychologistFiltersProps) {
   const [search, setSearch] = useState(filters.search || "");
+  const [searchTimeout, setSearchTimeout] = useState<number | null>(null);
 
   const buildUrl = (params: Record<string, string | number | undefined>) => {
     const url = new URL(
@@ -34,6 +35,40 @@ export default function PsychologistFilters({
     });
     return url.pathname + url.search;
   };
+
+  const navigateToUrl = (url: string) => {
+    globalThis.location.href = url;
+  };
+
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    
+    // Clear existing timeout
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+    
+    // Set new timeout for debounced search
+    const timeout = setTimeout(() => {
+      const url = buildUrl({
+        ...filters,
+        search: value || undefined,
+        page: 1,
+      });
+      navigateToUrl(url);
+    }, 500); // 500ms delay
+    
+    setSearchTimeout(timeout);
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+    };
+  }, [searchTimeout]);
 
   return (
     <div class="mb-8">
@@ -74,13 +109,7 @@ export default function PsychologistFilters({
                 value={search}
                 onInput={(e) => {
                   const value = (e.target as HTMLInputElement).value;
-                  setSearch(value);
-                  const url = buildUrl({
-                    ...filters,
-                    search: value || undefined,
-                    page: 1,
-                  });
-                  globalThis.location.href = url;
+                  handleSearch(value);
                 }}
                 class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
               />
@@ -88,13 +117,17 @@ export default function PsychologistFilters({
                 <button
                   type="button"
                   onClick={() => {
+                    // Clear timeout if exists
+                    if (searchTimeout) {
+                      clearTimeout(searchTimeout);
+                    }
                     setSearch("");
                     const url = buildUrl({
                       ...filters,
                       search: undefined,
                       page: 1,
                     });
-                    globalThis.location.href = url;
+                    navigateToUrl(url);
                   }}
                   class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-red-500"
                   title="Limpiar búsqueda"
@@ -121,7 +154,7 @@ export default function PsychologistFilters({
                     role: value || undefined,
                     page: 1,
                   });
-                  globalThis.location.href = url;
+                  navigateToUrl(url);
                 }}
                 title="Filtrar por rol de usuario"
                 aria-label="Filtrar por rol de usuario"
@@ -149,7 +182,7 @@ export default function PsychologistFilters({
                   status: value || undefined,
                   page: 1,
                 });
-                globalThis.location.href = url;
+                navigateToUrl(url);
               }}
               title="Filtrar por estado de usuario"
               aria-label="Filtrar por estado de usuario"
@@ -181,7 +214,7 @@ export default function PsychologistFilters({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={() => (globalThis.location.href = "/psychologists")}
+                onClick={() => navigateToUrl("/psychologists")}
                 class="inline-flex items-center gap-1"
               >
                 <Icon name="x" className="h-3 w-3" />

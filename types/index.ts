@@ -18,6 +18,13 @@ export interface User {
   name?: string | undefined; // Nombre completo del usuario
   createdAt: string;
   isActive?: boolean | undefined;
+  // Campos específicos para psicólogos
+  specialty?: string | undefined; // Especialidad del psicólogo
+  licenseNumber?: string | undefined; // Número de licencia profesional
+  phone?: string | undefined; // Teléfono de contacto
+  education?: string | undefined; // Formación académica
+  experience?: string | undefined; // Años de experiencia o descripción
+  bio?: string | undefined; // Biografía o descripción profesional
 }
 
 export interface UserProfile {
@@ -27,6 +34,13 @@ export interface UserProfile {
   name?: string | undefined; // Nombre completo del usuario
   createdAt: string;
   isActive?: boolean | undefined;
+  // Campos específicos para psicólogos
+  specialty?: string | undefined;
+  licenseNumber?: string | undefined;
+  phone?: string | undefined;
+  education?: string | undefined;
+  experience?: string | undefined;
+  bio?: string | undefined;
 }
 
 export interface SessionUser {

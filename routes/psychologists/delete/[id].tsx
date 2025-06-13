@@ -4,6 +4,7 @@ import { Head } from "$fresh/runtime.ts";
 import type { AppState, UserProfile } from "../../../types/index.ts";
 import { Button } from "../../../components/ui/Button.tsx";
 import { Icon } from "../../../components/ui/Icon.tsx";
+import { getUserRepository } from "../../../lib/database/index.ts";
 
 // Data passed from handler to component
 interface Data {
@@ -29,11 +30,10 @@ export const handler: Handlers<Data, AppState> = {
       return ctx.render({ error: "No puedes eliminar tu propio perfil." });
     }
 
-    const kv = await Deno.openKv();
-    const userEntry = await kv.get(["users_by_id", id as string]);
-    kv.close();
+    const userRepository = getUserRepository();
+    const user = await userRepository.getUserById(id as string);
 
-    if (!userEntry.value) {
+    if (!user) {
       // If user doesn't exist, redirect back to profiles list
       return new Response(null, {
         status: 303,
@@ -41,14 +41,19 @@ export const handler: Handlers<Data, AppState> = {
       });
     }
 
-    const user = userEntry.value as UserProfile & { passwordHash: string };
     const profile: UserProfile = {
-      id: user.id,
+      id: user.id!,
       email: user.email,
       name: user.name,
       role: user.role,
       createdAt: user.createdAt,
       isActive: user.isActive,
+      specialty: user.specialty,
+      licenseNumber: user.licenseNumber,
+      phone: user.phone,
+      education: user.education,
+      experience: user.experience,
+      bio: user.bio,
     };
 
     return ctx.render({ profile });
@@ -69,32 +74,18 @@ export const handler: Handlers<Data, AppState> = {
       });
     }
 
-    const kv = await Deno.openKv();
-    const userEntry = await kv.get<UserProfile & { passwordHash: string }>([
-      "users_by_id",
-      id as string,
-    ]);
+    const userRepository = getUserRepository();
+    const user = await userRepository.getUserById(id as string);
 
-    if (!userEntry.value) {
-      kv.close();
+    if (!user) {
       return ctx.render({
         error: "El perfil que intentas eliminar ya no existe.",
       });
     }
 
-    const user = userEntry.value;
+    const success = await userRepository.delete(user.email);
 
-    // Use an atomic operation to ensure data consistency
-    const res = await kv
-      .atomic()
-      .delete(["users", user.email]) // Eliminar por email
-      .delete(["users_by_id", id as string]) // Eliminar por ID
-      .delete(["users_by_role", user.role, user.email])
-      .commit();
-
-    kv.close();
-
-    if (!res.ok) {
+    if (!success) {
       return ctx.render({
         error: "Error al eliminar el perfil de la base de datos.",
       });

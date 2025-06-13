@@ -60,6 +60,8 @@ export function Icon({
     phone: "/icons/phone.svg",
     "map-pin": "/icons/map-pin.svg",
     loader: "/icons/loader.svg",
+    "file-text": "/icons/file-text.svg",
+    "graduation-cap": "/icons/graduation-cap.svg",
 
     // Logo
     logo: "/icons/logo.svg",

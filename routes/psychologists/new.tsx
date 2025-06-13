@@ -2,10 +2,12 @@ import type { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
 import { hash } from "@felix/bcrypt";
 
-import type { AppState } from "../../types/index.ts";
+import type { AppState, User } from "../../types/index.ts";
+import { getUserRepository } from "../../lib/database/index.ts";
 import { Input } from "../../components/ui/Input.tsx";
 import { Button } from "../../components/ui/Button.tsx";
 import { Select } from "../../components/ui/Select.tsx";
+import { Textarea } from "../../components/ui/Textarea.tsx";
 import { Icon } from "../../components/ui/Icon.tsx";
 
 interface NewPsychologistData {
@@ -15,6 +17,12 @@ interface NewPsychologistData {
     name: string;
     email: string;
     role: string;
+    specialty: string;
+    licenseNumber: string;
+    phone: string;
+    education: string;
+    experience: string;
+    bio: string;
   };
 }
 
@@ -45,31 +53,46 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
     const email = form.get("email")?.toString() || "";
     const password = form.get("password")?.toString() || "";
     const role = form.get("role")?.toString() || "psychologist";
+    const specialty = form.get("specialty")?.toString() || "";
+    const licenseNumber = form.get("licenseNumber")?.toString() || "";
+    const phone = form.get("phone")?.toString() || "";
+    const education = form.get("education")?.toString() || "";
+    const experience = form.get("experience")?.toString() || "";
+    const bio = form.get("bio")?.toString() || "";
 
     // Validaciones básicas
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !specialty) {
       return ctx.render({
-        error: "Todos los campos son obligatorios",
-        formData: { name, email, role },
+        error: "Nombre, email, contraseña y especialidad son obligatorios",
+        formData: { name, email, role, specialty, licenseNumber, phone, education, experience, bio },
       });
     }
 
     if (password.length < 8) {
       return ctx.render({
         error: "La contraseña debe tener al menos 8 caracteres",
-        formData: { name, email, role },
+        formData: { name, email, role, specialty, licenseNumber, phone, education, experience, bio },
+      });
+    }
+
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return ctx.render({
+        error: "El formato del email no es válido",
+        formData: { name, email, role, specialty, licenseNumber, phone, education, experience, bio },
       });
     }
 
     try {
-      const kv = await Deno.openKv();
+      const userRepository = getUserRepository();
 
       // Verificar si el email ya existe
-      const existingUser = await kv.get(["users", email]);
-      if (existingUser.value) {
+      const existingUser = await userRepository.getUserByEmail(email);
+      if (existingUser) {
         return ctx.render({
-          error: "Ya existe un psicólogo con este email",
-          formData: { name, email, role },
+          error: "Ya existe un usuario con este email",
+          formData: { name, email, role, specialty, licenseNumber, phone, education, experience, bio },
         });
       }
 
@@ -77,17 +100,30 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
       const hashedPassword = await hash(password);
 
       // Crear el nuevo psicólogo
-      const newPsychologist = {
+      const newPsychologist: User = {
+        id: crypto.randomUUID(),
         email,
         name,
-        role,
-        password: hashedPassword,
+        role: role as "psychologist" | "superadmin",
+        passwordHash: hashedPassword,
         isActive: true,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        specialty: specialty || undefined,
+        licenseNumber: licenseNumber || undefined,
+        phone: phone || undefined,
+        education: education || undefined,
+        experience: experience || undefined,
+        bio: bio || undefined,
       };
 
-      await kv.set(["users", email], newPsychologist);
+      const success = await userRepository.create(newPsychologist);
+      
+      if (!success) {
+        return ctx.render({
+          error: "Error al crear el psicólogo",
+          formData: { name, email, role, specialty, licenseNumber, phone, education, experience, bio },
+        });
+      }
 
       return new Response("", {
         status: 302,
@@ -97,7 +133,7 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
       console.error("Error creating psychologist:", error);
       return ctx.render({
         error: "Error interno del servidor",
-        formData: { name, email, role },
+        formData: { name, email, role, specialty, licenseNumber, phone, education, experience, bio },
       });
     }
   },
@@ -175,11 +211,12 @@ export default function NewPsychologistPage({
                 </div>
               )}
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Información básica */}
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
                     <Icon name="user" className="w-4 h-4 inline mr-2" />
-                    Nombre Completo
+                    Nombre Completo *
                   </label>
                   <Input
                     type="text"
@@ -194,7 +231,7 @@ export default function NewPsychologistPage({
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
                     <Icon name="mail" className="w-4 h-4 inline mr-2" />
-                    Email
+                    Email *
                   </label>
                   <Input
                     type="email"
@@ -209,7 +246,7 @@ export default function NewPsychologistPage({
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">
                     <Icon name="lock" className="w-4 h-4 inline mr-2" />
-                    Contraseña
+                    Contraseña *
                   </label>
                   <Input
                     type="password"
@@ -236,6 +273,117 @@ export default function NewPsychologistPage({
                     <option value="psychologist">Psicólogo</option>
                     <option value="superadmin">Super Administrador</option>
                   </Select>
+                </div>
+              </div>
+
+              {/* Información profesional */}
+              <div class="border-t border-gray-200 pt-6 mb-8">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                  Información Profesional
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      <Icon name="briefcase" className="w-4 h-4 inline mr-2" />
+                      Especialidad *
+                    </label>
+                    <Select
+                      name="specialty"
+                      value={formData?.specialty || ""}
+                      required
+                      class="w-full"
+                    >
+                      <option value="">Seleccionar especialidad</option>
+                      <option value="Psicología Clínica">Psicología Clínica</option>
+                      <option value="Psicología Cognitivo-Conductual">Psicología Cognitivo-Conductual</option>
+                      <option value="Psicología Familiar">Psicología Familiar</option>
+                      <option value="Psicología Infantil">Psicología Infantil</option>
+                      <option value="Neuropsicología">Neuropsicología</option>
+                      <option value="Psicología de Pareja">Psicología de Pareja</option>
+                      <option value="Psicología de Grupos">Psicología de Grupos</option>
+                      <option value="Psicología del Trauma">Psicología del Trauma</option>
+                      <option value="Psicología Organizacional">Psicología Organizacional</option>
+                      <option value="Otra">Otra</option>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      <Icon name="file-text" className="w-4 h-4 inline mr-2" />
+                      Número de Licencia
+                    </label>
+                    <Input
+                      type="text"
+                      name="licenseNumber"
+                      value={formData?.licenseNumber || ""}
+                      placeholder="Ej: PSI-12345"
+                      class="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      <Icon name="phone" className="w-4 h-4 inline mr-2" />
+                      Teléfono
+                    </label>
+                    <Input
+                      type="tel"
+                      name="phone"
+                      value={formData?.phone || ""}
+                      placeholder="+56 9 1234 5678"
+                      class="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      <Icon name="calendar" className="w-4 h-4 inline mr-2" />
+                      Experiencia
+                    </label>
+                    <Input
+                      type="text"
+                      name="experience"
+                      value={formData?.experience || ""}
+                      placeholder="Ej: 5 años"
+                      class="w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Formación y biografía */}
+              <div class="border-t border-gray-200 pt-6 mb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">
+                  Formación Académica y Biografía
+                </h3>
+                <div class="space-y-6">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      <Icon name="graduation-cap" className="w-4 h-4 inline mr-2" />
+                      Formación Académica
+                    </label>
+                    <Textarea
+                      name="education"
+                      value={formData?.education || ""}
+                      placeholder="Ej: Psicólogo, Universidad de Chile (2018)&#10;Magíster en Psicología Clínica, Universidad Católica (2020)"
+                      class="w-full"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                      <Icon name="user" className="w-4 h-4 inline mr-2" />
+                      Biografía Profesional
+                    </label>
+                    <Textarea
+                      name="bio"
+                      value={formData?.bio || ""}
+                      placeholder="Breve descripción de la experiencia profesional, enfoques terapéuticos, etc."
+                      class="w-full"
+                      rows={4}
+                    />
+                  </div>
                 </div>
               </div>
 
