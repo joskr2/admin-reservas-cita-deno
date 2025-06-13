@@ -1,13 +1,12 @@
 import { type PageProps } from "$fresh/server.ts";
-import { type AppState } from "../types/index.ts";
 import { Icon } from "../components/ui/Icon.tsx";
 
-export default function Home({ state }: PageProps<unknown, AppState>) {
+export default function Home({}: PageProps) {
   return (
-    <div class="bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+    <div class="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-slate-800">
       {/* Hero Section */}
       <section class="relative overflow-hidden">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <div class="text-center">
             <h1 class="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white mb-6">
               Guía de Uso
@@ -15,517 +14,381 @@ export default function Home({ state }: PageProps<unknown, AppState>) {
                 Horizonte Clínica
               </span>
             </h1>
-            <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-8 max-w-4xl mx-auto">
+            <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-12 max-w-4xl mx-auto leading-relaxed">
               Aprende a usar todas las funcionalidades del sistema de gestión
               para consultorios psicológicos. Esta guía te ayudará a dominar la
               plataforma paso a paso.
             </p>
 
-            {state.user ? (
-              <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mt-10">
-                <a
-                  href="/dashboard"
-                  class="inline-flex items-center px-8 py-4 text-base font-semibold rounded-xl text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                >
-                  <Icon
-                    name="dashboard"
-                    size={20}
-                    className="mr-3 text-current"
-                  />
-                  Ir al Dashboard
-                </a>
-                <a
-                  href="/appointments"
-                  class="inline-flex items-center px-8 py-4 text-base font-semibold rounded-xl text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 border-2 border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                >
-                  <Icon
-                    name="calendar"
-                    size={20}
-                    className="mr-3 text-current"
-                  />
-                  Comenzar a Usar
-                </a>
-              </div>
-            ) : (
-              <div class="flex justify-center mt-10">
-                <a
-                  href="/login"
-                  class="inline-flex items-center px-10 py-4 text-lg font-semibold rounded-xl text-indigo-600 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:text-indigo-400 dark:hover:bg-gray-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-                >
-                  <Icon name="login" size={24} className="mr-3 text-current" />
-                  Iniciar Sesión para Comenzar
-                </a>
-              </div>
-            )}
+            {/* CTA Buttons */}
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+              <a
+                href="/login"
+                class="inline-flex items-center gap-3 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              >
+                <Icon name="login" size={20} className="text-white" />
+                Iniciar Sesión
+              </a>
+              <a
+                href="#guia-rapida"
+                class="inline-flex items-center gap-3 px-8 py-4 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 font-semibold rounded-xl shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200"
+              >
+                <Icon
+                  name="activity"
+                  size={20}
+                  className="text-blue-600 dark:text-blue-400"
+                />
+                Ver Guía Completa
+              </a>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Quick Start Guide */}
-      <section class="py-16 bg-white dark:bg-gray-900">
+      {/* Inicio Rápido */}
+      <section id="guia-rapida" class="py-16 bg-white dark:bg-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="text-center mb-16">
+          <div class="text-center mb-12">
             <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               🚀 Inicio Rápido
             </h2>
-            <p class="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              Sigue estos pasos para comenzar a usar Horizonte Clínica en menos
-              de 5 minutos
+            <p class="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Comienza a usar el sistema en menos de 5 minutos siguiendo estos
+              pasos
             </p>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {/* Step 1 */}
-            <div class="relative">
-              <div class="text-center p-6 rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30 border-2 border-blue-200 dark:border-blue-800">
-                <div class="w-16 h-16 mx-auto mb-4 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                  1
-                </div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Accede al Dashboard
-                </h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Inicia sesión y ve al panel principal para ver el resumen de
-                  tu clínica
-                </p>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Paso 1 */}
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-2xl p-6 border border-blue-200 dark:border-blue-800/50 h-full flex flex-col">
+              <div class="flex items-center justify-center w-12 h-12 bg-blue-600 text-white rounded-xl mb-4 font-bold text-lg">
+                1
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                Iniciar Sesión
+              </h3>
+              <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed flex-1">
+                Accede al sistema con tus credenciales. Si es tu primera vez,
+                contacta al administrador.
+              </p>
+              <div class="mt-4 pt-4 border-t border-blue-200 dark:border-blue-700">
+                <span class="text-xs text-blue-600 dark:text-blue-400 font-medium">
+                  ⏱️ 1 minuto
+                </span>
               </div>
             </div>
 
-            {/* Step 2 */}
-            <div class="relative">
-              <div class="text-center p-6 rounded-xl bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/30 border-2 border-green-200 dark:border-green-800">
-                <div class="w-16 h-16 mx-auto mb-4 bg-green-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                  2
-                </div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Registra Pacientes
-                </h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Agrega la información de tus pacientes en la sección
-                  "Pacientes"
-                </p>
+            {/* Paso 2 */}
+            <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-2xl p-6 border border-green-200 dark:border-green-800/50 h-full flex flex-col">
+              <div class="flex items-center justify-center w-12 h-12 bg-green-600 text-white rounded-xl mb-4 font-bold text-lg">
+                2
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                Explorar Dashboard
+              </h3>
+              <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed flex-1">
+                Familiarízate con el panel principal y las estadísticas del
+                sistema.
+              </p>
+              <div class="mt-4 pt-4 border-t border-green-200 dark:border-green-700">
+                <span class="text-xs text-green-600 dark:text-green-400 font-medium">
+                  ⏱️ 2 minutos
+                </span>
               </div>
             </div>
 
-            {/* Step 3 */}
-            <div class="relative">
-              <div class="text-center p-6 rounded-xl bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/30 border-2 border-purple-200 dark:border-purple-800">
-                <div class="w-16 h-16 mx-auto mb-4 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                  3
-                </div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Programa Citas
-                </h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Crea y gestiona citas desde la sección "Citas" o "Nueva Cita"
-                </p>
+            {/* Paso 3 */}
+            <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-2xl p-6 border border-purple-200 dark:border-purple-800/50 h-full flex flex-col">
+              <div class="flex items-center justify-center w-12 h-12 bg-purple-600 text-white rounded-xl mb-4 font-bold text-lg">
+                3
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                Crear Primera Cita
+              </h3>
+              <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed flex-1">
+                Programa tu primera cita usando el formulario intuitivo del
+                sistema.
+              </p>
+              <div class="mt-4 pt-4 border-t border-purple-200 dark:border-purple-700">
+                <span class="text-xs text-purple-600 dark:text-purple-400 font-medium">
+                  ⏱️ 2 minutos
+                </span>
               </div>
             </div>
 
-            {/* Step 4 */}
-            <div class="relative">
-              <div class="text-center p-6 rounded-xl bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/30 dark:to-orange-900/30 border-2 border-orange-200 dark:border-orange-800">
-                <div class="w-16 h-16 mx-auto mb-4 bg-orange-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                  4
-                </div>
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Gestiona tu Práctica
-                </h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Usa las herramientas de filtrado y reportes para optimizar tu
-                  trabajo
-                </p>
+            {/* Paso 4 */}
+            <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-2xl p-6 border border-orange-200 dark:border-orange-800/50 h-full flex flex-col">
+              <div class="flex items-center justify-center w-12 h-12 bg-orange-600 text-white rounded-xl mb-4 font-bold text-lg">
+                4
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                ¡Listo para usar!
+              </h3>
+              <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed flex-1">
+                Ya puedes gestionar citas, pacientes y salas de manera
+                eficiente.
+              </p>
+              <div class="mt-4 pt-4 border-t border-orange-200 dark:border-orange-700">
+                <span class="text-xs text-orange-600 dark:text-orange-400 font-medium">
+                  ✅ Completado
+                </span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Detailed Features Guide */}
-      <section class="py-16 bg-gray-50 dark:bg-gray-800">
+      {/* Guía Detallada */}
+      <section class="py-16 bg-gray-50 dark:bg-gray-900">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="text-center mb-16">
+          <div class="text-center mb-12">
             <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               📚 Guía Detallada de Funciones
             </h2>
-            <p class="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              Aprende a usar cada sección de la aplicación con ejemplos
-              prácticos
+            <p class="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              Aprende a usar cada sección del sistema de manera efectiva
             </p>
           </div>
 
-          <div class="space-y-12">
-            {/* Dashboard Guide */}
-            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
-              <div class="flex items-center mb-6">
-                <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mr-4">
-                  <Icon name="dashboard" size={24} className="text-white" />
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Dashboard */}
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 h-full">
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                  <Icon
+                    name="dashboard"
+                    size={24}
+                    className="text-blue-600 dark:text-blue-400"
+                  />
                 </div>
-                <div>
-                  <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
-                    Dashboard
-                  </h3>
-                  <p class="text-gray-600 dark:text-gray-400">
-                    Panel principal de control
-                  </p>
-                </div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+                  Dashboard
+                </h3>
               </div>
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+              <div class="space-y-4">
                 <div>
-                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                  <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
                     ¿Qué puedes hacer?
                   </h4>
-                  <ul class="space-y-2 text-gray-600 dark:text-gray-400">
-                    <li class="flex items-center">
-                      <Icon
-                        name="check"
-                        size={16}
-                        className="text-green-500 mr-2"
-                      />
-                      Ver estadísticas generales de tu clínica
+                  <ul class="space-y-2 text-gray-600 dark:text-gray-300">
+                    <li class="flex items-start gap-2">
+                      <span class="text-green-500 mt-1">•</span>
+                      Ver estadísticas generales del sistema
                     </li>
-                    <li class="flex items-center">
-                      <Icon
-                        name="check"
-                        size={16}
-                        className="text-green-500 mr-2"
-                      />
-                      Filtrar actividad reciente por tipo y período
+                    <li class="flex items-start gap-2">
+                      <span class="text-green-500 mt-1">•</span>
+                      Monitorear actividad reciente
                     </li>
-                    <li class="flex items-center">
-                      <Icon
-                        name="check"
-                        size={16}
-                        className="text-green-500 mr-2"
-                      />
-                      Acceder rápidamente a todas las secciones
-                    </li>
-                    <li class="flex items-center">
-                      <Icon
-                        name="check"
-                        size={16}
-                        className="text-green-500 mr-2"
-                      />
-                      Monitorear citas, pacientes, usuarios y salas
+                    <li class="flex items-start gap-2">
+                      <span class="text-green-500 mt-1">•</span>
+                      Acceder rápidamente a funciones principales
                     </li>
                   </ul>
                 </div>
-                <div class="bg-blue-50 dark:bg-blue-950/30 rounded-lg p-4">
-                  <h4 class="text-lg font-semibold text-blue-900 dark:text-blue-300 mb-2">
-                    💡 Consejo
+
+                <div>
+                  <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                    Filtros disponibles:
                   </h4>
-                  <p class="text-blue-800 dark:text-blue-400 text-sm">
-                    Usa los filtros de búsqueda para encontrar rápidamente
-                    información específica. El dashboard se actualiza
-                    automáticamente según tus filtros.
+                  <div class="flex flex-wrap gap-2">
+                    <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm">
+                      Búsqueda
+                    </span>
+                    <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm">
+                      Por tipo
+                    </span>
+                    <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full text-sm">
+                      Por período
+                    </span>
+                  </div>
+                </div>
+
+                <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                  <p class="text-sm text-blue-700 dark:text-blue-300">
+                    <strong>💡 Consejo:</strong> Usa los filtros para encontrar
+                    información específica rápidamente
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Appointments Guide */}
-            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
-              <div class="flex items-center mb-6">
-                <div class="w-12 h-12 bg-purple-600 rounded-xl flex items-center justify-center mr-4">
-                  <Icon name="calendar" size={24} className="text-white" />
+            {/* Gestión de Citas */}
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 h-full">
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+                  <Icon
+                    name="calendar"
+                    size={24}
+                    className="text-green-600 dark:text-green-400"
+                  />
                 </div>
-                <div>
-                  <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
-                    Gestión de Citas
-                  </h3>
-                  <p class="text-gray-600 dark:text-gray-400">
-                    Programa y administra todas tus sesiones
-                  </p>
-                </div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+                  Gestión de Citas
+                </h3>
               </div>
-              <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+              <div class="space-y-4">
                 <div>
-                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                    Crear Citas
+                  <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                    Proceso paso a paso:
                   </h4>
-                  <ol class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                    <li class="flex items-start">
-                      <span class="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
-                        1
-                      </span>
-                      Haz clic en "Nueva Cita"
+                  <ol class="space-y-2 text-gray-600 dark:text-gray-300">
+                    <li class="flex items-start gap-2">
+                      <span class="text-green-500 font-bold">1.</span>
+                      Selecciona paciente (o crea uno nuevo)
                     </li>
-                    <li class="flex items-start">
-                      <span class="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
-                        2
-                      </span>
-                      Selecciona o busca el paciente
+                    <li class="flex items-start gap-2">
+                      <span class="text-green-500 font-bold">2.</span>
+                      Elige psicólogo y sala disponible
                     </li>
-                    <li class="flex items-start">
-                      <span class="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
-                        3
-                      </span>
-                      Elige fecha, hora y sala
+                    <li class="flex items-start gap-2">
+                      <span class="text-green-500 font-bold">3.</span>
+                      Define fecha, hora y observaciones
                     </li>
-                    <li class="flex items-start">
-                      <span class="bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold mr-2 mt-0.5">
-                        4
-                      </span>
-                      Agrega notas si es necesario
+                    <li class="flex items-start gap-2">
+                      <span class="text-green-500 font-bold">4.</span>
+                      Confirma y gestiona el estado de la cita
                     </li>
                   </ol>
                 </div>
+
                 <div>
-                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                    Estados de Citas
+                  <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                    Estados de cita:
                   </h4>
-                  <div class="space-y-2">
-                    <div class="flex items-center">
-                      <span class="bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 px-2 py-1 rounded-full text-xs font-medium mr-2">
-                        Pendiente
-                      </span>
-                      <span class="text-sm text-gray-600 dark:text-gray-400">
-                        Recién creada
-                      </span>
-                    </div>
-                    <div class="flex items-center">
-                      <span class="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded-full text-xs font-medium mr-2">
-                        Programada
-                      </span>
-                      <span class="text-sm text-gray-600 dark:text-gray-400">
-                        Confirmada
-                      </span>
-                    </div>
-                    <div class="flex items-center">
-                      <span class="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 px-2 py-1 rounded-full text-xs font-medium mr-2">
-                        En Progreso
-                      </span>
-                      <span class="text-sm text-gray-600 dark:text-gray-400">
-                        Sesión activa
-                      </span>
-                    </div>
-                    <div class="flex items-center">
-                      <span class="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded-full text-xs font-medium mr-2">
-                        Completada
-                      </span>
-                      <span class="text-sm text-gray-600 dark:text-gray-400">
-                        Finalizada
-                      </span>
-                    </div>
+                  <div class="grid grid-cols-2 gap-2">
+                    <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded text-xs text-center">
+                      Pendiente
+                    </span>
+                    <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-xs text-center">
+                      Programada
+                    </span>
+                    <span class="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded text-xs text-center">
+                      En progreso
+                    </span>
+                    <span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded text-xs text-center">
+                      Completada
+                    </span>
                   </div>
                 </div>
-                <div class="bg-purple-50 dark:bg-purple-950/30 rounded-lg p-4">
-                  <h4 class="text-lg font-semibold text-purple-900 dark:text-purple-300 mb-2">
-                    ⚡ Funciones Avanzadas
-                  </h4>
-                  <ul class="text-purple-800 dark:text-purple-400 text-sm space-y-1">
-                    <li>• Cambiar estado con un clic</li>
-                    <li>• Filtrar por psicólogo, fecha o estado</li>
-                    <li>• Ver historial completo de cambios</li>
-                    <li>• Editar o eliminar citas existentes</li>
-                  </ul>
+
+                <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+                  <p class="text-sm text-green-700 dark:text-green-300">
+                    <strong>⚡ Función avanzada:</strong> Cambia estados
+                    directamente desde la lista de citas
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Patients Guide */}
-            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
-              <div class="flex items-center mb-6">
-                <div class="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center mr-4">
-                  <Icon name="user" size={24} className="text-white" />
+            {/* Gestión de Pacientes */}
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 h-full">
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
+                  <Icon
+                    name="user"
+                    size={24}
+                    className="text-purple-600 dark:text-purple-400"
+                  />
                 </div>
-                <div>
-                  <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
-                    Gestión de Pacientes
-                  </h3>
-                  <p class="text-gray-600 dark:text-gray-400">
-                    Administra la información de tus pacientes
-                  </p>
-                </div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+                  Gestión de Pacientes
+                </h3>
               </div>
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+              <div class="space-y-4">
                 <div>
-                  <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+                  <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
                     Información que puedes registrar:
                   </h4>
-                  <div class="grid grid-cols-2 gap-4">
-                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                      <li class="flex items-center">
-                        <Icon
-                          name="check"
-                          size={14}
-                          className="text-green-500 mr-2"
-                        />
-                        Datos personales
-                      </li>
-                      <li class="flex items-center">
-                        <Icon
-                          name="check"
-                          size={14}
-                          className="text-green-500 mr-2"
-                        />
-                        Información de contacto
-                      </li>
-                      <li class="flex items-center">
-                        <Icon
-                          name="check"
-                          size={14}
-                          className="text-green-500 mr-2"
-                        />
-                        Contacto de emergencia
-                      </li>
-                    </ul>
-                    <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                      <li class="flex items-center">
-                        <Icon
-                          name="check"
-                          size={14}
-                          className="text-green-500 mr-2"
-                        />
-                        Historial médico
-                      </li>
-                      <li class="flex items-center">
-                        <Icon
-                          name="check"
-                          size={14}
-                          className="text-green-500 mr-2"
-                        />
-                        Notas importantes
-                      </li>
-                      <li class="flex items-center">
-                        <Icon
-                          name="check"
-                          size={14}
-                          className="text-green-500 mr-2"
-                        />
-                        Estado activo/inactivo
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div class="bg-green-50 dark:bg-green-950/30 rounded-lg p-4">
-                  <h4 class="text-lg font-semibold text-green-900 dark:text-green-300 mb-2">
-                    🔍 Búsqueda Inteligente
-                  </h4>
-                  <p class="text-green-800 dark:text-green-400 text-sm mb-3">
-                    Encuentra pacientes rápidamente buscando por:
-                  </p>
-                  <ul class="text-green-800 dark:text-green-400 text-sm space-y-1">
-                    <li>• Nombre completo o parcial</li>
-                    <li>• Número de teléfono</li>
-                    <li>• Dirección de email</li>
-                    <li>• ID único del paciente</li>
+                  <ul class="space-y-2 text-gray-600 dark:text-gray-300">
+                    <li class="flex items-start gap-2">
+                      <span class="text-purple-500 mt-1">•</span>
+                      Datos personales completos
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <span class="text-purple-500 mt-1">•</span>
+                      Información de contacto
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <span class="text-purple-500 mt-1">•</span>
+                      Historial médico y observaciones
+                    </li>
+                    <li class="flex items-start gap-2">
+                      <span class="text-purple-500 mt-1">•</span>
+                      Contacto de emergencia
+                    </li>
                   </ul>
+                </div>
+
+                <div>
+                  <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                    Búsqueda inteligente:
+                  </h4>
+                  <p class="text-gray-600 dark:text-gray-300 text-sm">
+                    Encuentra pacientes por nombre, teléfono, email o cualquier
+                    dato registrado
+                  </p>
+                </div>
+
+                <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+                  <p class="text-sm text-purple-700 dark:text-purple-300">
+                    <strong>🔒 Privacidad:</strong> Toda la información está
+                    protegida y encriptada
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Rooms and Users Guide */}
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Rooms */}
-              <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
-                <div class="flex items-center mb-6">
-                  <div class="w-12 h-12 bg-orange-600 rounded-xl flex items-center justify-center mr-4">
-                    <Icon name="briefcase" size={24} className="text-white" />
-                  </div>
-                  <div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-                      Salas
-                    </h3>
-                    <p class="text-gray-600 dark:text-gray-400">
-                      Gestiona espacios de terapia
-                    </p>
-                  </div>
+            {/* Gestión de Salas */}
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg border border-gray-200 dark:border-gray-700 h-full">
+              <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center">
+                  <Icon
+                    name="briefcase"
+                    size={24}
+                    className="text-orange-600 dark:text-orange-400"
+                  />
                 </div>
-                <div class="space-y-4">
-                  <div>
-                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
-                      Tipos de Sala:
-                    </h4>
-                    <div class="space-y-1 text-sm">
-                      <div class="flex items-center">
-                        <span class="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded text-xs mr-2">
-                          Individual
-                        </span>
-                        <span class="text-gray-600 dark:text-gray-400">
-                          Terapia personal
-                        </span>
-                      </div>
-                      <div class="flex items-center">
-                        <span class="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded text-xs mr-2">
-                          Familiar
-                        </span>
-                        <span class="text-gray-600 dark:text-gray-400">
-                          Terapia familiar
-                        </span>
-                      </div>
-                      <div class="flex items-center">
-                        <span class="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400 px-2 py-1 rounded text-xs mr-2">
-                          Grupal
-                        </span>
-                        <span class="text-gray-600 dark:text-gray-400">
-                          Sesiones grupales
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="bg-orange-50 dark:bg-orange-950/30 rounded-lg p-3">
-                    <p class="text-orange-800 dark:text-orange-400 text-sm">
-                      💡 Cambia la disponibilidad de las salas con un clic para
-                      optimizar la programación.
-                    </p>
-                  </div>
-                </div>
+                <h3 class="text-2xl font-bold text-gray-900 dark:text-white">
+                  Gestión de Salas
+                </h3>
               </div>
 
-              {/* Users */}
-              <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
-                <div class="flex items-center mb-6">
-                  <div class="w-12 h-12 bg-indigo-600 rounded-xl flex items-center justify-center mr-4">
-                    <Icon name="users" size={24} className="text-white" />
-                  </div>
-                  <div>
-                    <h3 class="text-xl font-bold text-gray-900 dark:text-white">
-                      Psicólogos
-                    </h3>
-                    <p class="text-gray-600 dark:text-gray-400">
-                      Directorio de profesionales
-                    </p>
+              <div class="space-y-4">
+                <div>
+                  <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                    Tipos de sala disponibles:
+                  </h4>
+                  <div class="grid grid-cols-1 gap-2">
+                    <span class="px-3 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-lg text-sm">
+                      🏠 Individual - Terapia personal
+                    </span>
+                    <span class="px-3 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-lg text-sm">
+                      👨‍👩‍👧‍👦 Familiar - Terapia familiar
+                    </span>
+                    <span class="px-3 py-2 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-lg text-sm">
+                      👥 Grupal - Sesiones grupales
+                    </span>
                   </div>
                 </div>
-                <div class="space-y-4">
-                  <div>
-                    <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
-                      Roles del Sistema:
-                    </h4>
-                    <div class="space-y-2 text-sm">
-                      <div class="flex items-center">
-                        <span class="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 px-2 py-1 rounded text-xs mr-2">
-                          Superadmin
-                        </span>
-                        <span class="text-gray-600 dark:text-gray-400">
-                          Control total del sistema
-                        </span>
-                      </div>
-                      <div class="flex items-center">
-                        <span class="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 px-2 py-1 rounded text-xs mr-2">
-                          Admin
-                        </span>
-                        <span class="text-gray-600 dark:text-gray-400">
-                          Gestión administrativa
-                        </span>
-                      </div>
-                      <div class="flex items-center">
-                        <span class="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded text-xs mr-2">
-                          Psicólogo
-                        </span>
-                        <span class="text-gray-600 dark:text-gray-400">
-                          Profesional de la salud
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="bg-indigo-50 dark:bg-indigo-950/30 rounded-lg p-3">
-                    <p class="text-indigo-800 dark:text-indigo-400 text-sm">
-                      🔐 Los permisos se asignan automáticamente según el rol
-                      del usuario.
-                    </p>
-                  </div>
+
+                <div>
+                  <h4 class="font-semibold text-gray-900 dark:text-white mb-2">
+                    Gestión de disponibilidad:
+                  </h4>
+                  <p class="text-gray-600 dark:text-gray-300 text-sm">
+                    Cambia el estado de las salas entre disponible/ocupada con
+                    un solo clic
+                  </p>
+                </div>
+
+                <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
+                  <p class="text-sm text-orange-700 dark:text-orange-300">
+                    <strong>🏢 Equipamiento:</strong> Registra el equipamiento
+                    disponible en cada sala
+                  </p>
                 </div>
               </div>
             </div>
@@ -533,141 +396,277 @@ export default function Home({ state }: PageProps<unknown, AppState>) {
         </div>
       </section>
 
-      {/* Tips and Best Practices */}
-      <section class="py-16 bg-white dark:bg-gray-900">
+      {/* Consejos y Mejores Prácticas */}
+      <section class="py-16 bg-white dark:bg-gray-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="text-center mb-16">
+          <div class="text-center mb-12">
             <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
               💡 Consejos y Mejores Prácticas
             </h2>
-            <p class="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+            <p class="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
               Optimiza tu flujo de trabajo con estos consejos profesionales
             </p>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Tip 1 */}
-            <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/30 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
-              <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mb-4">
-                <Icon name="clock" size={24} className="text-white" />
-              </div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                Gestión del Tiempo
-              </h3>
-              <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-2">
-                <li>• Programa citas con 15 min de buffer</li>
-                <li>• Usa el filtro de fecha para planificar la semana</li>
-                <li>• Revisa el dashboard cada mañana</li>
-              </ul>
-            </div>
-
-            {/* Tip 2 */}
-            <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950/30 dark:to-green-900/30 rounded-xl p-6 border border-green-200 dark:border-green-800">
-              <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mb-4">
-                <Icon name="user" size={24} className="text-white" />
-              </div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                Organización de Pacientes
-              </h3>
-              <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-2">
-                <li>• Mantén actualizada la información de contacto</li>
-                <li>• Usa las notas para recordatorios importantes</li>
-                <li>• Marca como inactivos a pacientes que no continúan</li>
-              </ul>
-            </div>
-
-            {/* Tip 3 */}
-            <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/30 dark:to-purple-900/30 rounded-xl p-6 border border-purple-200 dark:border-purple-800">
-              <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mb-4">
-                <Icon name="shield" size={24} className="text-white" />
-              </div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                Seguridad y Privacidad
-              </h3>
-              <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-2">
-                <li>• Cierra sesión al terminar el día</li>
-                <li>• No compartas credenciales de acceso</li>
-                <li>• Mantén confidencial la información de pacientes</li>
-              </ul>
-            </div>
-
-            {/* Tip 4 */}
-            <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-950/30 dark:to-orange-900/30 rounded-xl p-6 border border-orange-200 dark:border-orange-800">
-              <div class="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center mb-4">
-                <Icon name="activity" size={24} className="text-white" />
-              </div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                Seguimiento y Reportes
-              </h3>
-              <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-2">
-                <li>• Revisa las estadísticas semanalmente</li>
-                <li>• Usa los filtros para análisis específicos</li>
-                <li>• Actualiza estados de citas puntualmente</li>
-              </ul>
-            </div>
-
-            {/* Tip 5 */}
-            <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/30 dark:to-red-900/30 rounded-xl p-6 border border-red-200 dark:border-red-800">
-              <div class="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center mb-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Organización */}
+            <div class="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-700/50 rounded-2xl p-6 border border-slate-200 dark:border-slate-700 h-full">
+              <div class="w-12 h-12 bg-slate-600 text-white rounded-xl flex items-center justify-center mb-4">
                 <Icon name="briefcase" size={24} className="text-white" />
               </div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                Gestión de Salas
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                Organización
               </h3>
-              <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-2">
-                <li>• Verifica disponibilidad antes de programar</li>
-                <li>• Mantén actualizado el equipamiento</li>
-                <li>• Asigna salas según el tipo de terapia</li>
+              <ul class="space-y-2 text-gray-600 dark:text-gray-300 text-sm">
+                <li class="flex items-start gap-2">
+                  <span class="text-slate-500 mt-1">•</span>
+                  Revisa el dashboard cada mañana
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-slate-500 mt-1">•</span>
+                  Mantén actualizada la información de pacientes
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-slate-500 mt-1">•</span>
+                  Usa filtros para encontrar información rápido
+                </li>
               </ul>
             </div>
 
-            {/* Tip 6 */}
-            <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-950/30 dark:to-indigo-900/30 rounded-xl p-6 border border-indigo-200 dark:border-indigo-800">
-              <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center mb-4">
-                <Icon name="heart" size={24} className="text-white" />
+            {/* Eficiencia */}
+            <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-800/50 dark:to-emerald-700/50 rounded-2xl p-6 border border-emerald-200 dark:border-emerald-700 h-full">
+              <div class="w-12 h-12 bg-emerald-600 text-white rounded-xl flex items-center justify-center mb-4">
+                <Icon name="activity" size={24} className="text-white" />
               </div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-                Flujo de Trabajo
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                Eficiencia
               </h3>
-              <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-2">
-                <li>• Establece rutinas diarias de revisión</li>
-                <li>• Usa atajos de teclado cuando sea posible</li>
-                <li>• Mantén un backup de información importante</li>
+              <ul class="space-y-2 text-gray-600 dark:text-gray-300 text-sm">
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-500 mt-1">•</span>
+                  Programa citas con anticipación
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-500 mt-1">•</span>
+                  Usa atajos de teclado cuando sea posible
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-emerald-500 mt-1">•</span>
+                  Actualiza estados de citas en tiempo real
+                </li>
+              </ul>
+            </div>
+
+            {/* Comunicación */}
+            <div class="bg-gradient-to-br from-sky-50 to-sky-100 dark:from-sky-800/50 dark:to-sky-700/50 rounded-2xl p-6 border border-sky-200 dark:border-sky-700 h-full">
+              <div class="w-12 h-12 bg-sky-600 text-white rounded-xl flex items-center justify-center mb-4">
+                <Icon name="mail" size={24} className="text-white" />
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                Comunicación
+              </h3>
+              <ul class="space-y-2 text-gray-600 dark:text-gray-300 text-sm">
+                <li class="flex items-start gap-2">
+                  <span class="text-sky-500 mt-1">•</span>
+                  Mantén notas detalladas en cada cita
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-sky-500 mt-1">•</span>
+                  Coordina con otros psicólogos del equipo
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-sky-500 mt-1">•</span>
+                  Verifica disponibilidad antes de programar
+                </li>
+              </ul>
+            </div>
+
+            {/* Seguridad */}
+            <div class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-800/50 dark:to-red-700/50 rounded-2xl p-6 border border-red-200 dark:border-red-700 h-full">
+              <div class="w-12 h-12 bg-red-600 text-white rounded-xl flex items-center justify-center mb-4">
+                <Icon name="shield" size={24} className="text-white" />
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                Seguridad
+              </h3>
+              <ul class="space-y-2 text-gray-600 dark:text-gray-300 text-sm">
+                <li class="flex items-start gap-2">
+                  <span class="text-red-500 mt-1">•</span>
+                  Cierra sesión al terminar tu turno
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-red-500 mt-1">•</span>
+                  No compartas credenciales de acceso
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-red-500 mt-1">•</span>
+                  Respeta la confidencialidad de pacientes
+                </li>
+              </ul>
+            </div>
+
+            {/* Mantenimiento */}
+            <div class="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-800/50 dark:to-amber-700/50 rounded-2xl p-6 border border-amber-200 dark:border-amber-700 h-full">
+              <div class="w-12 h-12 bg-amber-600 text-white rounded-xl flex items-center justify-center mb-4">
+                <Icon name="user-cog" size={24} className="text-white" />
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                Mantenimiento
+              </h3>
+              <ul class="space-y-2 text-gray-600 dark:text-gray-300 text-sm">
+                <li class="flex items-start gap-2">
+                  <span class="text-amber-500 mt-1">•</span>
+                  Revisa y actualiza datos regularmente
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-amber-500 mt-1">•</span>
+                  Reporta problemas técnicos inmediatamente
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-amber-500 mt-1">•</span>
+                  Mantén limpio tu espacio de trabajo digital
+                </li>
+              </ul>
+            </div>
+
+            {/* Productividad */}
+            <div class="bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-800/50 dark:to-violet-700/50 rounded-2xl p-6 border border-violet-200 dark:border-violet-700 h-full">
+              <div class="w-12 h-12 bg-violet-600 text-white rounded-xl flex items-center justify-center mb-4">
+                <Icon name="activity" size={24} className="text-white" />
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                Productividad
+              </h3>
+              <ul class="space-y-2 text-gray-600 dark:text-gray-300 text-sm">
+                <li class="flex items-start gap-2">
+                  <span class="text-violet-500 mt-1">•</span>
+                  Establece rutinas de trabajo consistentes
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-violet-500 mt-1">•</span>
+                  Aprovecha las estadísticas del dashboard
+                </li>
+                <li class="flex items-start gap-2">
+                  <span class="text-violet-500 mt-1">•</span>
+                  Planifica tu agenda con anticipación
+                </li>
               </ul>
             </div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section class="py-16 bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-800 dark:to-purple-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 class="text-3xl md:text-4xl font-bold text-white mb-4">
-            ¿Listo para comenzar?
-          </h2>
-          <p class="text-xl text-blue-100 mb-8 max-w-3xl mx-auto">
-            Con esta guía tienes todo lo necesario para aprovechar al máximo
-            Horizonte Clínica. ¡Comienza a gestionar tu práctica de manera más
-            eficiente!
-          </p>
+      {/* Soporte y Recursos */}
+      <section class="py-16 bg-gray-50 dark:bg-gray-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+              🆘 Soporte y Recursos
+            </h2>
+            <p class="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+              ¿Necesitas ayuda? Aquí tienes todos los recursos disponibles
+            </p>
+          </div>
 
-          {state.user ? (
-            <a
-              href="/dashboard"
-              class="inline-flex items-center px-10 py-4 text-lg font-semibold rounded-xl text-blue-600 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-gray-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-            >
-              <Icon name="dashboard" size={24} className="mr-3 text-current" />
-              Ir al Dashboard
-            </a>
-          ) : (
-            <a
-              href="/login"
-              class="inline-flex items-center px-10 py-4 text-lg font-semibold rounded-xl text-blue-600 bg-white hover:bg-gray-50 dark:bg-gray-800 dark:text-blue-400 dark:hover:bg-gray-700 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-            >
-              <Icon name="login" size={24} className="mr-3 text-current" />
-              Iniciar Sesión
-            </a>
-          )}
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Documentación */}
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 text-center h-full flex flex-col">
+              <div class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Icon
+                  name="file-digit"
+                  size={32}
+                  className="text-blue-600 dark:text-blue-400"
+                />
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                Documentación
+              </h3>
+              <p class="text-gray-600 dark:text-gray-300 text-sm mb-4 flex-1">
+                Guías detalladas y manuales de usuario completos
+              </p>
+              <div class="text-blue-600 dark:text-blue-400 font-medium text-sm">
+                📖 Disponible 24/7
+              </div>
+            </div>
+
+            {/* Soporte Técnico */}
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 text-center h-full flex flex-col">
+              <div class="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Icon
+                  name="user-cog"
+                  size={32}
+                  className="text-green-600 dark:text-green-400"
+                />
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                Soporte Técnico
+              </h3>
+              <p class="text-gray-600 dark:text-gray-300 text-sm mb-4 flex-1">
+                Asistencia técnica especializada para resolver problemas
+              </p>
+              <div class="text-green-600 dark:text-green-400 font-medium text-sm">
+                🕐 Lun-Vie 9:00-18:00
+              </div>
+            </div>
+
+            {/* Capacitación */}
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 text-center h-full flex flex-col">
+              <div class="w-16 h-16 bg-purple-100 dark:bg-purple-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Icon
+                  name="users"
+                  size={32}
+                  className="text-purple-600 dark:text-purple-400"
+                />
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                Capacitación
+              </h3>
+              <p class="text-gray-600 dark:text-gray-300 text-sm mb-4 flex-1">
+                Sesiones de entrenamiento para nuevos usuarios
+              </p>
+              <div class="text-purple-600 dark:text-purple-400 font-medium text-sm">
+                📅 Programar sesión
+              </div>
+            </div>
+
+            {/* Actualizaciones */}
+            <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 text-center h-full flex flex-col">
+              <div class="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Icon
+                  name="activity"
+                  size={32}
+                  className="text-orange-600 dark:text-orange-400"
+                />
+              </div>
+              <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                Actualizaciones
+              </h3>
+              <p class="text-gray-600 dark:text-gray-300 text-sm mb-4 flex-1">
+                Novedades y mejoras del sistema
+              </p>
+              <div class="text-orange-600 dark:text-orange-400 font-medium text-sm">
+                🔄 Automáticas
+              </div>
+            </div>
+          </div>
+
+          {/* CTA Final */}
+          <div class="mt-12 text-center">
+            <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
+              <h3 class="text-2xl font-bold mb-4">¿Listo para comenzar?</h3>
+              <p class="text-blue-100 mb-6 max-w-2xl mx-auto">
+                Inicia sesión ahora y comienza a gestionar tu clínica de manera
+                más eficiente
+              </p>
+              <a
+                href="/login"
+                class="inline-flex items-center gap-3 px-8 py-4 bg-white text-blue-600 font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+              >
+                <Icon name="login" size={20} className="text-blue-600" />
+                Acceder al Sistema
+              </a>
+            </div>
+          </div>
         </div>
       </section>
     </div>
