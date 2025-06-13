@@ -305,69 +305,6 @@ export default function RoomsPage({
             </form>
           </div>
 
-          {/* Estadísticas */}
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <div class="flex items-center">
-                <Icon
-                  name="briefcase"
-                  size={24}
-                  className="text-blue-500 mr-3"
-                />
-                <div>
-                  <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Total Salas
-                  </p>
-                  <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                    {allRoomsCount}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <div class="flex items-center">
-                <Icon name="check" size={24} className="text-green-500 mr-3" />
-                <div>
-                  <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Disponibles
-                  </p>
-                  <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                    {availableRoomsCount}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <div class="flex items-center">
-                <Icon name="x" size={24} className="text-red-500 mr-3" />
-                <div>
-                  <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    No Disponibles
-                  </p>
-                  <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                    {unavailableRoomsCount}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-              <div class="flex items-center">
-                <Icon
-                  name="activity"
-                  size={24}
-                  className="text-purple-500 mr-3"
-                />
-                <div>
-                  <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Tasa de Ocupación
-                  </p>
-                  <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                    {occupancyRate}%
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
 
           {/* Lista de salas */}
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -501,19 +438,16 @@ export default function RoomsPage({
                       <div class="flex items-center gap-3">
                         <a
                           href={`/rooms/${room.id}`}
-                          class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-950 rounded-md transition-colors"
                           title="Ver detalles"
                         >
                           <Icon name="eye" size={14} className="mr-1" />
-                          Ver
                         </a>
                         <a
                           href={`/rooms/edit/${room.id}`}
-                          class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300 bg-yellow-50 dark:bg-yellow-950/50 hover:bg-yellow-100 dark:hover:bg-yellow-950 rounded-md transition-colors"
+
                           title="Editar"
                         >
                           <Icon name="edit" size={14} className="mr-1" />
-                          Editar
                         </a>
                       </div>
                       <RoomToggleButton
