@@ -1,3 +1,5 @@
+/// <reference lib="deno.ns" />
+/// <reference lib="deno.unstable" />
 import type { FreshContext } from "$fresh/server.ts";
 import { getCookies } from "$std/http/cookie.ts";
 import type { AppState, SessionUser } from "../types/index.ts";
@@ -90,7 +92,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     // Redirigir al dashboard con mensaje de error
     const redirectUrl = new URL("/dashboard", url.origin);
     redirectUrl.searchParams.set("error", "access_denied");
-    return Response.redirect(redirectUrl, 403); // Prohibido
+    return Response.redirect(redirectUrl, 302); // Redirección temporal
   }
 
   // 3. Si el usuario está autenticado y trata de acceder a la página de login
