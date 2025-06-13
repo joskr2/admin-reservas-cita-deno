@@ -98,7 +98,6 @@ export default function PsychologistsPage({
 }: PageProps<PsychologistsPageData>) {
   const {
     psychologists,
-    totalCount,
     currentPage,
     totalPages,
     filters,
@@ -152,24 +151,6 @@ export default function PsychologistsPage({
             <PsychologistFilters currentUser={currentUser} filters={filters} />
           </div>
 
-          {/* Estadísticas */}
-          <div class="mb-6 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-4">
-                <div class="text-sm text-gray-600 dark:text-gray-400">
-                  Total de psicólogos:{" "}
-                  <span class="font-semibold text-gray-900 dark:text-white">
-                    {totalCount}
-                  </span>
-                </div>
-                {totalPages > 1 && (
-                  <div class="text-sm text-gray-600 dark:text-gray-400">
-                    Página {currentPage} de {totalPages}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
 
           {/* Lista de psicólogos */}
           {psychologists.length === 0

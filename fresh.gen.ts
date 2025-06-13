@@ -50,6 +50,7 @@ import * as $Header from "./islands/Header.tsx";
 import * as $PatientSearchSelect from "./islands/PatientSearchSelect.tsx";
 import * as $PatientSelect from "./islands/PatientSelect.tsx";
 import * as $PsychologistFilters from "./islands/PsychologistFilters.tsx";
+import * as $RoomFilters from "./islands/RoomFilters.tsx";
 import * as $RoomToggleButton from "./islands/RoomToggleButton.tsx";
 import * as $ThemeToggle from "./islands/ThemeToggle.tsx";
 import { type Manifest } from "$fresh/server.ts";
@@ -107,6 +108,7 @@ const manifest = {
     "./islands/PatientSearchSelect.tsx": $PatientSearchSelect,
     "./islands/PatientSelect.tsx": $PatientSelect,
     "./islands/PsychologistFilters.tsx": $PsychologistFilters,
+    "./islands/RoomFilters.tsx": $RoomFilters,
     "./islands/RoomToggleButton.tsx": $RoomToggleButton,
     "./islands/ThemeToggle.tsx": $ThemeToggle,
   },

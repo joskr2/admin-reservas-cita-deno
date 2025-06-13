@@ -4,6 +4,7 @@ import { getRoomRepository } from "../../lib/database/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
 import { Button } from "../../components/ui/Button.tsx";
 import RoomToggleButton from "../../islands/RoomToggleButton.tsx";
+import RoomFilters from "../../islands/RoomFilters.tsx";
 
 interface RoomsPageData {
   rooms: Room[];
@@ -196,105 +197,8 @@ export default function RoomsPage({
           </div>
 
           {/* Filtros */}
-          <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Búsqueda */}
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Buscar
-                </label>
-                <input
-                  type="text"
-                  name="search"
-                  value={filters.search || ""}
-                  placeholder="Nombre, ID o descripción..."
-                  class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 text-sm"
-                />
-              </div>
+          <RoomFilters filters={filters} />
 
-              {/* Estado */}
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Estado
-                </label>
-                <select
-                  name="status"
-                  title="Filtrar por estado de disponibilidad"
-                  class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                >
-                  <option value="">Todos los estados</option>
-                  <option
-                    value="available"
-                    selected={filters.status === "available"}
-                  >
-                    Disponible
-                  </option>
-                  <option
-                    value="unavailable"
-                    selected={filters.status === "unavailable"}
-                  >
-                    No disponible
-                  </option>
-                </select>
-              </div>
-
-              {/* Tipo */}
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Tipo
-                </label>
-                <select
-                  name="type"
-                  title="Filtrar por tipo de sala"
-                  class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-                >
-                  <option value="">Todos los tipos</option>
-                  <option
-                    value="individual"
-                    selected={filters.type === "individual"}
-                  >
-                    Individual
-                  </option>
-                  <option value="family" selected={filters.type === "family"}>
-                    Familiar
-                  </option>
-                  <option value="group" selected={filters.type === "group"}>
-                    Grupal
-                  </option>
-                  <option
-                    value="evaluation"
-                    selected={filters.type === "evaluation"}
-                  >
-                    Evaluación
-                  </option>
-                  <option
-                    value="relaxation"
-                    selected={filters.type === "relaxation"}
-                  >
-                    Relajación
-                  </option>
-                </select>
-              </div>
-
-              {/* Botones */}
-              <div class="flex items-end gap-2">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  leftIcon="eye"
-                  size="sm"
-                  class="flex-1"
-                >
-                  Filtrar
-                </Button>
-                <a href="/rooms" title="Limpiar filtros">
-                  <Button variant="outline" iconOnly leftIcon="x" size="sm">
-                    Limpiar filtros
-                  </Button>
-                </a>
-              </div>
-            </form>
-          </div>
 
           {/* Lista de salas */}
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
