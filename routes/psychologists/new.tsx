@@ -154,19 +154,19 @@ export default function NewPsychologistPage({
         />
       </Head>
 
-      <div class="min-h-screen bg-gray-50">
+      <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Breadcrumb */}
           <nav class="mb-8">
-            <ol class="flex items-center space-x-2 text-sm text-gray-500">
+            <ol class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
               <li>
-                <a href="/psychologists" class="hover:text-gray-700">
+                <a href="/psychologists" class="hover:text-gray-700 dark:hover:text-gray-300">
                   Psicólogos
                 </a>
               </li>
               <li class="flex items-center">
                 <Icon name="arrow-left" className="w-4 h-4 mx-2 rotate-180" />
-                <span class="text-gray-900">Nuevo Psicólogo</span>
+                <span class="text-gray-900 dark:text-white">Nuevo Psicólogo</span>
               </li>
             </ol>
           </nav>
@@ -174,14 +174,14 @@ export default function NewPsychologistPage({
           {/* Header */}
           <div class="mb-8">
             <div class="flex items-center gap-3 mb-4">
-              <div class="p-2 bg-blue-100 rounded-lg">
-                <Icon name="user-plus" className="w-6 h-6 text-blue-600" />
+              <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                <Icon name="user-plus" className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <h1 class="text-3xl font-bold text-gray-900">
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
                   Nuevo Psicólogo
                 </h1>
-                <p class="text-gray-600">
+                <p class="text-gray-600 dark:text-gray-300">
                   Agrega un nuevo psicólogo al sistema de la clínica
                 </p>
               </div>
@@ -189,22 +189,22 @@ export default function NewPsychologistPage({
           </div>
 
           {/* Formulario */}
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="px-6 py-4 border-b border-gray-200">
-              <h2 class="text-lg font-medium text-gray-900">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 class="text-lg font-medium text-gray-900 dark:text-white">
                 Información del Psicólogo
               </h2>
-              <p class="text-sm text-gray-600 mt-1">
+              <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">
                 Completa todos los campos para crear el nuevo psicólogo
               </p>
             </div>
 
             <form method="POST" class="p-6 space-y-6">
               {error && (
-                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
                   <div class="flex items-center">
-                    <Icon name="x" className="w-5 h-5 text-red-400 mr-2" />
-                    <span class="text-red-800 text-sm font-medium">
+                    <Icon name="x" className="w-5 h-5 text-red-400 dark:text-red-300 mr-2" />
+                    <span class="text-red-800 dark:text-red-200 text-sm font-medium">
                       {error}
                     </span>
                   </div>
@@ -214,7 +214,7 @@ export default function NewPsychologistPage({
               {/* Información básica */}
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     <Icon name="user" className="w-4 h-4 inline mr-2" />
                     Nombre Completo *
                   </label>
@@ -229,7 +229,7 @@ export default function NewPsychologistPage({
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     <Icon name="mail" className="w-4 h-4 inline mr-2" />
                     Email *
                   </label>
@@ -244,7 +244,7 @@ export default function NewPsychologistPage({
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     <Icon name="lock" className="w-4 h-4 inline mr-2" />
                     Contraseña *
                   </label>
@@ -255,13 +255,13 @@ export default function NewPsychologistPage({
                     required
                     class="w-full"
                   />
-                  <p class="text-xs text-gray-500 mt-1">
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     La contraseña debe tener al menos 8 caracteres
                   </p>
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     <Icon name="shield" className="w-4 h-4 inline mr-2" />
                     Rol
                   </label>
@@ -277,13 +277,13 @@ export default function NewPsychologistPage({
               </div>
 
               {/* Información profesional */}
-              <div class="border-t border-gray-200 pt-6 mb-8">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">
+              <div class="border-t border-gray-200 dark:border-gray-700 pt-6 mb-8">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                   Información Profesional
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <Icon name="briefcase" className="w-4 h-4 inline mr-2" />
                       Especialidad *
                     </label>
@@ -308,7 +308,7 @@ export default function NewPsychologistPage({
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <Icon name="file-text" className="w-4 h-4 inline mr-2" />
                       Número de Licencia
                     </label>
@@ -322,7 +322,7 @@ export default function NewPsychologistPage({
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <Icon name="phone" className="w-4 h-4 inline mr-2" />
                       Teléfono
                     </label>
@@ -336,7 +336,7 @@ export default function NewPsychologistPage({
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <Icon name="calendar" className="w-4 h-4 inline mr-2" />
                       Experiencia
                     </label>
@@ -352,13 +352,13 @@ export default function NewPsychologistPage({
               </div>
 
               {/* Formación y biografía */}
-              <div class="border-t border-gray-200 pt-6 mb-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">
+              <div class="border-t border-gray-200 dark:border-gray-700 pt-6 mb-6">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
                   Formación Académica y Biografía
                 </h3>
                 <div class="space-y-6">
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <Icon name="graduation-cap" className="w-4 h-4 inline mr-2" />
                       Formación Académica
                     </label>
@@ -372,7 +372,7 @@ export default function NewPsychologistPage({
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <Icon name="user" className="w-4 h-4 inline mr-2" />
                       Biografía Profesional
                     </label>
@@ -388,11 +388,11 @@ export default function NewPsychologistPage({
               </div>
 
               {/* Información sobre roles */}
-              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h3 class="text-sm font-medium text-blue-900 mb-2">
+              <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <h3 class="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
                   Información sobre los roles:
                 </h3>
-                <ul class="text-sm text-blue-800 space-y-1">
+                <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1">
                   <li>
                     <strong>Psicólogo:</strong>{" "}
                     Puede gestionar sus propias citas y ver el directorio de
@@ -407,10 +407,10 @@ export default function NewPsychologistPage({
               </div>
 
               {/* Botones de acción */}
-              <div class="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
+              <div class="flex items-center justify-end gap-4 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <a
                   href="/psychologists"
-                  class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Cancelar
                 </a>
