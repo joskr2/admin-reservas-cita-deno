@@ -119,6 +119,15 @@ export async function authenticateUser(
     name: "Test Admin",
     createdAt: new Date().toISOString(),
     isActive: true,
+    // Additional fields for psychologists (optional for superadmin but included for completeness)
+    dni: "00000000",
+    specialty: "Administración",
+    customSpecialty: undefined,
+    licenseNumber: "ADMIN-001",
+    phone: "+1000000000",
+    education: "Administración de Sistemas de Salud",
+    experienceYears: 10,
+    bio: "Administrador del sistema con experiencia en gestión de clínicas.",
   };
 
   // Guardar usuario en la base de datos de test

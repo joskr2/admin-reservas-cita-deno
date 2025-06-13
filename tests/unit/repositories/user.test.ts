@@ -24,6 +24,13 @@ describe("UserRepository", () => {
         email: "test@example.com",
         name: "Test User",
         role: "psychologist",
+        dni: "87654321",
+        specialty: "Psicología Infantil",
+        licenseNumber: "PSI-002",
+        phone: "+9876543210",
+        education: "Universidad Nacional, Maestría en Psicología Infantil",
+        experienceYears: 3,
+        bio: "Especialista en psicología infantil con enfoque en terapia de juego.",
       });
 
       const result = await userRepository.create(user);
@@ -34,6 +41,13 @@ describe("UserRepository", () => {
       assertEquals(createdUser?.email, user.email);
       assertEquals(createdUser?.name, user.name);
       assertEquals(createdUser?.role, user.role);
+      assertEquals(createdUser?.dni, user.dni);
+      assertEquals(createdUser?.specialty, user.specialty);
+      assertEquals(createdUser?.licenseNumber, user.licenseNumber);
+      assertEquals(createdUser?.phone, user.phone);
+      assertEquals(createdUser?.education, user.education);
+      assertEquals(createdUser?.experienceYears, user.experienceYears);
+      assertEquals(createdUser?.bio, user.bio);
     });
 
     it("should generate ID if not provided", async () => {
@@ -323,6 +337,70 @@ describe("UserRepository", () => {
       const invalidUser = testUtils.createUser({ name: "" });
       const result = await userRepository.create(invalidUser);
       assertEquals(result, false);
+    });
+
+    it("should validate DNI format", async () => {
+      const invalidUser = testUtils.createUser({ dni: "123" }); // Too short
+      const result = await userRepository.create(invalidUser);
+      assertEquals(result, false);
+    });
+
+    it("should allow valid DNI", async () => {
+      const validUser = testUtils.createUser({ dni: "12345678" });
+      const result = await userRepository.create(validUser);
+      assertEquals(result, true);
+    });
+
+    it("should validate experience years is non-negative", async () => {
+      const invalidUser = testUtils.createUser({ experienceYears: -1 });
+      const result = await userRepository.create(invalidUser);
+      assertEquals(result, false);
+    });
+
+    it("should allow zero experience years", async () => {
+      const validUser = testUtils.createUser({ experienceYears: 0 });
+      const result = await userRepository.create(validUser);
+      assertEquals(result, true);
+    });
+
+    it("should handle custom specialty when specialty is 'Otra'", async () => {
+      const userWithCustomSpecialty = testUtils.createUser({
+        specialty: "Otra",
+        customSpecialty: "Neuropsicología Clínica",
+      });
+      const result = await userRepository.create(userWithCustomSpecialty);
+      assertEquals(result, true);
+
+      const createdUser = await userRepository.getUserByEmail(userWithCustomSpecialty.email);
+      assertEquals(createdUser?.specialty, "Otra");
+      assertEquals(createdUser?.customSpecialty, "Neuropsicología Clínica");
+    });
+
+    it("should update psychologist fields", async () => {
+      const user = testUtils.createUser({ email: "psychologist@test.com" });
+      await userRepository.create(user);
+
+      const updates = {
+        dni: "98765432",
+        specialty: "Psicología Educativa",
+        licenseNumber: "PSI-999",
+        phone: "+1122334455",
+        education: "Universidad Actualizada, Doctorado en Psicología",
+        experienceYears: 10,
+        bio: "Bio actualizada con más experiencia.",
+      };
+
+      const result = await userRepository.update(user.email, updates);
+      assertEquals(result, true);
+
+      const updatedUser = await userRepository.getUserByEmail(user.email);
+      assertEquals(updatedUser?.dni, updates.dni);
+      assertEquals(updatedUser?.specialty, updates.specialty);
+      assertEquals(updatedUser?.licenseNumber, updates.licenseNumber);
+      assertEquals(updatedUser?.phone, updates.phone);
+      assertEquals(updatedUser?.education, updates.education);
+      assertEquals(updatedUser?.experienceYears, updates.experienceYears);
+      assertEquals(updatedUser?.bio, updates.bio);
     });
   });
 });

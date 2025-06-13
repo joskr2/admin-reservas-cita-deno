@@ -5,6 +5,7 @@ import { Input } from "../../../components/ui/Input.tsx";
 import { Select } from "../../../components/ui/Select.tsx";
 import { Textarea } from "../../../components/ui/Textarea.tsx";
 import { Icon } from "../../../components/ui/Icon.tsx";
+import SpecialtySelector from "../../../islands/SpecialtySelector.tsx";
 
 import type { AppState, UserProfile } from "../../../types/index.ts";
 import { getUserRepository } from "../../../lib/database/index.ts";
@@ -77,21 +78,55 @@ export const handler: Handlers<EditPsychologistData, AppState> = {
     const name = form.get("name")?.toString() || "";
     const role = form.get("role")?.toString() || "psychologist";
     const isActive = form.get("isActive") === "true";
+    const dni = form.get("dni")?.toString() || "";
     const specialty = form.get("specialty")?.toString() || "";
+    const customSpecialty = form.get("customSpecialty")?.toString() || "";
     const licenseNumber = form.get("licenseNumber")?.toString() || "";
     const phone = form.get("phone")?.toString() || "";
     const education = form.get("education")?.toString() || "";
-    const experience = form.get("experience")?.toString() || "";
+    const experienceYears = form.get("experienceYears")?.toString() || "";
     const bio = form.get("bio")?.toString() || "";
 
     const userRepository = getUserRepository();
 
+    // Validaciones
     if (!name || !specialty) {
       const psychologist = await userRepository.getUserById(id);
       return ctx.render({
         psychologist: psychologist as UserProfile,
         error: "El nombre y la especialidad son obligatorios",
       });
+    }
+
+    // Validar DNI si se proporciona
+    if (dni && !/^[A-Za-z0-9]{7,30}$/.test(dni)) {
+      const psychologist = await userRepository.getUserById(id);
+      return ctx.render({
+        psychologist: psychologist as UserProfile,
+        error: "El DNI debe tener entre 7 y 30 caracteres alfanuméricos",
+      });
+    }
+
+    // Validar especialidad personalizada
+    if (specialty === "Otra" && !customSpecialty.trim()) {
+      const psychologist = await userRepository.getUserById(id);
+      return ctx.render({
+        psychologist: psychologist as UserProfile,
+        error: "Debe especificar la especialidad personalizada",
+      });
+    }
+
+    // Validar años de experiencia
+    let experienceYearsNum: number | undefined = undefined;
+    if (experienceYears.trim()) {
+      experienceYearsNum = parseInt(experienceYears);
+      if (isNaN(experienceYearsNum) || experienceYearsNum < 0 || experienceYearsNum > 50) {
+        const psychologist = await userRepository.getUserById(id);
+        return ctx.render({
+          psychologist: psychologist as UserProfile,
+          error: "Los años de experiencia deben ser un número entre 0 y 50",
+        });
+      }
     }
 
     try {
@@ -112,7 +147,9 @@ export const handler: Handlers<EditPsychologistData, AppState> = {
         licenseNumber: licenseNumber || undefined,
         phone: phone || undefined,
         education: education || undefined,
-        experience: experience || undefined,
+        dni: dni || undefined,
+        customSpecialty: (specialty === "Otra" && customSpecialty) ? customSpecialty : undefined,
+        experienceYears: experienceYearsNum,
         bio: bio || undefined,
       };
 
@@ -276,6 +313,25 @@ export default function EditPsychologistPage({
 
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <Icon name="file-text" className="w-4 h-4 inline mr-2" />
+                        DNI/Pasaporte
+                      </label>
+                      <Input
+                        type="text"
+                        name="dni"
+                        value={psychologist.dni || ""}
+                        placeholder="12345678 o AB123456789"
+                        class="w-full"
+                        pattern="[A-Za-z0-9]{7,30}"
+                        title="Documento Nacional de Identidad (7-30 caracteres alfanuméricos)"
+                      />
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        DNI o pasaporte (7-30 caracteres alfanuméricos)
+                      </p>
+                    </div>
+
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         <Icon name="check" className="w-4 h-4 inline mr-2" />
                         Estado
                       </label>
@@ -290,6 +346,110 @@ export default function EditPsychologistPage({
                       <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         Los psicólogos inactivos no pueden acceder al sistema
                       </p>
+                    </div>
+                  </div>
+
+                  {/* Información profesional */}
+                  <div class="border-t border-gray-200 dark:border-gray-700 pt-6 mb-8">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                      Información Profesional
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <Icon name="briefcase" className="w-4 h-4 inline mr-2" />
+                          Especialidad
+                        </label>
+                        <SpecialtySelector
+                          name="specialty"
+                          value={psychologist.specialty || ""}
+                          customValue={psychologist.customSpecialty || ""}
+                          className="w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <Icon name="file-text" className="w-4 h-4 inline mr-2" />
+                          Número de Licencia
+                        </label>
+                        <Input
+                          type="text"
+                          name="licenseNumber"
+                          value={psychologist.licenseNumber || ""}
+                          placeholder="Ej: PSI-12345"
+                          class="w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <Icon name="phone" className="w-4 h-4 inline mr-2" />
+                          Teléfono
+                        </label>
+                        <Input
+                          type="tel"
+                          name="phone"
+                          value={psychologist.phone || ""}
+                          placeholder="+56 9 1234 5678"
+                          class="w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <Icon name="calendar" className="w-4 h-4 inline mr-2" />
+                          Años de Experiencia
+                        </label>
+                        <Input
+                          type="number"
+                          name="experienceYears"
+                          value={psychologist.experienceYears?.toString() || ""}
+                          placeholder="5"
+                          min="0"
+                          max="50"
+                          class="w-full"
+                        />
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          Número de años de experiencia profesional (0-50)
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Formación y biografía */}
+                  <div class="border-t border-gray-200 dark:border-gray-700 pt-6 mb-6">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                      Formación Académica y Biografía
+                    </h3>
+                    <div class="space-y-6">
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <Icon name="graduation-cap" className="w-4 h-4 inline mr-2" />
+                          Formación Académica
+                        </label>
+                        <Textarea
+                          name="education"
+                          value={psychologist.education || ""}
+                          placeholder="Ej: Psicólogo, Universidad de Chile (2018)&#10;Magíster en Psicología Clínica, Universidad Católica (2020)"
+                          class="w-full"
+                          rows={3}
+                        />
+                      </div>
+
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <Icon name="user" className="w-4 h-4 inline mr-2" />
+                          Biografía Profesional
+                        </label>
+                        <Textarea
+                          name="bio"
+                          value={psychologist.bio || ""}
+                          placeholder="Breve descripción de la experiencia profesional, enfoques terapéuticos, etc."
+                          class="w-full"
+                          rows={4}
+                        />
+                      </div>
                     </div>
                   </div>
 

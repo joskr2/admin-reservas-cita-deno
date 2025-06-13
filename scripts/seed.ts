@@ -17,84 +17,173 @@ import {
 } from "../lib/database/index.ts";
 
 // Define all users to be seeded
-const usersToSeed = [
+interface UserSeedData {
+  email: string;
+  password: string;
+  role: "superadmin" | "admin" | "psychologist";
+  name: string;
+  dni: string;
+  specialty?: string;
+  customSpecialty?: string;
+  licenseNumber?: string;
+  phone?: string;
+  education?: string;
+  experienceYears?: number;
+  bio?: string;
+}
+
+const usersToSeed: UserSeedData[] = [
   {
     email: "admin@horizonte.com",
     password: "password123",
     role: "superadmin" as const,
     name: "Administrador Principal",
+    dni: "12345678A",
   },
   {
     email: "admin2@horizonte.com",
     password: "password123",
     role: "admin" as const,
     name: "María Elena Vásquez",
+    dni: "87654321B",
   },
   {
     email: "admin3@horizonte.com",
     password: "password123",
     role: "admin" as const,
     name: "Roberto Díaz",
+    dni: "11223344C",
   },
   {
     email: "psicologo1@horizonte.com",
     password: "password123",
     role: "psychologist" as const,
     name: "Dr. Carlos Mendoza",
+    dni: "98765432D",
+    specialty: "Psicología Clínica",
+    licenseNumber: "PSI-001-2020",
+    phone: "+56912345001",
+    education: "Psicólogo, Universidad de Chile (2015)\nMagíster en Psicología Clínica, Universidad Católica (2018)",
+    experienceYears: 8,
+    bio: "Especialista en terapia cognitivo-conductual con amplia experiencia en el tratamiento de trastornos de ansiedad y depresión.",
   },
   {
     email: "psicologo2@horizonte.com",
     password: "password123",
     role: "psychologist" as const,
     name: "Dra. Laura Jiménez",
+    dni: "45678901E",
+    specialty: "Psicología Familiar",
+    licenseNumber: "PSI-002-2019",
+    phone: "+56912345002",
+    education: "Psicóloga, Universidad Diego Portales (2014)\nEspecialización en Terapia Familiar Sistémica (2017)",
+    experienceYears: 9,
+    bio: "Terapeuta familiar sistémica con enfoque en resolución de conflictos familiares y terapia de pareja.",
   },
   {
     email: "psicologo3@horizonte.com",
     password: "password123",
     role: "psychologist" as const,
     name: "Dr. Miguel Herrera",
+    dni: "23456789F",
+    specialty: "Neuropsicología",
+    licenseNumber: "PSI-003-2018",
+    phone: "+56912345003",
+    education: "Psicólogo, Universidad de Concepción (2013)\nMagíster en Neuropsicología Clínica, Universidad de Barcelona (2016)",
+    experienceYears: 10,
+    bio: "Neuropsicólogo especializado en evaluación y rehabilitación cognitiva en adultos y adultos mayores.",
   },
   {
     email: "psicologo4@horizonte.com",
     password: "password123",
     role: "psychologist" as const,
     name: "Dra. Patricia Ruiz",
+    dni: "34567890G",
+    specialty: "Psicología Infantil",
+    licenseNumber: "PSI-004-2020",
+    phone: "+56912345004",
+    education: "Psicóloga, Universidad Alberto Hurtado (2016)\nDiplomado en Psicología Infantil y Adolescente (2019)",
+    experienceYears: 7,
+    bio: "Psicóloga infantil especializada en trastornos del desarrollo y problemas de conducta en niños y adolescentes.",
   },
   {
     email: "psicologo5@horizonte.com",
     password: "password123",
     role: "psychologist" as const,
     name: "Dr. Fernando Castro",
+    dni: "56789012H",
+    specialty: "Psicología del Trauma",
+    licenseNumber: "PSI-005-2017",
+    phone: "+56912345005",
+    education: "Psicólogo, Universidad de Valparaíso (2012)\nCertificación en EMDR y Terapia del Trauma (2018)",
+    experienceYears: 11,
+    bio: "Especialista en trastorno de estrés postraumático y terapia EMDR, con experiencia en víctimas de violencia.",
   },
   {
     email: "psicologo6@horizonte.com",
     password: "password123",
     role: "psychologist" as const,
     name: "Dra. Carmen Morales",
+    dni: "67890123I",
+    specialty: "Psicología de Pareja",
+    licenseNumber: "PSI-006-2019",
+    phone: "+56912345006",
+    education: "Psicóloga, Universidad Católica (2015)\nFormación en Terapia de Pareja Emotivo-Focalizada (2018)",
+    experienceYears: 8,
+    bio: "Terapeuta de pareja especializada en terapia emotivo-focalizada y resolución de conflictos de pareja.",
   },
   {
     email: "psicologo7@horizonte.com",
     password: "password123",
     role: "psychologist" as const,
     name: "Dr. Andrés Vargas",
+    dni: "78901234J",
+    specialty: "Psicología de Grupos",
+    licenseNumber: "PSI-007-2018",
+    phone: "+56912345007",
+    education: "Psicólogo, Universidad de la Frontera (2014)\nEspecialización en Psicoterapia Grupal (2017)",
+    experienceYears: 9,
+    bio: "Psicoterapeuta grupal con experiencia en grupos de apoyo y terapia de habilidades sociales.",
   },
   {
     email: "psicologo8@horizonte.com",
     password: "password123",
     role: "psychologist" as const,
     name: "Dra. Silvia Ortega",
+    dni: "89012345K",
+    specialty: "Psicología Organizacional",
+    licenseNumber: "PSI-008-2020",
+    phone: "+56912345008",
+    education: "Psicóloga, Universidad de los Andes (2016)\nMBA con mención en Recursos Humanos (2019)",
+    experienceYears: 7,
+    bio: "Psicóloga organizacional especializada en bienestar laboral, liderazgo y manejo del estrés ocupacional.",
   },
   {
     email: "psicologo9@horizonte.com",
     password: "password123",
     role: "psychologist" as const,
     name: "Dr. Rafael Peña",
+    dni: "90123456L",
+    specialty: "Psicología Cognitivo-Conductual",
+    licenseNumber: "PSI-009-2017",
+    phone: "+56912345009",
+    education: "Psicólogo, Universidad Mayor (2013)\nCertificación en Terapia Cognitivo-Conductual (2016)",
+    experienceYears: 10,
+    bio: "Especialista en terapia cognitivo-conductual para trastornos de ansiedad, depresión y fobias específicas.",
   },
   {
     email: "psicologo10@horizonte.com",
     password: "password123",
     role: "psychologist" as const,
     name: "Dra. Mónica Guerrero",
+    dni: "01234567M",
+    specialty: "Otra",
+    customSpecialty: "Psicología Deportiva",
+    licenseNumber: "PSI-010-2019",
+    phone: "+56912345010",
+    education: "Psicóloga, Universidad San Sebastián (2015)\nDiplomado en Psicología del Deporte (2018)",
+    experienceYears: 8,
+    bio: "Psicóloga deportiva especializada en rendimiento atlético, motivación y manejo de la presión competitiva.",
   },
 ];
 
@@ -632,6 +721,13 @@ async function createTestData(_kv: Deno.Kv): Promise<void> {
     name: "Usuario de Prueba",
     createdAt: new Date().toISOString(),
     isActive: true,
+    dni: "TEST123456",
+    specialty: "Psicología Clínica",
+    licenseNumber: "PSI-TEST-001",
+    phone: "+56900000000",
+    education: "Universidad de Prueba",
+    experienceYears: 5,
+    bio: "Usuario creado específicamente para pruebas automatizadas del sistema.",
   };
   
   await userRepo.create(testUser);
@@ -731,6 +827,14 @@ async function seedDatabase() {
         name: userSeed.name,
         createdAt: new Date().toISOString(),
         isActive: true,
+        dni: userSeed.dni,
+        specialty: userSeed.specialty,
+        customSpecialty: userSeed.customSpecialty,
+        licenseNumber: userSeed.licenseNumber,
+        phone: userSeed.phone,
+        education: userSeed.education,
+        experienceYears: userSeed.experienceYears,
+        bio: userSeed.bio,
       };
 
       const success = await createUser(userData);

@@ -60,6 +60,7 @@ import * as $PatientSelect from "./islands/PatientSelect.tsx";
 import * as $PsychologistFilters from "./islands/PsychologistFilters.tsx";
 import * as $RoomFilters from "./islands/RoomFilters.tsx";
 import * as $RoomToggleButton from "./islands/RoomToggleButton.tsx";
+import * as $SpecialtySelector from "./islands/SpecialtySelector.tsx";
 import * as $ThemeToggle from "./islands/ThemeToggle.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
@@ -127,6 +128,7 @@ const manifest = {
     "./islands/PsychologistFilters.tsx": $PsychologistFilters,
     "./islands/RoomFilters.tsx": $RoomFilters,
     "./islands/RoomToggleButton.tsx": $RoomToggleButton,
+    "./islands/SpecialtySelector.tsx": $SpecialtySelector,
     "./islands/ThemeToggle.tsx": $ThemeToggle,
   },
   baseUrl: import.meta.url,

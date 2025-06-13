@@ -24,6 +24,15 @@ export const testUtils = {
       passwordHash: "hashedpassword123",
       isActive: true,
       createdAt: new Date().toISOString(),
+      // New fields for psychologists
+      dni: "12345678",
+      specialty: "Psicología Clínica",
+      customSpecialty: undefined,
+      licenseNumber: "PSI-001",
+      phone: "+1234567890",
+      education: "Universidad de Psicología, Licenciatura en Psicología Clínica",
+      experienceYears: 5,
+      bio: "Psicólogo clínico especializado en terapia cognitivo-conductual con 5 años de experiencia.",
     };
 
     return { ...defaultUser, ...overrides };

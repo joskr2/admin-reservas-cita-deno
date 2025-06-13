@@ -9,6 +9,7 @@ import { Button } from "../../components/ui/Button.tsx";
 import { Select } from "../../components/ui/Select.tsx";
 import { Textarea } from "../../components/ui/Textarea.tsx";
 import { Icon } from "../../components/ui/Icon.tsx";
+import SpecialtySelector from "../../islands/SpecialtySelector.tsx";
 
 interface NewPsychologistData {
   error?: string;
@@ -17,11 +18,13 @@ interface NewPsychologistData {
     name: string;
     email: string;
     role: string;
+    dni: string;
     specialty: string;
+    customSpecialty: string;
     licenseNumber: string;
     phone: string;
     education: string;
-    experience: string;
+    experienceYears: string;
     bio: string;
   };
 }
@@ -53,25 +56,36 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
     const email = form.get("email")?.toString() || "";
     const password = form.get("password")?.toString() || "";
     const role = form.get("role")?.toString() || "psychologist";
+    const dni = form.get("dni")?.toString() || "";
     const specialty = form.get("specialty")?.toString() || "";
+    const customSpecialty = form.get("customSpecialty")?.toString() || "";
     const licenseNumber = form.get("licenseNumber")?.toString() || "";
     const phone = form.get("phone")?.toString() || "";
     const education = form.get("education")?.toString() || "";
-    const experience = form.get("experience")?.toString() || "";
+    const experienceYears = form.get("experienceYears")?.toString() || "";
     const bio = form.get("bio")?.toString() || "";
 
     // Validaciones básicas
-    if (!name || !email || !password || !specialty) {
+    if (!name || !email || !password || !dni || !specialty) {
       return ctx.render({
-        error: "Nombre, email, contraseña y especialidad son obligatorios",
-        formData: { name, email, role, specialty, licenseNumber, phone, education, experience, bio },
+        error: "Nombre, email, contraseña, DNI y especialidad son obligatorios",
+        formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
       });
     }
 
     if (password.length < 8) {
       return ctx.render({
         error: "La contraseña debe tener al menos 8 caracteres",
-        formData: { name, email, role, specialty, licenseNumber, phone, education, experience, bio },
+        formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
+      });
+    }
+
+    // Validar DNI (7-30 caracteres, solo números y letras)
+    const dniRegex = /^[A-Za-z0-9]{7,30}$/;
+    if (!dniRegex.test(dni)) {
+      return ctx.render({
+        error: "El DNI debe tener entre 7 y 30 caracteres alfanuméricos",
+        formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
       });
     }
 
@@ -80,8 +94,28 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
     if (!emailRegex.test(email)) {
       return ctx.render({
         error: "El formato del email no es válido",
-        formData: { name, email, role, specialty, licenseNumber, phone, education, experience, bio },
+        formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
       });
+    }
+
+    // Validar que si specialty es "Otra", debe haber customSpecialty
+    if (specialty === "Otra" && !customSpecialty.trim()) {
+      return ctx.render({
+        error: "Debe especificar la especialidad personalizada",
+        formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
+      });
+    }
+
+    // Validar años de experiencia si se proporciona
+    let experienceYearsNum: number | undefined = undefined;
+    if (experienceYears.trim()) {
+      experienceYearsNum = parseInt(experienceYears);
+      if (isNaN(experienceYearsNum) || experienceYearsNum < 0 || experienceYearsNum > 50) {
+        return ctx.render({
+          error: "Los años de experiencia deben ser un número entre 0 y 50",
+          formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
+        });
+      }
     }
 
     try {
@@ -92,7 +126,7 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
       if (existingUser) {
         return ctx.render({
           error: "Ya existe un usuario con este email",
-          formData: { name, email, role, specialty, licenseNumber, phone, education, experience, bio },
+          formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
         });
       }
 
@@ -108,11 +142,13 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
         passwordHash: hashedPassword,
         isActive: true,
         createdAt: new Date().toISOString(),
+        dni: dni || undefined,
         specialty: specialty || undefined,
+        customSpecialty: (specialty === "Otra" && customSpecialty) ? customSpecialty : undefined,
         licenseNumber: licenseNumber || undefined,
         phone: phone || undefined,
         education: education || undefined,
-        experience: experience || undefined,
+        experienceYears: experienceYearsNum,
         bio: bio || undefined,
       };
 
@@ -121,7 +157,7 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
       if (!success) {
         return ctx.render({
           error: "Error al crear el psicólogo",
-          formData: { name, email, role, specialty, licenseNumber, phone, education, experience, bio },
+          formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
         });
       }
 
@@ -133,7 +169,7 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
       console.error("Error creating psychologist:", error);
       return ctx.render({
         error: "Error interno del servidor",
-        formData: { name, email, role, specialty, licenseNumber, phone, education, experience, bio },
+        formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
       });
     }
   },
@@ -230,6 +266,26 @@ export default function NewPsychologistPage({
 
                 <div>
                   <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    <Icon name="file-text" className="w-4 h-4 inline mr-2" />
+                    DNI/Pasaporte *
+                  </label>
+                  <Input
+                    type="text"
+                    name="dni"
+                    value={formData?.dni || ""}
+                    placeholder="12345678 o AB123456789"
+                    required
+                    class="w-full"
+                    pattern="[A-Za-z0-9]{7,30}"
+                    title="Documento Nacional de Identidad (7-30 caracteres alfanuméricos)"
+                  />
+                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    DNI o pasaporte (7-30 caracteres alfanuméricos)
+                  </p>
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     <Icon name="mail" className="w-4 h-4 inline mr-2" />
                     Email *
                   </label>
@@ -287,24 +343,13 @@ export default function NewPsychologistPage({
                       <Icon name="briefcase" className="w-4 h-4 inline mr-2" />
                       Especialidad *
                     </label>
-                    <Select
+                    <SpecialtySelector
                       name="specialty"
                       value={formData?.specialty || ""}
-                      required
-                      class="w-full"
-                    >
-                      <option value="">Seleccionar especialidad</option>
-                      <option value="Psicología Clínica">Psicología Clínica</option>
-                      <option value="Psicología Cognitivo-Conductual">Psicología Cognitivo-Conductual</option>
-                      <option value="Psicología Familiar">Psicología Familiar</option>
-                      <option value="Psicología Infantil">Psicología Infantil</option>
-                      <option value="Neuropsicología">Neuropsicología</option>
-                      <option value="Psicología de Pareja">Psicología de Pareja</option>
-                      <option value="Psicología de Grupos">Psicología de Grupos</option>
-                      <option value="Psicología del Trauma">Psicología del Trauma</option>
-                      <option value="Psicología Organizacional">Psicología Organizacional</option>
-                      <option value="Otra">Otra</option>
-                    </Select>
+                      customValue={formData?.customSpecialty || ""}
+                      required={true}
+                      className="w-full"
+                    />
                   </div>
 
                   <div>
@@ -338,15 +383,20 @@ export default function NewPsychologistPage({
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       <Icon name="calendar" className="w-4 h-4 inline mr-2" />
-                      Experiencia
+                      Años de Experiencia
                     </label>
                     <Input
-                      type="text"
-                      name="experience"
-                      value={formData?.experience || ""}
-                      placeholder="Ej: 5 años"
+                      type="number"
+                      name="experienceYears"
+                      value={formData?.experienceYears || ""}
+                      placeholder="5"
+                      min="0"
+                      max="50"
                       class="w-full"
                     />
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Número de años de experiencia profesional (0-50)
+                    </p>
                   </div>
                 </div>
               </div>

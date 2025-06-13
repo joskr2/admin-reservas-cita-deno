@@ -19,11 +19,13 @@ export interface User {
   createdAt: string;
   isActive?: boolean | undefined;
   // Campos específicos para psicólogos
+  dni?: string | undefined; // Documento Nacional de Identidad (7-30 caracteres)
   specialty?: string | undefined; // Especialidad del psicólogo
+  customSpecialty?: string | undefined; // Especialidad personalizada cuando selecciona "Otra"
   licenseNumber?: string | undefined; // Número de licencia profesional
   phone?: string | undefined; // Teléfono de contacto
   education?: string | undefined; // Formación académica
-  experience?: string | undefined; // Años de experiencia o descripción
+  experienceYears?: number | undefined; // Años de experiencia (número)
   bio?: string | undefined; // Biografía o descripción profesional
 }
 
@@ -35,11 +37,13 @@ export interface UserProfile {
   createdAt: string;
   isActive?: boolean | undefined;
   // Campos específicos para psicólogos
+  dni?: string | undefined;
   specialty?: string | undefined;
+  customSpecialty?: string | undefined;
   licenseNumber?: string | undefined;
   phone?: string | undefined;
   education?: string | undefined;
-  experience?: string | undefined;
+  experienceYears?: number | undefined;
   bio?: string | undefined;
 }
 
