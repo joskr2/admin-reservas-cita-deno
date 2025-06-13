@@ -203,36 +203,152 @@ export default function Dashboard({
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
       <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="px-4 py-6 sm:px-0">
+          {/* Header */}
           <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
               Dashboard
             </h1>
             <p class="mt-2 text-gray-600 dark:text-gray-400">
-              Resumen general del sistema
+              Resumen general del sistema y actividad reciente
             </p>
           </div>
 
-          {/* Stats Cards */}
-          <DashboardStats {...dashboardData} />
+          {/* 1. Filtros de Búsqueda - PRIMERO */}
+          <div class="mb-8">
+            <GenericFilters
+              title="Filtros de Búsqueda"
+              basePath="/dashboard"
+              filters={filters}
+              fields={filterFields}
+              showActiveIndicator={true}
+            />
+          </div>
 
-          {/* Filtros para actividad reciente */}
-          <GenericFilters
-            title="Filtros de Actividad Reciente"
-            basePath="/dashboard"
-            filters={filters}
-            fields={filterFields}
-          />
+          {/* 2. Estadísticas - SEGUNDO */}
+          <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+              <Icon name="bar-chart-3" className="h-5 w-5 text-blue-500 mr-2" />
+              Estadísticas del Sistema
+            </h2>
+            <DashboardStats {...dashboardData} />
+          </div>
 
-          {/* Actividad Reciente */}
-          <div class="mt-8">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+          {/* 3. Acciones Rápidas - TERCERO */}
+          <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+              <Icon name="activity" className="h-5 w-5 text-purple-500 mr-2" />
+              Acciones Rápidas
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <a
+                href="/appointments/new"
+                class="group bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600"
+              >
+                <div class="flex items-center">
+                  <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-900/50 transition-colors">
+                      <Icon
+                        name="calendar-plus"
+                        className="h-6 w-6 text-blue-600 dark:text-blue-400"
+                      />
+                    </div>
+                  </div>
+                  <div class="ml-4">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      Nueva Cita
+                    </h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                      Programar una nueva cita
+                    </p>
+                  </div>
+                </div>
+              </a>
+
+              <a
+                href="/patients/new"
+                class="group bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600"
+              >
+                <div class="flex items-center">
+                  <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center group-hover:bg-green-200 dark:group-hover:bg-green-900/50 transition-colors">
+                      <Icon
+                        name="user-plus"
+                        className="h-6 w-6 text-green-600 dark:text-green-400"
+                      />
+                    </div>
+                  </div>
+                  <div class="ml-4">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                      Nuevo Paciente
+                    </h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                      Registrar nuevo paciente
+                    </p>
+                  </div>
+                </div>
+              </a>
+
+              <a
+                href="/appointments"
+                class="group bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600"
+              >
+                <div class="flex items-center">
+                  <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-900/50 transition-colors">
+                      <Icon
+                        name="calendar"
+                        className="h-6 w-6 text-purple-600 dark:text-purple-400"
+                      />
+                    </div>
+                  </div>
+                  <div class="ml-4">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                      Ver Citas
+                    </h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                      Gestionar todas las citas
+                    </p>
+                  </div>
+                </div>
+              </a>
+
+              <a
+                href="/rooms"
+                class="group bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-600"
+              >
+                <div class="flex items-center">
+                  <div class="flex-shrink-0">
+                    <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center group-hover:bg-orange-200 dark:group-hover:bg-orange-900/50 transition-colors">
+                      <Icon
+                        name="briefcase"
+                        className="h-6 w-6 text-orange-600 dark:text-orange-400"
+                      />
+                    </div>
+                  </div>
+                  <div class="ml-4">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                      Ver Salas
+                    </h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">
+                      Estado de las salas
+                    </p>
+                  </div>
+                </div>
+              </a>
+            </div>
+          </div>
+
+          {/* 4. Actividad Reciente - CUARTO */}
+          <div>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+              <Icon name="activity" className="h-5 w-5 text-indigo-500 mr-2" />
               Actividad Reciente
             </h2>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               {/* Citas Recientes */}
               {(!filters.type || filters.type === "appointments") && (
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                   <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
@@ -242,22 +358,28 @@ export default function Dashboard({
                         />
                         Citas Recientes
                       </h3>
-                      <span class="text-sm text-gray-500 dark:text-gray-400">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
                         {recentAppointments.length}
                       </span>
                     </div>
                     <div class="space-y-3 max-h-64 overflow-y-auto">
                       {recentAppointments.length === 0 ? (
-                        <p class="text-gray-500 dark:text-gray-400 text-sm text-center py-4">
-                          No hay citas recientes
-                        </p>
+                        <div class="text-center py-8">
+                          <Icon
+                            name="calendar"
+                            className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
+                          />
+                          <p class="text-gray-500 dark:text-gray-400 text-sm">
+                            No hay citas recientes
+                          </p>
+                        </div>
                       ) : (
                         recentAppointments.map((appointment) => (
                           <div
                             key={appointment.id}
-                            class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                            class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                           >
-                            <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                            <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
                               <Icon
                                 name="calendar"
                                 className="h-4 w-4 text-blue-600 dark:text-blue-400"
@@ -280,9 +402,13 @@ export default function Dashboard({
                       <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <a
                           href="/appointments"
-                          class="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                          class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center"
                         >
-                          Ver todas las citas →
+                          Ver todas las citas
+                          <Icon
+                            name="arrow-left"
+                            className="h-4 w-4 ml-1 rotate-180"
+                          />
                         </a>
                       </div>
                     )}
@@ -292,7 +418,7 @@ export default function Dashboard({
 
               {/* Pacientes Recientes */}
               {(!filters.type || filters.type === "patients") && (
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                   <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
@@ -302,23 +428,29 @@ export default function Dashboard({
                         />
                         Pacientes Recientes
                       </h3>
-                      <span class="text-sm text-gray-500 dark:text-gray-400">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
                         {recentPatients.length}
                       </span>
                     </div>
                     <div class="space-y-3 max-h-64 overflow-y-auto">
                       {recentPatients.length === 0 ? (
-                        <p class="text-gray-500 dark:text-gray-400 text-sm text-center py-4">
-                          No hay pacientes recientes
-                        </p>
+                        <div class="text-center py-8">
+                          <Icon
+                            name="user"
+                            className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
+                          />
+                          <p class="text-gray-500 dark:text-gray-400 text-sm">
+                            No hay pacientes recientes
+                          </p>
+                        </div>
                       ) : (
                         recentPatients.map((patient) => (
                           <div
                             key={patient.id}
-                            class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                            class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                           >
-                            <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-                              <span class="text-xs font-medium text-green-600 dark:text-green-400">
+                            <div class="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center">
+                              <span class="text-sm font-medium text-green-600 dark:text-green-400">
                                 {patient.name.charAt(0).toUpperCase()}
                               </span>
                             </div>
@@ -338,9 +470,13 @@ export default function Dashboard({
                       <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <a
                           href="/patients"
-                          class="text-sm text-green-600 dark:text-green-400 hover:underline"
+                          class="text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium flex items-center"
                         >
-                          Ver todos los pacientes →
+                          Ver todos los pacientes
+                          <Icon
+                            name="arrow-left"
+                            className="h-4 w-4 ml-1 rotate-180"
+                          />
                         </a>
                       </div>
                     )}
@@ -350,7 +486,7 @@ export default function Dashboard({
 
               {/* Usuarios Recientes */}
               {(!filters.type || filters.type === "users") && (
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-200 dark:border-gray-700">
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                   <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                       <h3 class="text-lg font-medium text-gray-900 dark:text-white flex items-center">
@@ -360,23 +496,29 @@ export default function Dashboard({
                         />
                         Usuarios Recientes
                       </h3>
-                      <span class="text-sm text-gray-500 dark:text-gray-400">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
                         {recentUsers.length}
                       </span>
                     </div>
                     <div class="space-y-3 max-h-64 overflow-y-auto">
                       {recentUsers.length === 0 ? (
-                        <p class="text-gray-500 dark:text-gray-400 text-sm text-center py-4">
-                          No hay usuarios recientes
-                        </p>
+                        <div class="text-center py-8">
+                          <Icon
+                            name="users"
+                            className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
+                          />
+                          <p class="text-gray-500 dark:text-gray-400 text-sm">
+                            No hay usuarios recientes
+                          </p>
+                        </div>
                       ) : (
                         recentUsers.map((user) => (
                           <div
                             key={user.id}
-                            class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                            class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                           >
-                            <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-full flex items-center justify-center">
-                              <span class="text-xs font-medium text-purple-600 dark:text-purple-400">
+                            <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center">
+                              <span class="text-sm font-medium text-purple-600 dark:text-purple-400">
                                 {(user.name || user.email)
                                   .charAt(0)
                                   .toUpperCase()}
@@ -400,94 +542,19 @@ export default function Dashboard({
                       <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <a
                           href="/psychologists"
-                          class="text-sm text-purple-600 dark:text-purple-400 hover:underline"
+                          class="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium flex items-center"
                         >
-                          Ver todos los usuarios →
+                          Ver todos los usuarios
+                          <Icon
+                            name="arrow-left"
+                            className="h-4 w-4 ml-1 rotate-180"
+                          />
                         </a>
                       </div>
                     )}
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Quick Actions */}
-          <div class="mt-8">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              Acciones Rápidas
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <a
-                href="/appointments/new"
-                class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700"
-              >
-                <div class="flex items-center">
-                  <Icon
-                    name="calendar-plus"
-                    className="h-8 w-8 text-blue-500"
-                  />
-                  <div class="ml-4">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                      Nueva Cita
-                    </h3>
-                    <p class="text-gray-600 dark:text-gray-400">
-                      Programar una nueva cita
-                    </p>
-                  </div>
-                </div>
-              </a>
-
-              <a
-                href="/patients/new"
-                class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700"
-              >
-                <div class="flex items-center">
-                  <Icon name="user-plus" className="h-8 w-8 text-green-500" />
-                  <div class="ml-4">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                      Nuevo Paciente
-                    </h3>
-                    <p class="text-gray-600 dark:text-gray-400">
-                      Registrar nuevo paciente
-                    </p>
-                  </div>
-                </div>
-              </a>
-
-              <a
-                href="/appointments"
-                class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700"
-              >
-                <div class="flex items-center">
-                  <Icon name="calendar" className="h-8 w-8 text-purple-500" />
-                  <div class="ml-4">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                      Ver Citas
-                    </h3>
-                    <p class="text-gray-600 dark:text-gray-400">
-                      Gestionar todas las citas
-                    </p>
-                  </div>
-                </div>
-              </a>
-
-              <a
-                href="/rooms"
-                class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700"
-              >
-                <div class="flex items-center">
-                  <Icon name="briefcase" className="h-8 w-8 text-orange-500" />
-                  <div class="ml-4">
-                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                      Ver Salas
-                    </h3>
-                    <p class="text-gray-600 dark:text-gray-400">
-                      Estado de las salas
-                    </p>
-                  </div>
-                </div>
-              </a>
             </div>
           </div>
         </div>
