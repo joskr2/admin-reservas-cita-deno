@@ -441,46 +441,52 @@ export default function AppointmentsPage({
                     key={appointment.id}
                     class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
                   >
-                    <div class="flex items-start justify-between mb-4">
-                      <div class="flex items-center space-x-3">
-                        <div class="h-12 w-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
-                          {appointment.patientName.charAt(0).toUpperCase()}
+                    <div class="flex items-center space-x-3 mb-4">
+                      <div class="h-12 w-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
+                        {appointment.patientName.charAt(0).toUpperCase()}
+                      </div>
+                      <div class="flex-1">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                          {appointment.patientName}
+                        </h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-mono">
+                          {appointment.id.substring(0, 8)}...
+                        </p>
+                      </div>
+                    </div>
+
+                    <div class="space-y-4 mb-4">
+                      <div class="grid grid-cols-2 gap-4">
+                        <div>
+                          <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Psicólogo
+                          </p>
+                          <p class="text-sm text-gray-900 dark:text-white mt-1">
+                            {appointment.psychologistName ||
+                              appointment.psychologistEmail}
+                          </p>
                         </div>
                         <div>
-                          <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                            {appointment.patientName}
-                          </h3>
-                          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono">
-                            {appointment.id.substring(0, 8)}...
+                          <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Fecha y Hora
+                          </p>
+                          <p class="text-sm text-gray-900 dark:text-white mt-1">
+                            {appointment.appointmentDate}
+                          </p>
+                          <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {appointment.appointmentTime}
                           </p>
                         </div>
                       </div>
-                      <AppointmentStatusSelector
-                        appointmentId={appointment.id}
-                        currentStatus={appointment.status}
-                      />
-                    </div>
 
-                    <div class="grid grid-cols-2 gap-4 mb-4">
                       <div>
-                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Psicólogo
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                          Estado de la Cita
                         </p>
-                        <p class="text-sm text-gray-900 dark:text-white mt-1">
-                          {appointment.psychologistName ||
-                            appointment.psychologistEmail}
-                        </p>
-                      </div>
-                      <div>
-                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          Fecha y Hora
-                        </p>
-                        <p class="text-sm text-gray-900 dark:text-white mt-1">
-                          {appointment.appointmentDate}
-                        </p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">
-                          {appointment.appointmentTime}
-                        </p>
+                        <AppointmentStatusSelector
+                          appointmentId={appointment.id}
+                          currentStatus={appointment.status}
+                        />
                       </div>
                     </div>
 

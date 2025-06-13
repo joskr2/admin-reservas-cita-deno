@@ -35,7 +35,7 @@ export default function AppointmentStatusSelector({
             body: JSON.stringify({
               status: newStatus,
             }),
-          },
+          }
         );
 
         if (response.ok) {
@@ -59,7 +59,7 @@ export default function AppointmentStatusSelector({
   const statusColorClass = getStatusColor(currentStatus);
 
   return (
-    <div class="relative inline-block">
+    <div class="relative inline-block w-full sm:w-auto">
       <select
         value={currentStatus}
         onChange={handleStatusChange}
@@ -67,12 +67,12 @@ export default function AppointmentStatusSelector({
         title="Cambiar estado de la cita"
         class={`
           appearance-none cursor-pointer
-          px-3 py-1.5 pr-8
-          text-xs font-medium
-          border border-transparent rounded-md
+          px-3 py-2 pr-8
+          text-sm font-medium
+          border border-transparent rounded-lg
           focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
           transition-all duration-200
-          min-w-[120px]
+          w-full sm:min-w-[120px] sm:w-auto
           ${statusColorClass}
           ${isUpdating ? "opacity-50 cursor-not-allowed" : "hover:shadow-md"}
         `}
@@ -96,7 +96,7 @@ export default function AppointmentStatusSelector({
       {/* Icono de dropdown personalizado */}
       <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
         <svg
-          class="h-3 w-3 text-current opacity-70"
+          class="h-4 w-4 text-current opacity-70"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -107,8 +107,7 @@ export default function AppointmentStatusSelector({
       {/* Indicador de carga */}
       {isUpdating && (
         <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded-md">
-          <div class="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent">
-          </div>
+          <div class="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent"></div>
         </div>
       )}
     </div>
