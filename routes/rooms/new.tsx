@@ -1,5 +1,9 @@
 import { type FreshContext, type PageProps } from "$fresh/server.ts";
-import { type AppState, type CreateRoomForm, type RoomId } from "../../types/index.ts";
+import {
+  type AppState,
+  type CreateRoomForm,
+  type RoomId,
+} from "../../types/index.ts";
 import { getRoomRepository } from "../../lib/database/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
 
@@ -13,30 +17,42 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         id: formData.get("id") as RoomId,
         name: formData.get("name") as string,
         isAvailable: formData.get("isAvailable") === "true",
-        equipment: formData.get("equipment") 
-          ? (formData.get("equipment") as string).split(",").map(item => item.trim()).filter(Boolean)
+        equipment: formData.get("equipment")
+          ? (formData.get("equipment") as string)
+              .split(",")
+              .map((item) => item.trim())
+              .filter(Boolean)
           : [],
-        capacity: formData.get("capacity") 
+        capacity: formData.get("capacity")
           ? parseInt(formData.get("capacity") as string)
           : undefined,
-        roomType: (formData.get("roomType") as string) || undefined,
+        roomType: (() => {
+          const roomType = formData.get("roomType") as string;
+          if (!roomType || roomType === "") return undefined;
+          return roomType as
+            | "individual"
+            | "family"
+            | "group"
+            | "evaluation"
+            | "relaxation";
+        })(),
         description: (formData.get("description") as string) || undefined,
       };
 
       // Validaciones
       if (!roomData.id || !roomData.name) {
-        return ctx.render({ 
+        return ctx.render({
           error: "ID y nombre de la sala son requeridos",
-          formData: roomData
+          formData: roomData,
         });
       }
 
       // Verificar si ya existe una sala con ese ID
       const existingRoom = await roomRepository.getById(roomData.id);
       if (existingRoom) {
-        return ctx.render({ 
+        return ctx.render({
           error: "Ya existe una sala con ese ID",
-          formData: roomData
+          formData: roomData,
         });
       }
 
@@ -47,7 +63,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         isAvailable: roomData.isAvailable,
         equipment: roomData.equipment,
         capacity: roomData.capacity,
-        roomType: roomData.roomType as any,
+        roomType: roomData.roomType,
         description: roomData.description,
       });
 
@@ -57,16 +73,16 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
           headers: { Location: "/rooms" },
         });
       } else {
-        return ctx.render({ 
+        return ctx.render({
           error: "Error al crear la sala",
-          formData: roomData
+          formData: roomData,
         });
       }
     } catch (error) {
       console.error("Error creating room:", error);
-      return ctx.render({ 
+      return ctx.render({
         error: "Error interno del servidor",
-        formData: null
+        formData: null,
       });
     }
   }
@@ -76,10 +92,40 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
 export default function NewRoomPage({
   data,
-}: PageProps<{ error: string | null; formData: CreateRoomForm | null }, AppState>) {
+}: PageProps<
+  { error: string | null; formData: CreateRoomForm | null },
+  AppState
+>) {
   const { error, formData } = data;
 
-  const availableRoomIds: RoomId[] = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"];
+  const availableRoomIds: RoomId[] = [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F",
+    "G",
+    "H",
+    "I",
+    "J",
+    "K",
+    "L",
+    "M",
+    "N",
+    "O",
+    "P",
+    "Q",
+    "R",
+    "S",
+    "T",
+    "U",
+    "V",
+    "W",
+    "X",
+    "Y",
+    "Z",
+  ];
 
   return (
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -97,7 +143,11 @@ export default function NewRoomPage({
           {error && (
             <div class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
               <div class="flex">
-                <Icon name="alert-circle" size={20} className="text-red-500 mr-3 flex-shrink-0 mt-0.5" />
+                <Icon
+                  name="alert-circle"
+                  size={20}
+                  className="text-red-500 mr-3 flex-shrink-0 mt-0.5"
+                />
                 <div>
                   <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
                     Error
@@ -114,7 +164,10 @@ export default function NewRoomPage({
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="id"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     ID de la Sala *
                   </label>
                   <select
@@ -125,14 +178,19 @@ export default function NewRoomPage({
                     value={formData?.id || ""}
                   >
                     <option value="">Seleccionar ID</option>
-                    {availableRoomIds.map(id => (
-                      <option key={id} value={id}>{id}</option>
+                    {availableRoomIds.map((id) => (
+                      <option key={id} value={id}>
+                        {id}
+                      </option>
                     ))}
                   </select>
                 </div>
 
                 <div>
-                  <label htmlFor="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="name"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Nombre de la Sala *
                   </label>
                   <input
@@ -147,7 +205,10 @@ export default function NewRoomPage({
                 </div>
 
                 <div>
-                  <label htmlFor="roomType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="roomType"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Tipo de Sala
                   </label>
                   <select
@@ -166,7 +227,10 @@ export default function NewRoomPage({
                 </div>
 
                 <div>
-                  <label htmlFor="capacity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="capacity"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Capacidad (personas)
                   </label>
                   <input
@@ -182,7 +246,10 @@ export default function NewRoomPage({
                 </div>
 
                 <div class="md:col-span-2">
-                  <label htmlFor="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="description"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Descripción
                   </label>
                   <textarea
@@ -196,7 +263,10 @@ export default function NewRoomPage({
                 </div>
 
                 <div class="md:col-span-2">
-                  <label htmlFor="equipment" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="equipment"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Equipamiento
                   </label>
                   <input
@@ -222,7 +292,10 @@ export default function NewRoomPage({
                       checked={formData?.isAvailable !== false}
                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
-                    <label htmlFor="isAvailable" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                    <label
+                      htmlFor="isAvailable"
+                      class="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+                    >
                       Sala disponible
                     </label>
                   </div>

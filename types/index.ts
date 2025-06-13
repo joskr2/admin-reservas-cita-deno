@@ -44,11 +44,13 @@ export interface Patient extends BaseEntity {
   dateOfBirth?: string | undefined; // YYYY-MM-DD
   gender?: "male" | "female" | "other" | "prefer_not_say" | undefined;
   address?: string | undefined;
-  emergencyContact?: {
-    name: string;
-    phone: string;
-    relationship: string;
-  } | undefined;
+  emergencyContact?:
+    | {
+        name: string;
+        phone: string;
+        relationship: string;
+      }
+    | undefined;
   medicalHistory?: string | undefined;
   notes?: string | undefined;
   isActive: boolean;
@@ -70,17 +72,45 @@ export interface CreatePatientForm {
   dateOfBirth?: string | undefined;
   gender?: "male" | "female" | "other" | "prefer_not_say" | undefined;
   address?: string | undefined;
-  emergencyContact?: {
-    name: string;
-    phone: string;
-    relationship: string;
-  } | undefined;
+  emergencyContact?:
+    | {
+        name: string;
+        phone: string;
+        relationship: string;
+      }
+    | undefined;
   medicalHistory?: string | undefined;
   notes?: string | undefined;
 }
 
 // === TIPOS DE SALAS ===
-export type RoomId = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L";
+export type RoomId =
+  | "A"
+  | "B"
+  | "C"
+  | "D"
+  | "E"
+  | "F"
+  | "G"
+  | "H"
+  | "I"
+  | "J"
+  | "K"
+  | "L"
+  | "M"
+  | "N"
+  | "O"
+  | "P"
+  | "Q"
+  | "R"
+  | "S"
+  | "T"
+  | "U"
+  | "V"
+  | "W"
+  | "X"
+  | "Y"
+  | "Z";
 
 export interface Room {
   id: RoomId;
@@ -88,7 +118,13 @@ export interface Room {
   isAvailable: boolean;
   equipment?: string[] | undefined;
   capacity?: number | undefined;
-  roomType?: "individual" | "family" | "group" | "evaluation" | "relaxation" | undefined;
+  roomType?:
+    | "individual"
+    | "family"
+    | "group"
+    | "evaluation"
+    | "relaxation"
+    | undefined;
   description?: string | undefined;
 }
 
@@ -98,7 +134,13 @@ export interface CreateRoomForm {
   isAvailable: boolean;
   equipment?: string[] | undefined;
   capacity?: number | undefined;
-  roomType?: "individual" | "family" | "group" | "evaluation" | "relaxation" | undefined;
+  roomType?:
+    | "individual"
+    | "family"
+    | "group"
+    | "evaluation"
+    | "relaxation"
+    | undefined;
   description?: string | undefined;
 }
 
