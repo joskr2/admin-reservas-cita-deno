@@ -57,33 +57,44 @@ export default function RoomDetailsPage({
         <div class="px-4 py-6 sm:px-0">
           {/* Header */}
           <div class="mb-8">
-            <div class="flex items-center justify-between">
-              <div>
-                <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                  <Icon name="briefcase" className="w-8 h-8 text-blue-600" />
-                  Sala {room.name}
-                </h1>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">
-                  Detalles de la sala de atención
-                </p>
-              </div>
+            {/* Título y descripción */}
+            <div class="mb-4 sm:mb-6">
+              <h1 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2 sm:gap-3">
+                <Icon
+                  name="briefcase"
+                  className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-blue-600 flex-shrink-0"
+                />
+                <span class="break-words">Sala {room.name}</span>
+              </h1>
+              <p class="mt-2 text-xs sm:text-sm lg:text-base text-gray-600 dark:text-gray-400">
+                Detalles de la sala de atención
+              </p>
+            </div>
 
-              <div class="flex items-center gap-3">
-                <a
-                  href="/rooms"
-                  class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
-                >
-                  <Icon name="arrow-left" size={16} className="mr-2" />
-                  Volver
-                </a>
-                <a
-                  href={`/rooms/edit/${room.id}`}
-                  class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors"
-                >
-                  <Icon name="edit" size={16} className="mr-2" />
-                  Editar
-                </a>
-              </div>
+            {/* Botones de acción */}
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 lg:gap-4 w-full">
+              <a
+                href="/rooms"
+                class="inline-flex items-center justify-center px-3 sm:px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-xs sm:text-sm font-medium min-h-[40px] w-full sm:w-auto"
+              >
+                <Icon
+                  name="arrow-left"
+                  size={14}
+                  className="mr-1.5 sm:mr-2 flex-shrink-0"
+                />
+                <span class="truncate">Volver a Salas</span>
+              </a>
+              <a
+                href={`/rooms/edit/${room.id}`}
+                class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors text-xs sm:text-sm min-h-[40px] w-full sm:w-auto"
+              >
+                <Icon
+                  name="edit"
+                  size={14}
+                  className="mr-1.5 sm:mr-2 flex-shrink-0"
+                />
+                <span class="truncate">Editar Sala</span>
+              </a>
             </div>
           </div>
 
