@@ -24,9 +24,8 @@ export default function Home({}: PageProps) {
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
               <a
                 href="/login"
-                class="inline-flex items-center gap-3 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                class="inline-flex items-center justify-center font-medium rounded-lg px-8 py-4 text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 ease-in-out shadow-lg hover:shadow-xl transform hover:scale-105"
               >
-                <Icon name="login" size={20} className="text-white" />
                 Iniciar Sesión
               </a>
             </div>

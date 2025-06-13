@@ -130,16 +130,14 @@ export default function PatientDetailsPage({
                 <div class="flex items-center gap-3">
                   <a
                     href="/patients"
-                    class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                    class="inline-flex items-center justify-center font-medium rounded-lg px-4 py-2 text-gray-700 dark:text-gray-200 bg-transparent border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-900/20 focus:ring-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 ease-in-out"
                   >
-                    <Icon name="arrow-left" size={16} className="mr-2" />
                     Volver
                   </a>
                   <a
                     href={`/patients/edit/${patient.id}`}
-                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors"
+                    class="inline-flex items-center justify-center font-medium rounded-lg px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 ease-in-out"
                   >
-                    <Icon name="edit" size={16} className="mr-2" />
                     Editar
                   </a>
                 </div>
@@ -372,29 +370,24 @@ export default function PatientDetailsPage({
                   <div class="space-y-3">
                     <a
                       href={`/patients/edit/${patient.id}`}
-                      class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                      class="w-full inline-flex items-center justify-center font-medium rounded-lg px-4 py-2 text-gray-700 dark:text-gray-200 bg-transparent border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-900/20 focus:ring-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 ease-in-out"
                     >
-                      <Icon name="edit" size={16} className="mr-2" />
                       Editar Paciente
                     </a>
 
                     <a
-                      href={`/appointments/new?patient=${
-                        encodeURIComponent(
-                          patient.name,
-                        )
-                      }`}
-                      class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                      href={`/appointments/new?patient=${encodeURIComponent(
+                        patient.name
+                      )}`}
+                      class="w-full inline-flex items-center justify-center font-medium rounded-lg px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 ease-in-out"
                     >
-                      <Icon name="calendar-plus" size={16} className="mr-2" />
                       Nueva Cita
                     </a>
 
                     <a
                       href={`/patients/delete/${patient.id}`}
-                      class="w-full inline-flex items-center justify-center px-4 py-2 border border-red-300 dark:border-red-600 rounded-lg text-red-700 dark:text-red-400 bg-white dark:bg-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      class="w-full inline-flex items-center justify-center font-medium rounded-lg px-4 py-2 text-red-600 dark:text-red-400 bg-transparent border border-red-300 dark:border-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 focus:ring-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 ease-in-out"
                     >
-                      <Icon name="trash-2" size={16} className="mr-2" />
                       Eliminar Paciente
                     </a>
                   </div>

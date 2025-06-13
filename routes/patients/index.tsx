@@ -184,9 +184,8 @@ export default function PatientsPage({
             <div class="mt-4 sm:mt-0">
               <a
                 href="/patients/new"
-                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                class="inline-flex items-center justify-center font-medium rounded-lg px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 ease-in-out"
               >
-                <Icon name="user-plus" size={16} className="mr-2" />
                 Nuevo Paciente
               </a>
             </div>
@@ -282,9 +281,8 @@ export default function PatientsPage({
                   </p>
                   <a
                     href="/patients/new"
-                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+                    class="inline-flex items-center justify-center font-medium rounded-lg px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 ease-in-out"
                   >
-                    <Icon name="user-plus" size={16} className="mr-2" />
                     Crear Primer Paciente
                   </a>
                 </div>

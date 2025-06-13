@@ -209,13 +209,8 @@ export default function AppointmentsPage({
               </div>
               <a
                 href="/appointments/new"
-                class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                class="inline-flex items-center justify-center font-medium rounded-lg px-6 py-3 text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 ease-in-out shadow-lg hover:shadow-xl"
               >
-                <Icon
-                  name="calendar-plus"
-                  className="h-5 w-5 filter brightness-0 invert"
-                  disableAutoFilter
-                />
                 Nueva Cita
               </a>
             </div>
@@ -326,13 +321,8 @@ export default function AppointmentsPage({
               </p>
               <a
                 href="/appointments/new"
-                class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                class="inline-flex items-center justify-center font-medium rounded-lg px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 ease-in-out"
               >
-                <Icon
-                  name="calendar-plus"
-                  className="h-5 w-5 filter brightness-0 invert"
-                  disableAutoFilter
-                />
                 Crear Primera Cita
               </a>
             </div>

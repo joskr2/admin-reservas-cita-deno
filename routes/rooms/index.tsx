@@ -2,7 +2,6 @@ import { type FreshContext, type PageProps } from "$fresh/server.ts";
 import { type AppState, type Room } from "../../types/index.ts";
 import { getRoomRepository } from "../../lib/database/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
-import { Button } from "../../components/ui/Button.tsx";
 import RoomToggleButton from "../../islands/RoomToggleButton.tsx";
 import RoomFilters from "../../islands/RoomFilters.tsx";
 
@@ -201,10 +200,11 @@ export default function RoomsPage({
             </div>
             {data.userRole === "superadmin" && (
               <div class="mt-4 sm:mt-0 flex gap-3">
-                <a href="/rooms/new">
-                  <Button variant="primary" leftIcon="plus">
-                    Nueva Sala
-                  </Button>
+                <a
+                  href="/rooms/new"
+                  class="inline-flex items-center justify-center font-medium rounded-lg px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 ease-in-out"
+                >
+                  Nueva Sala
                 </a>
               </div>
             )}
@@ -414,9 +414,8 @@ export default function RoomsPage({
               {totalCount > 0 && (
                 <a
                   href="/rooms"
-                  class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors"
+                  class="inline-flex items-center justify-center font-medium rounded-lg px-4 py-2 text-blue-600 dark:text-blue-400 bg-transparent border border-blue-300 dark:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 focus:ring-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 ease-in-out"
                 >
-                  <Icon name="x" size={16} className="mr-2" />
                   Limpiar filtros
                 </a>
               )}

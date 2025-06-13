@@ -10,7 +10,15 @@
     "update": "deno run -A -r https://fresh.deno.dev/update .",
     "seed": "deno run --allow-read --allow-write --unstable-kv scripts/seed.ts",
     "fix-kv": "deno run --allow-read --allow-write --unstable-kv scripts/fix-kv-data.ts",
-    "migrate-user-ids": "deno run --allow-read --allow-write --unstable-kv scripts/migrate-user-ids.ts"
+    "migrate-user-ids": "deno run --allow-read --allow-write --unstable-kv scripts/migrate-user-ids.ts",
+    "test": "deno run -A --unstable-kv scripts/test-runner-simple.ts",
+    "test:unit": "deno run -A --unstable-kv scripts/test-runner-simple.ts --type=unit",
+    "test:integration": "deno run -A --unstable-kv scripts/test-runner-simple.ts --type=integration",
+    "test:performance": "deno run -A --unstable-kv scripts/test-runner-simple.ts --type=performance",
+    "test:coverage": "deno run -A --unstable-kv scripts/test-runner-simple.ts --coverage",
+    "test:verbose": "deno run -A --unstable-kv scripts/test-runner-simple.ts --verbose",
+    "test:quick": "deno test --allow-all --unstable-kv tests/unit/repositories/",
+    "test:real": "deno test --allow-all --unstable-kv tests/integration/api/patients-real.test.ts"
   },
   "lint": {
     "rules": {
