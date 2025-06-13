@@ -4,26 +4,125 @@ import { getRoomRepository } from "../../lib/database/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
 import RoomToggleButton from "../../islands/RoomToggleButton.tsx";
 
+interface RoomsPageData {
+  rooms: Room[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+  filters: {
+    search?: string;
+    status?: string;
+    type?: string;
+  };
+  success?: string | null;
+}
+
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
+  const url = new URL(req.url);
+  const page = parseInt(url.searchParams.get("page") || "1");
+  const limit = parseInt(url.searchParams.get("limit") || "5");
+  const search = url.searchParams.get("search") || "";
+  const status = url.searchParams.get("status") || "";
+  const type = url.searchParams.get("type") || "";
+  const success = url.searchParams.get("success");
+
   try {
     const roomRepository = getRoomRepository();
-    const rooms = await roomRepository.getAll();
+    let allRooms = await roomRepository.getAll();
 
-    // Detectar mensaje de éxito
-    const url = new URL(req.url);
-    const success = url.searchParams.get("success");
+    // Aplicar filtros
+    if (search) {
+      const searchLower = search.toLowerCase();
+      allRooms = allRooms.filter(
+        (room) =>
+          room.name.toLowerCase().includes(searchLower) ||
+          room.id.toLowerCase().includes(searchLower) ||
+          (room.description &&
+            room.description.toLowerCase().includes(searchLower))
+      );
+    }
 
-    return ctx.render({ rooms, success });
+    if (status) {
+      const isAvailable = status === "available";
+      allRooms = allRooms.filter((room) => room.isAvailable === isAvailable);
+    }
+
+    if (type) {
+      allRooms = allRooms.filter((room) => room.roomType === type);
+    }
+
+    const totalCount = allRooms.length;
+    const totalPages = Math.ceil(totalCount / limit);
+    const startIndex = (page - 1) * limit;
+    const rooms = allRooms.slice(startIndex, startIndex + limit);
+
+    return ctx.render({
+      rooms,
+      totalCount,
+      currentPage: page,
+      totalPages,
+      filters: { search, status, type },
+      success,
+    });
   } catch (error) {
     console.error("Error loading rooms:", error);
-    return ctx.render({ rooms: [] });
+    return ctx.render({
+      rooms: [],
+      totalCount: 0,
+      currentPage: 1,
+      totalPages: 1,
+      filters: {},
+      success: null,
+    });
   }
 }
 
 export default function RoomsPage({
   data,
-}: PageProps<{ rooms: Room[]; success?: string | null }, AppState>) {
-  const { rooms, success } = data;
+}: PageProps<RoomsPageData, AppState>) {
+  const { rooms, totalCount, currentPage, totalPages, filters, success } = data;
+
+  const buildUrl = (params: Record<string, string | number | undefined>) => {
+    const url = new URL(
+      "/rooms",
+      globalThis.location?.origin || "http://localhost:8000"
+    );
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== "") {
+        url.searchParams.set(key, value.toString());
+      }
+    });
+    return url.pathname + url.search;
+  };
+
+  const getPaginationPages = () => {
+    const pages = [];
+    const maxVisible = 5;
+
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push("...");
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push("...");
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push("...");
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push("...");
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
+  };
 
   const getRoomTypeLabel = (type?: string) => {
     const typeLabels: Record<string, string> = {
@@ -55,6 +154,15 @@ export default function RoomsPage({
       : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
   };
 
+  // Calcular estadísticas de todas las salas (no solo las de la página actual)
+  const allRoomsCount = totalCount;
+  const availableRoomsCount = rooms.filter((r) => r.isAvailable).length;
+  const unavailableRoomsCount = rooms.filter((r) => !r.isAvailable).length;
+  const occupancyRate =
+    allRoomsCount > 0
+      ? Math.round((unavailableRoomsCount / allRoomsCount) * 100)
+      : 0;
+
   return (
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
       <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -76,6 +184,7 @@ export default function RoomsPage({
             </div>
           )}
 
+          {/* Header */}
           <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
@@ -96,6 +205,107 @@ export default function RoomsPage({
             </div>
           </div>
 
+          {/* Filtros */}
+          <div class="mb-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Búsqueda */}
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Buscar
+                </label>
+                <input
+                  type="text"
+                  name="search"
+                  value={filters.search || ""}
+                  placeholder="Nombre, ID o descripción..."
+                  class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 text-sm"
+                />
+              </div>
+
+              {/* Estado */}
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Estado
+                </label>
+                <select
+                  name="status"
+                  title="Filtrar por estado de disponibilidad"
+                  class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                >
+                  <option value="">Todos los estados</option>
+                  <option
+                    value="available"
+                    selected={filters.status === "available"}
+                  >
+                    Disponible
+                  </option>
+                  <option
+                    value="unavailable"
+                    selected={filters.status === "unavailable"}
+                  >
+                    No disponible
+                  </option>
+                </select>
+              </div>
+
+              {/* Tipo */}
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Tipo
+                </label>
+                <select
+                  name="type"
+                  title="Filtrar por tipo de sala"
+                  class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                >
+                  <option value="">Todos los tipos</option>
+                  <option
+                    value="individual"
+                    selected={filters.type === "individual"}
+                  >
+                    Individual
+                  </option>
+                  <option value="family" selected={filters.type === "family"}>
+                    Familiar
+                  </option>
+                  <option value="group" selected={filters.type === "group"}>
+                    Grupal
+                  </option>
+                  <option
+                    value="evaluation"
+                    selected={filters.type === "evaluation"}
+                  >
+                    Evaluación
+                  </option>
+                  <option
+                    value="relaxation"
+                    selected={filters.type === "relaxation"}
+                  >
+                    Relajación
+                  </option>
+                </select>
+              </div>
+
+              {/* Botones */}
+              <div class="flex items-end gap-2">
+                <button
+                  type="submit"
+                  class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors text-sm"
+                >
+                  <Icon name="eye" size={16} className="mr-2" />
+                  Filtrar
+                </button>
+                <a
+                  href="/rooms"
+                  class="inline-flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm"
+                  title="Limpiar filtros"
+                >
+                  <Icon name="x" size={16} />
+                </a>
+              </div>
+            </form>
+          </div>
+
           {/* Estadísticas */}
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
@@ -110,7 +320,7 @@ export default function RoomsPage({
                     Total Salas
                   </p>
                   <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                    {rooms.length}
+                    {allRoomsCount}
                   </p>
                 </div>
               </div>
@@ -123,7 +333,7 @@ export default function RoomsPage({
                     Disponibles
                   </p>
                   <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                    {rooms.filter((r) => r.isAvailable).length}
+                    {availableRoomsCount}
                   </p>
                 </div>
               </div>
@@ -136,7 +346,7 @@ export default function RoomsPage({
                     No Disponibles
                   </p>
                   <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                    {rooms.filter((r) => !r.isAvailable).length}
+                    {unavailableRoomsCount}
                   </p>
                 </div>
               </div>
@@ -153,14 +363,7 @@ export default function RoomsPage({
                     Tasa de Ocupación
                   </p>
                   <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                    {rooms.length > 0
-                      ? Math.round(
-                          (rooms.filter((r) => !r.isAvailable).length /
-                            rooms.length) *
-                            100
-                        )
-                      : 0}
-                    %
+                    {occupancyRate}%
                   </p>
                 </div>
               </div>
@@ -333,12 +536,176 @@ export default function RoomsPage({
                 className="mx-auto text-gray-400 mb-4"
               />
               <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                No hay salas configuradas
+                {totalCount === 0
+                  ? "No hay salas configuradas"
+                  : "No se encontraron salas"}
               </h3>
               <p class="text-gray-600 dark:text-gray-400 mb-6">
-                Las salas se inicializan automáticamente al cargar la
-                aplicación.
+                {totalCount === 0
+                  ? "Las salas se inicializan automáticamente al cargar la aplicación."
+                  : "Intenta ajustar los filtros para encontrar las salas que buscas."}
               </p>
+              {totalCount > 0 && (
+                <a
+                  href="/rooms"
+                  class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors"
+                >
+                  <Icon name="x" size={16} className="mr-2" />
+                  Limpiar filtros
+                </a>
+              )}
+            </div>
+          )}
+
+          {/* Paginación */}
+          {totalPages > 1 && (
+            <div class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              {/* Información de resultados - Móvil */}
+              <div class="sm:hidden text-center mb-4">
+                <span class="text-sm text-gray-600 dark:text-gray-400">
+                  Página {currentPage} de {totalPages}
+                </span>
+                <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  {totalCount} salas en total
+                </div>
+              </div>
+
+              {/* Paginación móvil - Solo botones anterior/siguiente y página actual */}
+              <div class="sm:hidden flex items-center justify-between">
+                <a
+                  href={
+                    currentPage > 1
+                      ? buildUrl({ ...filters, page: currentPage - 1 })
+                      : "#"
+                  }
+                  class={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    currentPage > 1
+                      ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
+                      : "text-gray-400 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700"
+                  }`}
+                >
+                  <Icon name="arrow-left" size={16} className="mr-1" />
+                  Anterior
+                </a>
+
+                <div class="flex items-center space-x-1">
+                  {/* Solo mostrar página actual y adyacentes en móvil */}
+                  {currentPage > 1 && (
+                    <a
+                      href={buildUrl({
+                        ...filters,
+                        page: currentPage - 1,
+                      })}
+                      class="px-2 py-1 rounded text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      {currentPage - 1}
+                    </a>
+                  )}
+
+                  <span class="px-3 py-1 rounded bg-blue-600 text-white text-sm font-medium">
+                    {currentPage}
+                  </span>
+
+                  {currentPage < totalPages && (
+                    <a
+                      href={buildUrl({
+                        ...filters,
+                        page: currentPage + 1,
+                      })}
+                      class="px-2 py-1 rounded text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      {currentPage + 1}
+                    </a>
+                  )}
+                </div>
+
+                <a
+                  href={
+                    currentPage < totalPages
+                      ? buildUrl({ ...filters, page: currentPage + 1 })
+                      : "#"
+                  }
+                  class={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    currentPage < totalPages
+                      ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
+                      : "text-gray-400 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700"
+                  }`}
+                >
+                  Siguiente
+                  <Icon
+                    name="arrow-left"
+                    size={16}
+                    className="ml-1 rotate-180"
+                  />
+                </a>
+              </div>
+
+              {/* Paginación desktop - Versión completa */}
+              <div class="hidden sm:flex items-center justify-between">
+                <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                  <span>
+                    Mostrando {(currentPage - 1) * 5 + 1} -{" "}
+                    {Math.min(currentPage * 5, totalCount)} de {totalCount}{" "}
+                    salas
+                  </span>
+                </div>
+
+                <div class="flex items-center space-x-1">
+                  {/* Botón anterior */}
+                  <a
+                    href={
+                      currentPage > 1
+                        ? buildUrl({ ...filters, page: currentPage - 1 })
+                        : "#"
+                    }
+                    class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      currentPage > 1
+                        ? "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        : "text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                    }`}
+                  >
+                    Anterior
+                  </a>
+
+                  {/* Números de página */}
+                  {getPaginationPages().map((page, index) => (
+                    <span key={index}>
+                      {page === "..." ? (
+                        <span class="px-3 py-2 text-gray-400 dark:text-gray-600">
+                          ...
+                        </span>
+                      ) : (
+                        <a
+                          href={buildUrl({ ...filters, page })}
+                          class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            currentPage === page
+                              ? "bg-blue-600 text-white"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                          }`}
+                        >
+                          {page}
+                        </a>
+                      )}
+                    </span>
+                  ))}
+
+                  {/* Botón siguiente */}
+                  <a
+                    href={
+                      currentPage < totalPages
+                        ? buildUrl({ ...filters, page: currentPage + 1 })
+                        : "#"
+                    }
+                    class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      currentPage < totalPages
+                        ? "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        : "text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                    }`}
+                  >
+                    Siguiente
+                  </a>
+                </div>
+              </div>
             </div>
           )}
         </div>
