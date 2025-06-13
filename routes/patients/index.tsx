@@ -2,23 +2,141 @@ import { type FreshContext, type PageProps } from "$fresh/server.ts";
 import { type AppState, type PatientProfile } from "../../types/index.ts";
 import { getPatientRepository } from "../../lib/database/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
+import GenericFilters from "../../islands/GenericFilters.tsx";
 
-export async function handler(_req: Request, ctx: FreshContext<AppState>) {
+interface PatientsPageData {
+  patients: PatientProfile[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+  filters: {
+    search?: string;
+    status?: string;
+  };
+}
+
+export async function handler(req: Request, ctx: FreshContext<AppState>) {
+  const url = new URL(req.url);
+  const page = parseInt(url.searchParams.get("page") || "1");
+  const limit = parseInt(url.searchParams.get("limit") || "10");
+  const search = url.searchParams.get("search") || "";
+  const status = url.searchParams.get("status") || "";
+
   try {
     const patientRepository = getPatientRepository();
-    const patients = await patientRepository.getAllPatientsAsProfiles();
+    let allPatients = await patientRepository.getAllPatientsAsProfiles();
 
-    return ctx.render({ patients });
+    // Aplicar filtros
+    if (search) {
+      const searchLower = search.toLowerCase();
+      allPatients = allPatients.filter(
+        (patient) =>
+          patient.name.toLowerCase().includes(searchLower) ||
+          patient.id.toLowerCase().includes(searchLower) ||
+          (patient.email &&
+            patient.email.toLowerCase().includes(searchLower)) ||
+          (patient.phone && patient.phone.includes(search)),
+      );
+    }
+
+    if (status) {
+      const isActive = status === "active";
+      allPatients = allPatients.filter(
+        (patient) => patient.isActive === isActive,
+      );
+    }
+
+    const totalCount = allPatients.length;
+    const totalPages = Math.ceil(totalCount / limit);
+    const startIndex = (page - 1) * limit;
+    const patients = allPatients.slice(startIndex, startIndex + limit);
+
+    return ctx.render({
+      patients,
+      totalCount,
+      currentPage: page,
+      totalPages,
+      filters: { search, status },
+    });
   } catch (error) {
     console.error("Error loading patients:", error);
-    return ctx.render({ patients: [] });
+    return ctx.render({
+      patients: [],
+      totalCount: 0,
+      currentPage: 1,
+      totalPages: 1,
+      filters: {},
+    });
   }
 }
 
 export default function PatientsPage({
   data,
-}: PageProps<{ patients: PatientProfile[] }, AppState>) {
-  const { patients } = data;
+}: PageProps<PatientsPageData, AppState>) {
+  const { patients, totalCount, currentPage, totalPages, filters } = data;
+
+  const buildUrl = (params: Record<string, string | number | undefined>) => {
+    const url = new URL(
+      "/patients",
+      globalThis.location?.origin || "http://localhost:8000",
+    );
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== undefined && value !== "") {
+        url.searchParams.set(key, value.toString());
+      }
+    });
+    return url.pathname + url.search;
+  };
+
+  const getPaginationPages = () => {
+    const pages = [];
+    const maxVisible = 5;
+
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) pages.push(i);
+        pages.push("...");
+        pages.push(totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1);
+        pages.push("...");
+        for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push("...");
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+        pages.push("...");
+        pages.push(totalPages);
+      }
+    }
+
+    return pages;
+  };
+
+  // Configuración de filtros para el componente genérico
+  const filterFields = [
+    {
+      key: "search",
+      label: "Buscar Paciente",
+      icon: "user",
+      type: "search" as const,
+      placeholder: "Nombre, email, teléfono o ID...",
+    },
+    {
+      key: "status",
+      label: "Estado",
+      icon: "activity",
+      type: "select" as const,
+      options: [
+        { value: "active", label: "Activos", emoji: "✅" },
+        { value: "inactive", label: "Inactivos", emoji: "❌" },
+      ],
+    },
+  ];
 
   return (
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -44,18 +162,35 @@ export default function PatientsPage({
             </div>
           </div>
 
+          {/* Filtros */}
+          <GenericFilters
+            title="Filtros de Búsqueda"
+            basePath="/patients"
+            filters={filters}
+            fields={filterFields}
+          />
+
           {/* Estadísticas */}
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div class="flex items-center">
-                <Icon
-                  name="users"
-                  size={24}
-                  className="text-blue-500 mr-3"
-                />
+                <Icon name="users" size={24} className="text-blue-500 mr-3" />
                 <div>
                   <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
                     Total Pacientes
+                  </p>
+                  <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                    {totalCount}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div class="flex items-center">
+                <Icon name="eye" size={24} className="text-green-500 mr-3" />
+                <div>
+                  <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Mostrando
                   </p>
                   <p class="text-2xl font-bold text-gray-900 dark:text-white">
                     {patients.length}
@@ -66,16 +201,16 @@ export default function PatientsPage({
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div class="flex items-center">
                 <Icon
-                  name="check"
+                  name="file-digit"
                   size={24}
-                  className="text-green-500 mr-3"
+                  className="text-purple-500 mr-3"
                 />
                 <div>
                   <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Pacientes Activos
+                    Página Actual
                   </p>
                   <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                    {patients.filter((p) => p.isActive).length}
+                    {currentPage}
                   </p>
                 </div>
               </div>
@@ -83,16 +218,16 @@ export default function PatientsPage({
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div class="flex items-center">
                 <Icon
-                  name="x"
+                  name="file-digit"
                   size={24}
-                  className="text-red-500 mr-3"
+                  className="text-orange-500 mr-3"
                 />
                 <div>
                   <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
-                    Pacientes Inactivos
+                    Total Páginas
                   </p>
                   <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                    {patients.filter((p) => !p.isActive).length}
+                    {totalPages}
                   </p>
                 </div>
               </div>
@@ -102,15 +237,6 @@ export default function PatientsPage({
           {/* Lista de pacientes */}
           <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
             <div class="px-4 py-5 sm:p-6">
-              <div class="mb-4">
-                <input
-                  type="text"
-                  placeholder="Buscar pacientes..."
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  id="patient-search"
-                />
-              </div>
-
               {patients.length === 0
                 ? (
                   <div class="text-center py-12">
@@ -232,6 +358,152 @@ export default function PatientsPage({
                 )}
             </div>
           </div>
+
+          {/* Paginación */}
+          {totalPages > 1 && (
+            <div class="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              {/* Información de resultados - Móvil */}
+              <div class="sm:hidden text-center mb-4">
+                <span class="text-sm text-gray-600 dark:text-gray-400">
+                  Página {currentPage} de {totalPages}
+                </span>
+                <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                  {totalCount} pacientes en total
+                </div>
+              </div>
+
+              {/* Paginación móvil */}
+              <div class="sm:hidden flex items-center justify-between">
+                <a
+                  href={currentPage > 1
+                    ? buildUrl({ ...filters, page: currentPage - 1 })
+                    : "#"}
+                  class={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    currentPage > 1
+                      ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
+                      : "text-gray-400 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700"
+                  }`}
+                >
+                  <Icon name="arrow-left" size={16} className="mr-1" />
+                  Anterior
+                </a>
+
+                <div class="flex items-center space-x-1">
+                  {currentPage > 1 && (
+                    <a
+                      href={buildUrl({
+                        ...filters,
+                        page: currentPage - 1,
+                      })}
+                      class="px-2 py-1 rounded text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      {currentPage - 1}
+                    </a>
+                  )}
+
+                  <span class="px-3 py-1 rounded bg-blue-600 text-white text-sm font-medium">
+                    {currentPage}
+                  </span>
+
+                  {currentPage < totalPages && (
+                    <a
+                      href={buildUrl({
+                        ...filters,
+                        page: currentPage + 1,
+                      })}
+                      class="px-2 py-1 rounded text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      {currentPage + 1}
+                    </a>
+                  )}
+                </div>
+
+                <a
+                  href={currentPage < totalPages
+                    ? buildUrl({ ...filters, page: currentPage + 1 })
+                    : "#"}
+                  class={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    currentPage < totalPages
+                      ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
+                      : "text-gray-400 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700"
+                  }`}
+                >
+                  Siguiente
+                  <Icon
+                    name="arrow-left"
+                    size={16}
+                    className="ml-1 rotate-180"
+                  />
+                </a>
+              </div>
+
+              {/* Paginación desktop */}
+              <div class="hidden sm:flex items-center justify-between">
+                <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                  <span>
+                    Mostrando {(currentPage - 1) * 10 + 1} -{" "}
+                    {Math.min(currentPage * 10, totalCount)} de {totalCount}
+                    {" "}
+                    pacientes
+                  </span>
+                </div>
+
+                <div class="flex items-center space-x-1">
+                  {/* Botón anterior */}
+                  <a
+                    href={currentPage > 1
+                      ? buildUrl({ ...filters, page: currentPage - 1 })
+                      : "#"}
+                    class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      currentPage > 1
+                        ? "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        : "text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                    }`}
+                  >
+                    Anterior
+                  </a>
+
+                  {/* Números de página */}
+                  {getPaginationPages().map((page, index) => (
+                    <span key={index}>
+                      {page === "..."
+                        ? (
+                          <span class="px-3 py-2 text-gray-400 dark:text-gray-600">
+                            ...
+                          </span>
+                        )
+                        : (
+                          <a
+                            href={buildUrl({ ...filters, page })}
+                            class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                              currentPage === page
+                                ? "bg-blue-600 text-white"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            }`}
+                          >
+                            {page}
+                          </a>
+                        )}
+                    </span>
+                  ))}
+
+                  {/* Botón siguiente */}
+                  <a
+                    href={currentPage < totalPages
+                      ? buildUrl({ ...filters, page: currentPage + 1 })
+                      : "#"}
+                    class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      currentPage < totalPages
+                        ? "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        : "text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                    }`}
+                  >
+                    Siguiente
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </main>
     </div>

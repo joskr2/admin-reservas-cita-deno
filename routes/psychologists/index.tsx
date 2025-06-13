@@ -151,7 +151,6 @@ export default function PsychologistsPage({
             <PsychologistFilters currentUser={currentUser} filters={filters} />
           </div>
 
-
           {/* Lista de psicólogos */}
           {psychologists.length === 0
             ? (

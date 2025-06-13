@@ -46,6 +46,7 @@ import * as $Counter from "./islands/Counter.tsx";
 import * as $DashboardStats from "./islands/DashboardStats.tsx";
 import * as $DeleteAppointmentButton from "./islands/DeleteAppointmentButton.tsx";
 import * as $DeleteRoomButton from "./islands/DeleteRoomButton.tsx";
+import * as $GenericFilters from "./islands/GenericFilters.tsx";
 import * as $Header from "./islands/Header.tsx";
 import * as $PatientSearchSelect from "./islands/PatientSearchSelect.tsx";
 import * as $PatientSelect from "./islands/PatientSelect.tsx";
@@ -104,6 +105,7 @@ const manifest = {
     "./islands/DashboardStats.tsx": $DashboardStats,
     "./islands/DeleteAppointmentButton.tsx": $DeleteAppointmentButton,
     "./islands/DeleteRoomButton.tsx": $DeleteRoomButton,
+    "./islands/GenericFilters.tsx": $GenericFilters,
     "./islands/Header.tsx": $Header,
     "./islands/PatientSearchSelect.tsx": $PatientSearchSelect,
     "./islands/PatientSelect.tsx": $PatientSelect,
