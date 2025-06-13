@@ -11,7 +11,7 @@ export const handler: Handlers = {
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
 
     // Eliminar todas las cookies relacionadas con autenticación

@@ -1,14 +1,14 @@
-import { useState, useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { Icon } from "../components/ui/Icon.tsx";
 import { Button } from "../components/ui/Button.tsx";
 import { Input } from "../components/ui/Input.tsx";
 import { Select } from "../components/ui/Select.tsx";
 import PatientSearchSelect from "./PatientSearchSelect.tsx";
 import type {
-  UserProfile,
+  AppointmentStatus,
   Room,
   RoomId,
-  AppointmentStatus,
+  UserProfile,
 } from "../types/index.ts";
 
 interface AppointmentFormProps {
@@ -27,7 +27,7 @@ interface AppointmentFormProps {
     notes?: string;
   };
   mode?: "create" | "edit";
-  onSubmit?: (data: any) => void;
+  onSubmit?: (data: FormData) => void;
   onCancel?: () => void;
 }
 
@@ -222,8 +222,7 @@ export default function AppointmentForm({
         if (onSubmit) {
           onSubmit(submitData);
         } else {
-          // Redirigir a la lista de citas
-          window.location.href = "/appointments";
+          globalThis.location.href = "/appointments";
         }
       } else {
         const errorData = await response.json();

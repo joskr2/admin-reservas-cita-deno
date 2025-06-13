@@ -115,8 +115,8 @@ export default function DeleteProfilePage({ data }: PageProps<Data>) {
     <>
       <Head>
         <title>
-          Eliminar Perfil - {profile?.name || profile?.email || "Usuario"} -
-          Horizonte Clínica
+          Eliminar Perfil - {profile?.name || profile?.email || "Usuario"}{" "}
+          - Horizonte Clínica
         </title>
         <meta
           name="description"
@@ -220,8 +220,7 @@ export default function DeleteProfilePage({ data }: PageProps<Data>) {
                             className="h-4 w-4 text-gray-500"
                           />
                           <span class="text-sm text-gray-600 dark:text-gray-400">
-                            <strong>Rol:</strong>{" "}
-                            {profile.role === "superadmin"
+                            <strong>Rol:</strong> {profile.role === "superadmin"
                               ? "👑 Superadministrador"
                               : "👨‍⚕️ Psicólogo"}
                           </span>
@@ -234,7 +233,7 @@ export default function DeleteProfilePage({ data }: PageProps<Data>) {
                           <span class="text-sm text-gray-600 dark:text-gray-400">
                             <strong>Creado:</strong>{" "}
                             {new Date(profile.createdAt).toLocaleDateString(
-                              "es-ES"
+                              "es-ES",
                             )}
                           </span>
                         </div>
@@ -244,8 +243,7 @@ export default function DeleteProfilePage({ data }: PageProps<Data>) {
                             className="h-4 w-4 text-gray-500"
                           />
                           <span class="text-sm text-gray-600 dark:text-gray-400">
-                            <strong>Estado:</strong>{" "}
-                            {profile.isActive !== false
+                            <strong>Estado:</strong> {profile.isActive !== false
                               ? "✅ Activo"
                               : "❌ Inactivo"}
                           </span>

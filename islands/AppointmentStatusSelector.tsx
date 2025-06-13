@@ -34,7 +34,7 @@ export default function AppointmentStatusSelector({
             body: JSON.stringify({
               status: newStatus,
             }),
-          }
+          },
         );
 
         if (response.ok) {
@@ -120,7 +120,8 @@ export default function AppointmentStatusSelector({
         {/* Indicador de carga desktop */}
         {isUpdating && (
           <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded-md">
-            <div class="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent"></div>
+            <div class="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent">
+            </div>
           </div>
         )}
       </div>
@@ -138,31 +139,34 @@ export default function AppointmentStatusSelector({
             transition-all duration-200
             ${statusColorClass}
             ${
-              isUpdating
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:shadow-md active:scale-95"
-            }
+            isUpdating
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:shadow-md active:scale-95"
+          }
           `}
         >
           <div class="flex items-center justify-between">
             <span>{getStatusText(currentStatus)}</span>
-            {isUpdating ? (
-              <div class="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
-            ) : (
-              <svg
-                class="h-4 w-4 text-current opacity-70"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            )}
+            {isUpdating
+              ? (
+                <div class="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent">
+                </div>
+              )
+              : (
+                <svg
+                  class="h-4 w-4 text-current opacity-70"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              )}
           </div>
         </button>
       </div>
@@ -174,7 +178,8 @@ export default function AppointmentStatusSelector({
           <div
             class="fixed inset-0 bg-black bg-opacity-50"
             onClick={() => setShowMobileModal(false)}
-          ></div>
+          >
+          </div>
 
           {/* Modal content */}
           <div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 rounded-t-xl shadow-xl">
@@ -226,9 +231,11 @@ export default function AppointmentStatusSelector({
                       key={status}
                       type="button"
                       onClick={() => handleStatusChange(status)}
-                      class={`w-full p-3 rounded-lg border border-gray-200 dark:border-gray-600 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${getStatusColor(
-                        status
-                      )}`}
+                      class={`w-full p-3 rounded-lg border border-gray-200 dark:border-gray-600 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                        getStatusColor(
+                          status,
+                        )
+                      }`}
                     >
                       <span class="font-medium">{getStatusText(status)}</span>
                     </button>

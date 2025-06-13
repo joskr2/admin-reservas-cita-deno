@@ -14,7 +14,9 @@ export function getInitialTheme(): Theme {
   }
 
   // Si no hay tema guardado, usar preferencia del sistema
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const prefersDark = globalThis.matchMedia(
+    "(prefers-color-scheme: dark)"
+  ).matches;
   return prefersDark ? "dark" : "light";
 }
 

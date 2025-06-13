@@ -1,11 +1,18 @@
 /// <reference lib="deno.ns" />
 /// <reference lib="deno.unstable" />
 
-import type { User, UserProfile, KVUserKey, KVUserByIdKey, KVUserByRoleKey } from "../../../types/index.ts";
+import type {
+  KVUserByIdKey,
+  KVUserByRoleKey,
+  KVUserKey,
+  User,
+  UserProfile,
+} from "../../../types/index.ts";
 import type { IUserRepository } from "../interfaces.ts";
 import { BaseRepository } from "./base.ts";
 
-export class UserRepository extends BaseRepository<User, string> implements IUserRepository {
+export class UserRepository extends BaseRepository<User, string>
+  implements IUserRepository {
   protected keyPrefix = ["users"];
 
   protected override getEntityId(entity: User): string {
@@ -13,11 +20,11 @@ export class UserRepository extends BaseRepository<User, string> implements IUse
   }
 
   protected override validate(entity: User): boolean {
-    return super.validate(entity) && 
-           typeof entity.email === "string" && 
-           entity.email.length > 0 &&
-           typeof entity.role === "string" && 
-           entity.role.length > 0;
+    return super.validate(entity) &&
+      typeof entity.email === "string" &&
+      entity.email.length > 0 &&
+      typeof entity.role === "string" &&
+      entity.role.length > 0;
   }
 
   public override async create(user: User): Promise<boolean> {
@@ -33,15 +40,18 @@ export class UserRepository extends BaseRepository<User, string> implements IUse
 
     try {
       const kv = await this.getKv();
-      
+
       // Usar transacciones atómicas para mantener consistencia
       const result = await kv
         .atomic()
         .set(["users", user.email] as KVUserKey, user)
         .set(["users_by_id", user.id] as KVUserByIdKey, user)
-        .set(["users_by_role", user.role, user.email] as KVUserByRoleKey, user.email)
+        .set(
+          ["users_by_role", user.role, user.email] as KVUserByRoleKey,
+          user.email,
+        )
         .commit();
-        
+
       return result.ok;
     } catch (error) {
       console.error("Error creating user:", error);
@@ -89,7 +99,10 @@ export class UserRepository extends BaseRepository<User, string> implements IUse
         try {
           const email = entry.value;
           if (typeof email !== "string" || !email) {
-            console.warn(`Invalid email value in users_by_role for role ${role}:`, email);
+            console.warn(
+              `Invalid email value in users_by_role for role ${role}:`,
+              email,
+            );
             continue;
           }
 
@@ -113,7 +126,7 @@ export class UserRepository extends BaseRepository<User, string> implements IUse
   public async getAllUsersAsProfiles(): Promise<UserProfile[]> {
     try {
       const users = await this.getAll();
-      const profiles = users.map(user => this.mapUserToProfile(user));
+      const profiles = users.map((user) => this.mapUserToProfile(user));
       return this.sortUserProfiles(profiles);
     } catch (error) {
       console.error("Error getting all users as profiles:", error);
@@ -121,13 +134,16 @@ export class UserRepository extends BaseRepository<User, string> implements IUse
     }
   }
 
-  public override async update(email: string, updates: Partial<User>): Promise<boolean> {
+  public override async update(
+    email: string,
+    updates: Partial<User>,
+  ): Promise<boolean> {
     try {
       const existingUser = await this.getUserByEmail(email);
       if (!existingUser) return false;
 
       const updatedUser = { ...existingUser, ...updates };
-      
+
       // Si cambió el rol, actualizar índices
       if (updates.role && updates.role !== existingUser.role) {
         const kv = await this.getKv();
@@ -135,7 +151,9 @@ export class UserRepository extends BaseRepository<User, string> implements IUse
           .atomic()
           .set(["users", email] as KVUserKey, updatedUser)
           .set(["users_by_id", updatedUser.id!] as KVUserByIdKey, updatedUser)
-          .delete(["users_by_role", existingUser.role, email] as KVUserByRoleKey)
+          .delete(
+            ["users_by_role", existingUser.role, email] as KVUserByRoleKey,
+          )
           .set(["users_by_role", updates.role, email] as KVUserByRoleKey, email)
           .commit();
         return true;
@@ -160,7 +178,7 @@ export class UserRepository extends BaseRepository<User, string> implements IUse
         .delete(["users_by_id", user.id!] as KVUserByIdKey)
         .delete(["users_by_role", user.role, email] as KVUserByRoleKey)
         .commit();
-        
+
       return result.ok;
     } catch (error) {
       console.error(`Error deleting user ${email}:`, error);

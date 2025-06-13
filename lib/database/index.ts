@@ -13,25 +13,25 @@ import { SessionRepository } from "./repositories/session.ts";
 import { DashboardService } from "./services/dashboard.ts";
 
 import type {
-  IDatabaseConnection,
-  IUserRepository,
-  IPatientRepository,
   IAppointmentRepository,
+  IDashboardService,
+  IDatabaseConnection,
+  IPatientRepository,
   IRoomRepository,
   ISessionRepository,
-  IDashboardService,
+  IUserRepository,
 } from "./interfaces.ts";
 
 // Factory class siguiendo el patrón Singleton para las instancias de repositorios
 export class DatabaseFactory {
   private static instance: DatabaseFactory;
   private connection: IDatabaseConnection;
-  private userRepository?: IUserRepository;
-  private patientRepository?: IPatientRepository;
-  private appointmentRepository?: IAppointmentRepository;
-  private roomRepository?: IRoomRepository;
-  private sessionRepository?: ISessionRepository;
-  private dashboardService?: IDashboardService;
+  private userRepository: IUserRepository | undefined;
+  private patientRepository: IPatientRepository | undefined;
+  private appointmentRepository: IAppointmentRepository | undefined;
+  private roomRepository: IRoomRepository | undefined;
+  private sessionRepository: ISessionRepository | undefined;
+  private dashboardService: IDashboardService | undefined;
 
   private constructor() {
     this.connection = DatabaseConnection.getInstance();
@@ -112,19 +112,20 @@ export const dbFactory = DatabaseFactory.getInstance();
 
 // Re-export de interfaces para facilitar imports
 export type {
-  IDatabaseConnection,
-  IUserRepository,
-  IPatientRepository,
   IAppointmentRepository,
+  IDashboardService,
+  IDatabaseConnection,
+  IPatientRepository,
   IRoomRepository,
   ISessionRepository,
-  IDashboardService,
+  IUserRepository,
 } from "./interfaces.ts";
 
 // Funciones de conveniencia que mantienen la API existente
 export const getUserRepository = () => dbFactory.getUserRepository();
 export const getPatientRepository = () => dbFactory.getPatientRepository();
-export const getAppointmentRepository = () => dbFactory.getAppointmentRepository();
+export const getAppointmentRepository = () =>
+  dbFactory.getAppointmentRepository();
 export const getRoomRepository = () => dbFactory.getRoomRepository();
 export const getSessionRepository = () => dbFactory.getSessionRepository();
 export const getDashboardService = () => dbFactory.getDashboardService();

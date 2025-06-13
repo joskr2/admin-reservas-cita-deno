@@ -96,7 +96,7 @@ const usersToSeed = [
 // Define rooms to be seeded
 const roomsToSeed: Room[] = [
   {
-    id: "A",
+    id: crypto.randomUUID(),
     name: "Sala A - Terapia Individual",
     isAvailable: true,
     equipment: [
@@ -105,9 +105,14 @@ const roomsToSeed: Room[] = [
       "Lámpara de ambiente",
       "Caja de pañuelos",
     ],
+    roomType: "individual",
+    description:
+      "Sala diseñada para sesiones de terapia individual con ambiente cálido y privado",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
-    id: "B",
+    id: crypto.randomUUID(),
     name: "Sala B - Terapia Familiar",
     isAvailable: true,
     equipment: [
@@ -116,9 +121,13 @@ const roomsToSeed: Room[] = [
       "Mesa de centro",
       "Juegos familiares",
     ],
+    roomType: "family",
+    description: "Espacio amplio y cómodo para terapia familiar y de pareja",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
-    id: "C",
+    id: crypto.randomUUID(),
     name: "Sala C - Terapia de Grupo",
     isAvailable: true,
     equipment: [
@@ -127,9 +136,15 @@ const roomsToSeed: Room[] = [
       "Proyector",
       "Sistema de audio",
     ],
+    roomType: "group",
+    description:
+      "Sala configurada para sesiones grupales con capacidad para 8 personas",
+    capacity: 8,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
-    id: "D",
+    id: crypto.randomUUID(),
     name: "Sala D - Evaluación Psicológica",
     isAvailable: true,
     equipment: [
@@ -138,9 +153,14 @@ const roomsToSeed: Room[] = [
       "Tests psicológicos",
       "Cronómetro",
     ],
+    roomType: "evaluation",
+    description:
+      "Sala equipada para evaluaciones psicológicas y neuropsicológicas",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
-    id: "E",
+    id: crypto.randomUUID(),
     name: "Sala E - Relajación y Mindfulness",
     isAvailable: true,
     equipment: [
@@ -149,9 +169,13 @@ const roomsToSeed: Room[] = [
       "Aromaterapia",
       "Mantas",
     ],
+    roomType: "relaxation",
+    description: "Espacio tranquilo para técnicas de relajación y mindfulness",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
-    id: "F",
+    id: crypto.randomUUID(),
     name: "Sala F - Terapia Cognitivo-Conductual",
     isAvailable: true,
     equipment: [
@@ -160,9 +184,14 @@ const roomsToSeed: Room[] = [
       "Pizarra interactiva",
       "Material didáctico",
     ],
+    roomType: "individual",
+    description:
+      "Sala especializada para terapia cognitivo-conductual con material didáctico",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
-    id: "G",
+    id: crypto.randomUUID(),
     name: "Sala G - Neuropsicología",
     isAvailable: true,
     equipment: [
@@ -171,9 +200,13 @@ const roomsToSeed: Room[] = [
       "Cronómetro digital",
       "Cámara de observación",
     ],
+    roomType: "evaluation",
+    description: "Sala especializada para evaluaciones neuropsicológicas",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
-    id: "H",
+    id: crypto.randomUUID(),
     name: "Sala H - Terapia de Pareja",
     isAvailable: true,
     equipment: [
@@ -182,9 +215,14 @@ const roomsToSeed: Room[] = [
       "Mesa redonda",
       "Sistema de grabación",
     ],
+    roomType: "family",
+    description: "Sala diseñada específicamente para terapia de pareja",
+    capacity: 2,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
-    id: "I",
+    id: crypto.randomUUID(),
     name: "Sala I - Terapia Infantil",
     isAvailable: true,
     equipment: [
@@ -193,9 +231,14 @@ const roomsToSeed: Room[] = [
       "Sillas infantiles",
       "Material de arte",
     ],
+    roomType: "individual",
+    description:
+      "Sala adaptada para terapia infantil con mobiliario y materiales apropiados",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
-    id: "J",
+    id: crypto.randomUUID(),
     name: "Sala J - Rehabilitación",
     isAvailable: true,
     equipment: [
@@ -204,9 +247,13 @@ const roomsToSeed: Room[] = [
       "Pelotas terapéuticas",
       "Espejos",
     ],
+    roomType: "individual",
+    description: "Sala equipada para rehabilitación cognitiva y física",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
-    id: "K",
+    id: crypto.randomUUID(),
     name: "Sala K - Consulta Psiquiátrica",
     isAvailable: true,
     equipment: [
@@ -215,9 +262,13 @@ const roomsToSeed: Room[] = [
       "Tensiómetro",
       "Balanza médica",
     ],
+    roomType: "evaluation",
+    description: "Sala médica para consultas psiquiátricas",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
   {
-    id: "L",
+    id: crypto.randomUUID(),
     name: "Sala L - Sala de Espera VIP",
     isAvailable: true,
     equipment: [
@@ -226,6 +277,11 @@ const roomsToSeed: Room[] = [
       "Revistas especializadas",
       "Sistema de climatización",
     ],
+    roomType: "relaxation",
+    description: "Sala de espera premium para pacientes VIP",
+    capacity: 6,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   },
 ];
 
@@ -234,27 +290,63 @@ function getRandomDate(startDate: Date, endDate: Date): string {
   const start = startDate.getTime();
   const end = endDate.getTime();
   const randomTime = start + Math.random() * (end - start);
-  return new Date(randomTime).toISOString().split('T')[0] as string;
+  return new Date(randomTime).toISOString().split("T")[0] as string;
 }
 
 // Función para generar horas aleatorias
 function getRandomTime(): string {
   const hours = Math.floor(Math.random() * 10) + 8; // 8 AM a 5 PM
-  const minutes = Math.random() < 0.5 ? '00' : '30';
-  return `${hours.toString().padStart(2, '0')}:${minutes}`;
+  const minutes = Math.random() < 0.5 ? "00" : "30";
+  return `${hours.toString().padStart(2, "0")}:${minutes}`;
 }
 
 // Listas de nombres de pacientes
 const patientNames = [
-  "María González", "Carlos Rodríguez", "Ana Martínez", "Pedro Sánchez", "Josué Patricio",
-  "Sofía López", "Diego Fernández", "Carmen Ruiz", "Alberto Díaz", "Lucía Morales",
-  "Francisco Herrera", "Elena Vargas", "Roberto Castro", "Isabel Ortega", "Manuel Peña",
-  "Patricia Guerrero", "Jorge Méndez", "Claudia Vega", "Raúl Jiménez", "Mónica Silva",
-  "Alejandro Torres", "Beatriz Ramos", "Gabriel Flores", "Cristina Aguilar", "Esteban Romero",
-  "Verónica Núñez", "Andrés Contreras", "Natalia Herrera", "Luis Paredes", "Carolina Medina",
-  "Fernando Ríos", "Adriana Soto", "Ignacio Valdés", "Valentina Cruz", "Mateo Espinoza",
-  "Camila Rojas", "Sebastián Muñoz", "Daniela Campos", "Nicolás Parra", "Fernanda Reyes",
-  "Emilio Santander", "Constanza Navarrete", "Tomás Olivares", "Francisca Bravo", "Joaquín Sáez"
+  "María González",
+  "Carlos Rodríguez",
+  "Ana Martínez",
+  "Pedro Sánchez",
+  "Josué Patricio",
+  "Sofía López",
+  "Diego Fernández",
+  "Carmen Ruiz",
+  "Alberto Díaz",
+  "Lucía Morales",
+  "Francisco Herrera",
+  "Elena Vargas",
+  "Roberto Castro",
+  "Isabel Ortega",
+  "Manuel Peña",
+  "Patricia Guerrero",
+  "Jorge Méndez",
+  "Claudia Vega",
+  "Raúl Jiménez",
+  "Mónica Silva",
+  "Alejandro Torres",
+  "Beatriz Ramos",
+  "Gabriel Flores",
+  "Cristina Aguilar",
+  "Esteban Romero",
+  "Verónica Núñez",
+  "Andrés Contreras",
+  "Natalia Herrera",
+  "Luis Paredes",
+  "Carolina Medina",
+  "Fernando Ríos",
+  "Adriana Soto",
+  "Ignacio Valdés",
+  "Valentina Cruz",
+  "Mateo Espinoza",
+  "Camila Rojas",
+  "Sebastián Muñoz",
+  "Daniela Campos",
+  "Nicolás Parra",
+  "Fernanda Reyes",
+  "Emilio Santander",
+  "Constanza Navarrete",
+  "Tomás Olivares",
+  "Francisca Bravo",
+  "Joaquín Sáez",
 ];
 
 // Listas de tipos de terapia/consulta
@@ -278,44 +370,56 @@ const therapyTypes = [
   "Terapia para trastornos alimentarios",
   "Manejo de fobias específicas",
   "Terapia para trastorno bipolar",
-  "Consulta de adicciones"
+  "Consulta de adicciones",
 ];
 
 // Función para generar citas
-function generateAppointments(): Appointment[] {
+function generateAppointments(roomIds: RoomId[]): Appointment[] {
   const appointments: Appointment[] = [];
-  const startDate = new Date('2024-11-01');
-  const endDate = new Date('2025-01-31');
-  const psychologists = usersToSeed.filter(user => user.role === 'psychologist');
-  const rooms: RoomId[] = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
-  const statuses: AppointmentStatus[] = ["pending", "scheduled", "in_progress", "completed", "cancelled"];
+  const startDate = new Date("2024-11-01");
+  const endDate = new Date("2025-01-31");
+  const psychologists = usersToSeed.filter(
+    (user) => user.role === "psychologist"
+  );
+  const statuses: AppointmentStatus[] = [
+    "pending",
+    "scheduled",
+    "in_progress",
+    "completed",
+    "cancelled",
+  ];
 
   // Generar 200 citas
   for (let i = 1; i <= 200; i++) {
-    const psychologist = psychologists[Math.floor(Math.random() * psychologists.length)]!;
-    const patient = patientNames[Math.floor(Math.random() * patientNames.length)]!;
+    const psychologist =
+      psychologists[Math.floor(Math.random() * psychologists.length)]!;
+    const patient =
+      patientNames[Math.floor(Math.random() * patientNames.length)]!;
     const appointmentDate = getRandomDate(startDate, endDate);
     const appointmentTime = getRandomTime();
-    const room = rooms[Math.floor(Math.random() * rooms.length)]!;
+    const room = roomIds[Math.floor(Math.random() * roomIds.length)]!;
     const status = statuses[Math.floor(Math.random() * statuses.length)]!;
-    const therapy = therapyTypes[Math.floor(Math.random() * therapyTypes.length)]!;
-    
+    const therapy =
+      therapyTypes[Math.floor(Math.random() * therapyTypes.length)]!;
+
     const createdAt = new Date(appointmentDate);
     createdAt.setDate(createdAt.getDate() - Math.floor(Math.random() * 30));
-    
+
     const statusHistory: AppointmentStatusHistory[] = [
       {
         status: "pending" as AppointmentStatus,
         changedAt: createdAt.toISOString(),
         notes: "Cita creada por el sistema",
-      }
+      },
     ];
 
     let updatedAt = createdAt.toISOString();
 
     if (status !== "pending") {
       const scheduledAt = new Date(createdAt);
-      scheduledAt.setDate(scheduledAt.getDate() + Math.floor(Math.random() * 3) + 1);
+      scheduledAt.setDate(
+        scheduledAt.getDate() + Math.floor(Math.random() * 3) + 1
+      );
       statusHistory.push({
         status: "scheduled" as AppointmentStatus,
         changedAt: scheduledAt.toISOString(),
@@ -325,7 +429,9 @@ function generateAppointments(): Appointment[] {
       updatedAt = scheduledAt.toISOString();
 
       if (status === "in_progress" || status === "completed") {
-        const inProgressAt = new Date(appointmentDate + 'T' + appointmentTime + ':00.000Z');
+        const inProgressAt = new Date(
+          appointmentDate + "T" + appointmentTime + ":00.000Z"
+        );
         statusHistory.push({
           status: "in_progress" as AppointmentStatus,
           changedAt: inProgressAt.toISOString(),
@@ -349,7 +455,9 @@ function generateAppointments(): Appointment[] {
 
       if (status === "cancelled") {
         const cancelledAt = new Date(appointmentDate);
-        cancelledAt.setDate(cancelledAt.getDate() - Math.floor(Math.random() * 2) + 1);
+        cancelledAt.setDate(
+          cancelledAt.getDate() - Math.floor(Math.random() * 2) + 1
+        );
         statusHistory.push({
           status: "cancelled" as AppointmentStatus,
           changedAt: cancelledAt.toISOString(),
@@ -360,8 +468,8 @@ function generateAppointments(): Appointment[] {
       }
     }
 
-    appointments.push({
-      id: `apt-${i.toString().padStart(3, '0')}-${appointmentDate}`,
+    const appointment: Appointment = {
+      id: crypto.randomUUID(),
       psychologistEmail: psychologist.email,
       psychologistName: psychologist.name,
       patientName: patient,
@@ -371,9 +479,11 @@ function generateAppointments(): Appointment[] {
       status,
       statusHistory,
       createdAt: createdAt.toISOString(),
-      updatedAt: status === "pending" ? undefined : updatedAt,
+      updatedAt,
       notes: therapy,
-    });
+    };
+
+    appointments.push(appointment);
   }
 
   return appointments;
@@ -391,14 +501,15 @@ const patientsData = [
     emergencyContact: {
       name: "Carlos González",
       phone: "+56987654321",
-      relationship: "Esposo"
+      relationship: "Esposo",
     },
     medicalHistory: "Historial de ansiedad generalizada",
-    notes: "Paciente colaboradora, responde bien a terapia cognitivo-conductual"
+    notes:
+      "Paciente colaboradora, responde bien a terapia cognitivo-conductual",
   },
   {
     name: "Carlos Rodríguez",
-    email: "carlos.rodriguez@email.com", 
+    email: "carlos.rodriguez@email.com",
     phone: "+56923456789",
     dateOfBirth: "1990-07-22",
     gender: "male" as const,
@@ -406,30 +517,30 @@ const patientsData = [
     emergencyContact: {
       name: "Ana Rodríguez",
       phone: "+56998765432",
-      relationship: "Madre"
+      relationship: "Madre",
     },
     medicalHistory: "Trastorno de pánico, episodios depresivos leves",
-    notes: "Requiere seguimiento constante, mejoría progresiva"
+    notes: "Requiere seguimiento constante, mejoría progresiva",
   },
   {
     name: "Ana Martínez",
     email: "ana.martinez@email.com",
-    phone: "+56934567890", 
+    phone: "+56934567890",
     dateOfBirth: "1978-11-08",
     gender: "female" as const,
     address: "Pasaje Los Álamos 789, Concepción",
     emergencyContact: {
       name: "Pedro Martínez",
       phone: "+56987654323",
-      relationship: "Hermano"
+      relationship: "Hermano",
     },
     medicalHistory: "Terapia familiar en curso, conflictos de pareja",
-    notes: "Excelente disposición al cambio, comprometida con el proceso"
-  }
+    notes: "Excelente disposición al cambio, comprometida con el proceso",
+  },
 ];
 
-// Define sample appointments to be seeded
-const appointmentsToSeed: Appointment[] = generateAppointments();
+// Define sample appointments to be seeded - se generarán después de crear las salas
+let appointmentsToSeed: Appointment[] = [];
 
 async function seedDatabase() {
   const kv = await Deno.openKv();
@@ -495,7 +606,7 @@ async function seedDatabase() {
       const success = await createUser(userData);
       if (success) {
         console.log(
-          `   ✅ Usuario creado: ${userSeed.name} (${userSeed.email})`,
+          `   ✅ Usuario creado: ${userSeed.name} (${userSeed.email})`
         );
       } else {
         console.log(`   ❌ Error creando usuario: ${userSeed.email}`);
@@ -504,8 +615,10 @@ async function seedDatabase() {
 
     // Seed rooms
     console.log("🏠 Creando salas...");
+    const createdRoomIds: RoomId[] = [];
     for (const room of roomsToSeed) {
       await kv.set(["rooms", room.id], room);
+      createdRoomIds.push(room.id);
       console.log(`   ✅ Sala creada: ${room.name}`);
     }
 
@@ -519,7 +632,7 @@ async function seedDatabase() {
         createdAt: new Date().toISOString(),
         isActive: true,
       };
-      
+
       const success = await patientRepo.create(patient);
       if (success) {
         console.log(`   ✅ Paciente creado: ${patient.name}`);
@@ -528,13 +641,17 @@ async function seedDatabase() {
       }
     }
 
+    // Generar citas usando los IDs reales de las salas creadas
+    console.log("📅 Generando citas...");
+    appointmentsToSeed = generateAppointments(createdRoomIds);
+
     // Seed appointments using the createAppointment function to ensure proper indexing
     console.log("📅 Creando citas...");
     for (const appointment of appointmentsToSeed) {
       const success = await createAppointment(appointment);
       if (success) {
         console.log(
-          `   ✅ Cita creada: ${appointment.patientName} - ${appointment.appointmentDate} ${appointment.appointmentTime}`,
+          `   ✅ Cita creada: ${appointment.patientName} - ${appointment.appointmentDate} ${appointment.appointmentTime}`
         );
       } else {
         console.log(`   ❌ Error creando cita: ${appointment.id}`);

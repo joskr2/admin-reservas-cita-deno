@@ -15,10 +15,12 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         id: roomId,
         name: formData.get("name") as string,
         isAvailable: formData.get("isAvailable") === "true",
-        equipment: formData.get("equipment") 
-          ? (formData.get("equipment") as string).split(",").map(item => item.trim()).filter(Boolean)
+        equipment: formData.get("equipment")
+          ? (formData.get("equipment") as string).split(",").map((item) =>
+            item.trim()
+          ).filter(Boolean)
           : [],
-        capacity: formData.get("capacity") 
+        capacity: formData.get("capacity")
           ? parseInt(formData.get("capacity") as string)
           : undefined,
         roomType: (formData.get("roomType") as string) || undefined,
@@ -28,9 +30,9 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       // Validaciones
       if (!roomData.name) {
         const room = await roomRepository.getById(roomId);
-        return ctx.render({ 
+        return ctx.render({
           error: "El nombre de la sala es requerido",
-          room: room || null
+          room: room || null,
         });
       }
 
@@ -43,17 +45,17 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         });
       } else {
         const room = await roomRepository.getById(roomId);
-        return ctx.render({ 
+        return ctx.render({
           error: "Error al actualizar la sala",
-          room: room || null
+          room: room || null,
         });
       }
     } catch (error) {
       console.error("Error updating room:", error);
       const room = await roomRepository.getById(roomId);
-      return ctx.render({ 
+      return ctx.render({
         error: "Error interno del servidor",
-        room: room || null
+        room: room || null,
       });
     }
   }
@@ -110,7 +112,11 @@ export default function EditRoomPage({
           {error && (
             <div class="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
               <div class="flex">
-                <Icon name="alert-circle" size={20} className="text-red-500 mr-3 flex-shrink-0 mt-0.5" />
+                <Icon
+                  name="alert-circle"
+                  size={20}
+                  className="text-red-500 mr-3 flex-shrink-0 mt-0.5"
+                />
                 <div>
                   <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
                     Error
@@ -127,7 +133,10 @@ export default function EditRoomPage({
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="id"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     ID de la Sala
                   </label>
                   <input
@@ -143,7 +152,10 @@ export default function EditRoomPage({
                 </div>
 
                 <div>
-                  <label htmlFor="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="name"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Nombre de la Sala *
                   </label>
                   <input
@@ -158,7 +170,10 @@ export default function EditRoomPage({
                 </div>
 
                 <div>
-                  <label htmlFor="roomType" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="roomType"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Tipo de Sala
                   </label>
                   <select
@@ -168,16 +183,41 @@ export default function EditRoomPage({
                     value={room.roomType || ""}
                   >
                     <option value="">Seleccionar tipo</option>
-                    <option value="individual" selected={room.roomType === "individual"}>Individual</option>
-                    <option value="family" selected={room.roomType === "family"}>Familiar</option>
-                    <option value="group" selected={room.roomType === "group"}>Grupal</option>
-                    <option value="evaluation" selected={room.roomType === "evaluation"}>Evaluación</option>
-                    <option value="relaxation" selected={room.roomType === "relaxation"}>Relajación</option>
+                    <option
+                      value="individual"
+                      selected={room.roomType === "individual"}
+                    >
+                      Individual
+                    </option>
+                    <option
+                      value="family"
+                      selected={room.roomType === "family"}
+                    >
+                      Familiar
+                    </option>
+                    <option value="group" selected={room.roomType === "group"}>
+                      Grupal
+                    </option>
+                    <option
+                      value="evaluation"
+                      selected={room.roomType === "evaluation"}
+                    >
+                      Evaluación
+                    </option>
+                    <option
+                      value="relaxation"
+                      selected={room.roomType === "relaxation"}
+                    >
+                      Relajación
+                    </option>
                   </select>
                 </div>
 
                 <div>
-                  <label htmlFor="capacity" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="capacity"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Capacidad (personas)
                   </label>
                   <input
@@ -193,7 +233,10 @@ export default function EditRoomPage({
                 </div>
 
                 <div class="md:col-span-2">
-                  <label htmlFor="description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="description"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Descripción
                   </label>
                   <textarea
@@ -207,7 +250,10 @@ export default function EditRoomPage({
                 </div>
 
                 <div class="md:col-span-2">
-                  <label htmlFor="equipment" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  <label
+                    htmlFor="equipment"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
                     Equipamiento
                   </label>
                   <input
@@ -233,7 +279,10 @@ export default function EditRoomPage({
                       checked={room.isAvailable}
                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                     />
-                    <label htmlFor="isAvailable" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                    <label
+                      htmlFor="isAvailable"
+                      class="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+                    >
                       Sala disponible
                     </label>
                   </div>

@@ -120,14 +120,13 @@ export const handler: Handlers<EditPatientData, AppState> = {
         dateOfBirth: dateOfBirth || undefined,
         gender: (gender as Patient["gender"]) || undefined,
         address: address || undefined,
-        emergencyContact:
-          emergencyName && emergencyPhone
-            ? {
-                name: emergencyName,
-                phone: emergencyPhone,
-                relationship: emergencyRelationship,
-              }
-            : undefined,
+        emergencyContact: emergencyName && emergencyPhone
+          ? {
+            name: emergencyName,
+            phone: emergencyPhone,
+            relationship: emergencyRelationship,
+          }
+          : undefined,
         medicalHistory: medicalHistory || undefined,
         notes: notes || undefined,
         isActive,
@@ -519,7 +518,7 @@ export default function EditPatientPage({ data }: PageProps<EditPatientData>) {
                             day: "numeric",
                             hour: "2-digit",
                             minute: "2-digit",
-                          }
+                          },
                         )}
                       </p>
                     </div>
@@ -560,9 +559,11 @@ export default function EditPatientPage({ data }: PageProps<EditPatientData>) {
                   </a>
 
                   <a
-                    href={`/appointments/new?patient=${encodeURIComponent(
-                      patient.name
-                    )}`}
+                    href={`/appointments/new?patient=${
+                      encodeURIComponent(
+                        patient.name,
+                      )
+                    }`}
                     class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
                   >
                     <Icon

@@ -2,7 +2,7 @@ import { useEffect } from "preact/hooks";
 import { effect, signal } from "@preact/signals";
 import { Icon } from "../components/ui/Icon.tsx";
 import type { Theme } from "../types/index.ts";
-import { getInitialTheme, applyTheme } from "../utils/theme.ts";
+import { applyTheme, getInitialTheme } from "../utils/theme.ts";
 
 // Signal para mantener el estado actual del tema
 const theme = signal<Theme>(getInitialTheme());

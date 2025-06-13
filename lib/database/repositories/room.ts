@@ -2,10 +2,11 @@
 /// <reference lib="deno.unstable" />
 
 import type { Room, RoomId } from "../../../types/index.ts";
-import type { IRoomRepository, IAppointmentRepository } from "../interfaces.ts";
+import type { IAppointmentRepository, IRoomRepository } from "../interfaces.ts";
 import { BaseRepository } from "./base.ts";
 
-export class RoomRepository extends BaseRepository<Room, RoomId> implements IRoomRepository {
+export class RoomRepository extends BaseRepository<Room, RoomId>
+  implements IRoomRepository {
   protected keyPrefix = ["rooms"];
   private appointmentRepository: IAppointmentRepository;
 
@@ -19,15 +20,20 @@ export class RoomRepository extends BaseRepository<Room, RoomId> implements IRoo
   }
 
   protected override validate(entity: Room): boolean {
-    return super.validate(entity) && 
-           typeof entity.id === "string" && 
-           entity.id.length > 0 &&
-           typeof entity.name === "string" && 
-           entity.name.length > 0 &&
-           typeof entity.isAvailable === "boolean";
+    return (
+      super.validate(entity) &&
+      typeof entity.id === "string" &&
+      entity.id.length > 0 &&
+      typeof entity.name === "string" &&
+      entity.name.length > 0 &&
+      typeof entity.isAvailable === "boolean"
+    );
   }
 
-  public async updateAvailability(id: RoomId, isAvailable: boolean): Promise<boolean> {
+  public async updateAvailability(
+    id: RoomId,
+    isAvailable: boolean,
+  ): Promise<boolean> {
     try {
       const room = await this.getById(id);
       if (!room) return false;
@@ -45,7 +51,7 @@ export class RoomRepository extends BaseRepository<Room, RoomId> implements IRoo
   public async getAvailableRooms(
     date: string,
     time: string,
-    excludeAppointmentId?: string
+    excludeAppointmentId?: string,
   ): Promise<Room[]> {
     try {
       const allRooms = await this.getAll();
@@ -57,16 +63,19 @@ export class RoomRepository extends BaseRepository<Room, RoomId> implements IRoo
           apt.appointmentDate === date &&
           apt.appointmentTime === time &&
           apt.status !== "cancelled" &&
-          apt.id !== excludeAppointmentId
+          apt.id !== excludeAppointmentId,
       );
 
       const occupiedRoomIds = conflictingAppointments.map((apt) => apt.roomId);
 
       return allRooms.filter(
-        (room) => room.isAvailable && !occupiedRoomIds.includes(room.id)
+        (room) => room.isAvailable && !occupiedRoomIds.includes(room.id),
       );
     } catch (error) {
-      console.error(`Error getting available rooms for ${date} ${time}:`, error);
+      console.error(
+        `Error getting available rooms for ${date} ${time}:`,
+        error,
+      );
       return [];
     }
   }
@@ -74,45 +83,72 @@ export class RoomRepository extends BaseRepository<Room, RoomId> implements IRoo
   public async initializeDefaultRooms(): Promise<void> {
     const defaultRooms: Room[] = [
       {
-        id: "A",
+        id: crypto.randomUUID(),
         name: "Sala A - Terapia Individual",
         isAvailable: true,
         equipment: ["Sillón", "Mesa", "Lámpara"],
+        roomType: "individual",
+        description: "Sala diseñada para sesiones de terapia individual",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
       {
-        id: "B",
+        id: crypto.randomUUID(),
         name: "Sala B - Terapia Familiar",
         isAvailable: true,
         equipment: ["Sofá", "Sillas", "Mesa de centro"],
+        roomType: "family",
+        description: "Espacio amplio para terapia familiar y de pareja",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
       {
-        id: "C",
+        id: crypto.randomUUID(),
         name: "Sala C - Terapia de Grupo",
         isAvailable: true,
         equipment: ["Círculo de sillas", "Pizarra"],
+        roomType: "group",
+        description: "Sala configurada para sesiones grupales",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
       {
-        id: "D",
+        id: crypto.randomUUID(),
         name: "Sala D - Evaluación",
         isAvailable: true,
         equipment: ["Escritorio", "Computadora", "Tests"],
+        roomType: "evaluation",
+        description: "Sala equipada para evaluaciones psicológicas",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
       {
-        id: "E",
+        id: crypto.randomUUID(),
         name: "Sala E - Relajación",
         isAvailable: true,
         equipment: ["Camilla", "Música", "Aromaterapia"],
+        roomType: "relaxation",
+        description: "Espacio tranquilo para técnicas de relajación",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       },
     ];
 
     try {
       const kv = await this.getKv();
-      
+
+      // Verificar si ya existen salas en la base de datos
+      const existingRooms = await this.getAll();
+      if (existingRooms.length > 0) {
+        console.log(
+          "Salas ya inicializadas, omitiendo creación de salas por defecto",
+        );
+        return;
+      }
+
       for (const room of defaultRooms) {
-        const existing = await this.getById(room.id);
-        if (!existing) {
-          await kv.set(["rooms", room.id], room);
-        }
+        await kv.set(["rooms", room.id], room);
+        console.log(`Sala por defecto creada: ${room.name}`);
       }
     } catch (error) {
       console.error("Error initializing default rooms:", error);

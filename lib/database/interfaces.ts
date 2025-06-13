@@ -40,7 +40,8 @@ export interface IPatientRepository extends IRepository<Patient, string> {
   getActivePatients(): Promise<PatientProfile[]>;
 }
 
-export interface IAppointmentRepository extends IRepository<Appointment, string> {
+export interface IAppointmentRepository
+  extends IRepository<Appointment, string> {
   getAppointmentsByPsychologist(email: string): Promise<Appointment[]>;
   getAppointmentsByDate(date: string): Promise<Appointment[]>;
   getAppointmentsByStatus(status: string): Promise<Appointment[]>;
@@ -48,7 +49,11 @@ export interface IAppointmentRepository extends IRepository<Appointment, string>
 
 export interface IRoomRepository extends IRepository<Room, RoomId> {
   updateAvailability(id: RoomId, isAvailable: boolean): Promise<boolean>;
-  getAvailableRooms(date: string, time: string, excludeAppointmentId?: string): Promise<Room[]>;
+  getAvailableRooms(
+    date: string,
+    time: string,
+    excludeAppointmentId?: string,
+  ): Promise<Room[]>;
   initializeDefaultRooms(): Promise<void>;
 }
 

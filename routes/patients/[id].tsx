@@ -379,9 +379,11 @@ export default function PatientDetailsPage({
                     </a>
 
                     <a
-                      href={`/appointments/new?patient=${encodeURIComponent(
-                        patient.name
-                      )}`}
+                      href={`/appointments/new?patient=${
+                        encodeURIComponent(
+                          patient.name,
+                        )
+                      }`}
                       class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
                     >
                       <Icon name="calendar-plus" size={16} className="mr-2" />

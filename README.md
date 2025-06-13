@@ -1,6 +1,7 @@
 # Horizonte Clínica - Sistema de Gestión
 
-Sistema de gestión de citas para clínica psicológica desarrollado con Fresh (Deno) y Deno KV.
+Sistema de gestión de citas para clínica psicológica desarrollado con Fresh
+(Deno) y Deno KV.
 
 ## Características
 
@@ -95,7 +96,8 @@ horizonte-clinica-deno/
 
 ### Mantenimiento
 
-Si experimentas errores relacionados con la base de datos KV, puedes usar el script de reparación:
+Si experimentas errores relacionados con la base de datos KV, puedes usar el
+script de reparación:
 
 ```bash
 deno task fix-kv

@@ -1,5 +1,9 @@
 import { type FreshContext, type PageProps } from "$fresh/server.ts";
-import { type AppState, type CreatePatientForm, type Patient } from "../../types/index.ts";
+import {
+  type AppState,
+  type CreatePatientForm,
+  type Patient,
+} from "../../types/index.ts";
 import { getPatientRepository } from "../../lib/database/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
 
@@ -7,13 +11,17 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
   if (req.method === "POST") {
     try {
       const formData = await req.formData();
-      
+
       const patientData: CreatePatientForm = {
         name: formData.get("name") as string,
         email: formData.get("email") as string || undefined,
         phone: formData.get("phone") as string || undefined,
         dateOfBirth: formData.get("dateOfBirth") as string || undefined,
-        gender: formData.get("gender") as "male" | "female" | "other" | "prefer_not_say" || undefined,
+        gender: formData.get("gender") as
+          | "male"
+          | "female"
+          | "other"
+          | "prefer_not_say" || undefined,
         address: formData.get("address") as string || undefined,
         medicalHistory: formData.get("medicalHistory") as string || undefined,
         notes: formData.get("notes") as string || undefined,
@@ -27,8 +35,10 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       // Crear contacto de emergencia si se proporciona información
       const emergencyName = formData.get("emergencyName") as string;
       const emergencyPhone = formData.get("emergencyPhone") as string;
-      const emergencyRelationship = formData.get("emergencyRelationship") as string;
-      
+      const emergencyRelationship = formData.get(
+        "emergencyRelationship",
+      ) as string;
+
       if (emergencyName && emergencyPhone && emergencyRelationship) {
         patientData.emergencyContact = {
           name: emergencyName,
@@ -191,7 +201,8 @@ export default function NewPatientPage({
                       rows={3}
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       placeholder="Dirección completa"
-                    ></textarea>
+                    >
+                    </textarea>
                   </div>
                 </div>
               </div>
@@ -253,7 +264,8 @@ export default function NewPatientPage({
                       rows={4}
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       placeholder="Condiciones médicas relevantes, medicamentos, alergias, etc."
-                    ></textarea>
+                    >
+                    </textarea>
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -264,7 +276,8 @@ export default function NewPatientPage({
                       rows={3}
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       placeholder="Información adicional relevante"
-                    ></textarea>
+                    >
+                    </textarea>
                   </div>
                 </div>
               </div>

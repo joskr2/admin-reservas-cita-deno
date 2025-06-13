@@ -2,7 +2,7 @@
 /// <reference lib="deno.unstable" />
 
 import type { KVSessionKey } from "../../../types/index.ts";
-import type { ISessionRepository, IDatabaseConnection } from "../interfaces.ts";
+import type { IDatabaseConnection, ISessionRepository } from "../interfaces.ts";
 import { DatabaseConnection } from "../connection.ts";
 
 interface SessionData {
@@ -22,7 +22,10 @@ export class SessionRepository implements ISessionRepository {
     return await this.connection.getInstance();
   }
 
-  public async createSession(sessionId: string, userEmail: string): Promise<void> {
+  public async createSession(
+    sessionId: string,
+    userEmail: string,
+  ): Promise<void> {
     if (typeof sessionId !== "string" || !sessionId) {
       throw new Error("Invalid sessionId provided to createSession");
     }
@@ -45,7 +48,9 @@ export class SessionRepository implements ISessionRepository {
     }
   }
 
-  public async getSession(sessionId: string): Promise<{ userEmail: string } | null> {
+  public async getSession(
+    sessionId: string,
+  ): Promise<{ userEmail: string } | null> {
     if (typeof sessionId !== "string" || !sessionId) {
       console.warn("Invalid sessionId provided to getSession:", sessionId);
       return null;
@@ -53,7 +58,9 @@ export class SessionRepository implements ISessionRepository {
 
     try {
       const kv = await this.getKv();
-      const result = await kv.get<SessionData>(["sessions", sessionId] as KVSessionKey);
+      const result = await kv.get<SessionData>(
+        ["sessions", sessionId] as KVSessionKey,
+      );
       const session = result.value;
 
       if (!session) return null;
@@ -114,17 +121,23 @@ export class SessionRepository implements ISessionRepository {
     }
   }
 
-  public async extendSession(sessionId: string, extensionDays = 7): Promise<boolean> {
+  public async extendSession(
+    sessionId: string,
+    extensionDays = 7,
+  ): Promise<boolean> {
     try {
       const kv = await this.getKv();
-      const result = await kv.get<SessionData>(["sessions", sessionId] as KVSessionKey);
+      const result = await kv.get<SessionData>(
+        ["sessions", sessionId] as KVSessionKey,
+      );
       const session = result.value;
 
       if (!session) return false;
 
       const extendedSession: SessionData = {
         ...session,
-        expiresAt: new Date(Date.now() + extensionDays * 24 * 60 * 60 * 1000).toISOString(),
+        expiresAt: new Date(Date.now() + extensionDays * 24 * 60 * 60 * 1000)
+          .toISOString(),
       };
 
       await kv.set(["sessions", sessionId] as KVSessionKey, extendedSession);
@@ -135,10 +148,13 @@ export class SessionRepository implements ISessionRepository {
     }
   }
 
-  public async getAllActiveSessions(): Promise<Array<{ sessionId: string; session: SessionData }>> {
+  public async getAllActiveSessions(): Promise<
+    Array<{ sessionId: string; session: SessionData }>
+  > {
     try {
       const kv = await this.getKv();
-      const activeSessions: Array<{ sessionId: string; session: SessionData }> = [];
+      const activeSessions: Array<{ sessionId: string; session: SessionData }> =
+        [];
       const now = new Date();
 
       const iter = kv.list<SessionData>({ prefix: ["sessions"] });

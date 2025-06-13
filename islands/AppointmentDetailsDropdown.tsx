@@ -68,10 +68,8 @@ export default function AppointmentDetailsDropdown({
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-
         title="Ver detalles de la cita"
       >
-      
         <Icon
           name={isOpen ? "x" : "plus"}
           size={isCompact ? 12 : 14}

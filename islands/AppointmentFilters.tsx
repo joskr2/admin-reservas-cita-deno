@@ -184,8 +184,7 @@ function AppointmentFilters({
                 placeholder="Nombre o ID del psicólogo..."
                 value={psychologist}
                 onInput={(e) =>
-                  setPsychologist((e.target as HTMLInputElement).value)
-                }
+                  setPsychologist((e.target as HTMLInputElement).value)}
                 class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
               />
               {psychologist && (
@@ -229,8 +228,7 @@ function AppointmentFilters({
             <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
               <Icon name="check" className="h-4 w-4 text-green-500" />
               <span>
-                Filtros aplicados:{" "}
-                {[
+                Filtros aplicados: {[
                   filters.search && "Búsqueda",
                   filters.status && "Estado",
                   filters.psychologist && "Psicólogo",

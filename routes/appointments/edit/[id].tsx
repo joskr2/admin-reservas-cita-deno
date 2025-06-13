@@ -48,10 +48,9 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     const psychologists = users.filter((user) => user.role === "psychologist");
 
     // Si es psicólogo, solo mostrar su propio perfil
-    const filteredPsychologists =
-      ctx.state.user?.role === "psychologist"
-        ? psychologists.filter((p) => p.email === ctx.state.user?.email)
-        : psychologists;
+    const filteredPsychologists = ctx.state.user?.role === "psychologist"
+      ? psychologists.filter((p) => p.email === ctx.state.user?.email)
+      : psychologists;
 
     // Obtener todas las salas
     const rooms = await getAllRooms();
@@ -102,10 +101,11 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       const availableRooms = await getAvailableRooms(
         appointmentDate,
         appointmentTime,
-        appointmentId
+        appointmentId,
       );
-      const isRoomAvailable =
-        availableRooms.some((room) => room.id === roomId) ||
+      const isRoomAvailable = availableRooms.some((room) =>
+        room.id === roomId
+      ) ||
         appointment.roomId === roomId;
 
       if (!isRoomAvailable) {
@@ -121,15 +121,15 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
       // Buscar el nombre del psicólogo
       const psychologist = psychologists.find(
-        (p) => p.email === psychologistEmail
+        (p) => p.email === psychologistEmail,
       );
 
       const updatedAppointment: Appointment = {
         ...appointment,
         patientName,
         psychologistEmail,
-        psychologistName:
-          psychologist?.name || psychologist?.email || undefined,
+        psychologistName: psychologist?.name || psychologist?.email ||
+          undefined,
         appointmentDate,
         appointmentTime,
         roomId,
@@ -298,9 +298,8 @@ export default function EditAppointmentPage({
                       <option
                         key={psychologist.email}
                         value={psychologist.email}
-                        selected={
-                          psychologist.email === appointment.psychologistEmail
-                        }
+                        selected={psychologist.email ===
+                          appointment.psychologistEmail}
                       >
                         {psychologist.name || psychologist.email}
                       </option>
@@ -372,12 +371,10 @@ export default function EditAppointmentPage({
                           key={room.id}
                           value={room.id}
                           selected={room.id === appointment.roomId}
-                          disabled={
-                            !room.isAvailable && room.id !== appointment.roomId
-                          }
+                          disabled={!room.isAvailable &&
+                            room.id !== appointment.roomId}
                         >
-                          {room.name}{" "}
-                          {!room.isAvailable &&
+                          {room.name} {!room.isAvailable &&
                             room.id !== appointment.roomId &&
                             "(No disponible)"}
                         </option>

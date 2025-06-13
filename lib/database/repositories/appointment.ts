@@ -1,11 +1,16 @@
 /// <reference lib="deno.ns" />
 /// <reference lib="deno.unstable" />
 
-import type { Appointment, KVAppointmentKey, KVAppointmentByPsychologistKey } from "../../../types/index.ts";
+import type {
+  Appointment,
+  KVAppointmentByPsychologistKey,
+  KVAppointmentKey,
+} from "../../../types/index.ts";
 import type { IAppointmentRepository } from "../interfaces.ts";
 import { BaseRepository } from "./base.ts";
 
-export class AppointmentRepository extends BaseRepository<Appointment, string> implements IAppointmentRepository {
+export class AppointmentRepository extends BaseRepository<Appointment, string>
+  implements IAppointmentRepository {
   protected keyPrefix = ["appointments"];
 
   protected override getEntityId(entity: Appointment): string {
@@ -13,13 +18,13 @@ export class AppointmentRepository extends BaseRepository<Appointment, string> i
   }
 
   protected override validate(entity: Appointment): boolean {
-    return super.validate(entity) && 
-           typeof entity.id === "string" && 
-           entity.id.length > 0 &&
-           typeof entity.psychologistEmail === "string" && 
-           entity.psychologistEmail.length > 0 &&
-           typeof entity.appointmentDate === "string" &&
-           typeof entity.appointmentTime === "string";
+    return super.validate(entity) &&
+      typeof entity.id === "string" &&
+      entity.id.length > 0 &&
+      typeof entity.psychologistEmail === "string" &&
+      entity.psychologistEmail.length > 0 &&
+      typeof entity.appointmentDate === "string" &&
+      typeof entity.appointmentTime === "string";
   }
 
   public override async create(appointment: Appointment): Promise<boolean> {
@@ -30,7 +35,7 @@ export class AppointmentRepository extends BaseRepository<Appointment, string> i
 
     try {
       const kv = await this.getKv();
-      
+
       // Usar transacciones atómicas para mantener consistencia
       const result = await kv
         .atomic()
@@ -41,7 +46,7 @@ export class AppointmentRepository extends BaseRepository<Appointment, string> i
           appointment.id,
         ] as KVAppointmentByPsychologistKey, appointment)
         .commit();
-        
+
       return result.ok;
     } catch (error) {
       console.error("Error creating appointment:", error);
@@ -49,16 +54,23 @@ export class AppointmentRepository extends BaseRepository<Appointment, string> i
     }
   }
 
-  public async getAppointmentsByPsychologist(email: string): Promise<Appointment[]> {
+  public async getAppointmentsByPsychologist(
+    email: string,
+  ): Promise<Appointment[]> {
     if (typeof email !== "string" || !email) {
-      console.warn("Invalid email provided to getAppointmentsByPsychologist:", email);
+      console.warn(
+        "Invalid email provided to getAppointmentsByPsychologist:",
+        email,
+      );
       return [];
     }
 
     try {
       const kv = await this.getKv();
       const appointments: Appointment[] = [];
-      const entries = kv.list({ prefix: ["appointments_by_psychologist", email] });
+      const entries = kv.list({
+        prefix: ["appointments_by_psychologist", email],
+      });
 
       for await (const entry of entries) {
         if (entry.value && typeof entry.value === "object") {
@@ -68,7 +80,10 @@ export class AppointmentRepository extends BaseRepository<Appointment, string> i
 
       return this.sortAppointmentsByDateTime(appointments);
     } catch (error) {
-      console.error(`Error getting appointments by psychologist ${email}:`, error);
+      console.error(
+        `Error getting appointments by psychologist ${email}:`,
+        error,
+      );
       return [];
     }
   }
@@ -82,7 +97,7 @@ export class AppointmentRepository extends BaseRepository<Appointment, string> i
     try {
       const allAppointments = await this.getAll();
       const appointmentsOnDate = allAppointments.filter(
-        appointment => appointment.appointmentDate === date
+        (appointment) => appointment.appointmentDate === date,
       );
 
       return this.sortAppointmentsByDateTime(appointmentsOnDate);
@@ -94,14 +109,17 @@ export class AppointmentRepository extends BaseRepository<Appointment, string> i
 
   public async getAppointmentsByStatus(status: string): Promise<Appointment[]> {
     if (typeof status !== "string" || !status) {
-      console.warn("Invalid status provided to getAppointmentsByStatus:", status);
+      console.warn(
+        "Invalid status provided to getAppointmentsByStatus:",
+        status,
+      );
       return [];
     }
 
     try {
       const allAppointments = await this.getAll();
       const appointmentsWithStatus = allAppointments.filter(
-        appointment => appointment.status === status
+        (appointment) => appointment.status === status,
       );
 
       return this.sortAppointmentsByDateTime(appointmentsWithStatus);
@@ -131,17 +149,25 @@ export class AppointmentRepository extends BaseRepository<Appointment, string> i
     }
   }
 
-  public override async update(id: string, updates: Partial<Appointment>): Promise<boolean> {
+  public override async update(
+    id: string,
+    updates: Partial<Appointment>,
+  ): Promise<boolean> {
     try {
       const kv = await this.getKv();
-      const current = await kv.get<Appointment>(["appointments", id] as KVAppointmentKey);
-      
+      const current = await kv.get<Appointment>(
+        ["appointments", id] as KVAppointmentKey,
+      );
+
       if (!current.value) return false;
 
       const updated = { ...current.value, ...updates };
 
       // Si cambió el psicólogo, actualizar índices
-      if (updates.psychologistEmail && updates.psychologistEmail !== current.value.psychologistEmail) {
+      if (
+        updates.psychologistEmail &&
+        updates.psychologistEmail !== current.value.psychologistEmail
+      ) {
         const result = await kv
           .atomic()
           .set(["appointments", id] as KVAppointmentKey, updated)
@@ -156,7 +182,7 @@ export class AppointmentRepository extends BaseRepository<Appointment, string> i
             id,
           ] as KVAppointmentByPsychologistKey, updated)
           .commit();
-          
+
         return result.ok;
       }
 
@@ -182,7 +208,7 @@ export class AppointmentRepository extends BaseRepository<Appointment, string> i
           id,
         ] as KVAppointmentByPsychologistKey)
         .commit();
-        
+
       return result.ok;
     } catch (error) {
       console.error(`Error deleting appointment ${id}:`, error);
@@ -190,10 +216,14 @@ export class AppointmentRepository extends BaseRepository<Appointment, string> i
     }
   }
 
-  private sortAppointmentsByDateTime(appointments: Appointment[]): Appointment[] {
+  private sortAppointmentsByDateTime(
+    appointments: Appointment[],
+  ): Appointment[] {
     return appointments.sort((a, b) => {
-      const dateTimeA = new Date(`${a.appointmentDate} ${a.appointmentTime}`).getTime();
-      const dateTimeB = new Date(`${b.appointmentDate} ${b.appointmentTime}`).getTime();
+      const dateTimeA = new Date(`${a.appointmentDate} ${a.appointmentTime}`)
+        .getTime();
+      const dateTimeB = new Date(`${b.appointmentDate} ${b.appointmentTime}`)
+        .getTime();
       return dateTimeA - dateTimeB;
     });
   }

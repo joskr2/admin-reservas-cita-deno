@@ -37,7 +37,7 @@ async function cleanUsersByRoleIndex(kv: Deno.Kv) {
         const email = entry.value;
         if (typeof email !== "string" || !email) {
           console.log(
-            `    Eliminando entrada corrupta: ${JSON.stringify(entry.key)}`
+            `    Eliminando entrada corrupta: ${JSON.stringify(entry.key)}`,
           );
           await kv.delete(entry.key);
         }

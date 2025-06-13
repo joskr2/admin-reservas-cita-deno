@@ -50,7 +50,7 @@ export default function RoomToggleButton({
         console.error("Error al cambiar disponibilidad:", errorData.error);
         showNotification(
           errorData.error || "Error al cambiar la disponibilidad",
-          "error"
+          "error",
         );
       }
     } catch (error) {
@@ -63,13 +63,14 @@ export default function RoomToggleButton({
 
   const showNotification = (
     message: string,
-    type: "success" | "error" = "success"
+    type: "success" | "error" = "success",
   ) => {
     // Crear notificación temporal
     const notification = document.createElement("div");
-    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 ${
-      type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
-    }`;
+    notification.className =
+      `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 ${
+        type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+      }`;
     notification.textContent = message;
 
     document.body.appendChild(notification);
@@ -94,18 +95,20 @@ export default function RoomToggleButton({
           : "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40"
       }`}
     >
-      {loading ? (
-        <div class="flex items-center">
-          <Icon name="loader" size={12} className="mr-1 animate-spin" />
-          Cambiando...
-        </div>
-      ) : (
-        <>
-          {currentAvailability
-            ? "Marcar como Ocupada"
-            : "Marcar como Disponible"}
-        </>
-      )}
+      {loading
+        ? (
+          <div class="flex items-center">
+            <Icon name="loader" size={12} className="mr-1 animate-spin" />
+            Cambiando...
+          </div>
+        )
+        : (
+          <>
+            {currentAvailability
+              ? "Marcar como Ocupada"
+              : "Marcar como Disponible"}
+          </>
+        )}
     </button>
   );
 }

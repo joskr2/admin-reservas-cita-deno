@@ -212,7 +212,7 @@ export default function DeletePatientPage({ data }: PageProps<Data>) {
                           <span class="text-sm text-gray-600 dark:text-gray-400">
                             <strong>Registrado:</strong>{" "}
                             {new Date(patient.createdAt).toLocaleDateString(
-                              "es-ES"
+                              "es-ES",
                             )}
                           </span>
                         </div>
@@ -222,8 +222,7 @@ export default function DeletePatientPage({ data }: PageProps<Data>) {
                             className="h-4 w-4 text-gray-500"
                           />
                           <span class="text-sm text-gray-600 dark:text-gray-400">
-                            <strong>Género:</strong>{" "}
-                            {patient.gender === "male"
+                            <strong>Género:</strong> {patient.gender === "male"
                               ? "Masculino"
                               : patient.gender === "female"
                               ? "Femenino"
@@ -253,7 +252,7 @@ export default function DeletePatientPage({ data }: PageProps<Data>) {
                             <span class="text-sm text-gray-600 dark:text-gray-400">
                               <strong>Nacimiento:</strong>{" "}
                               {new Date(patient.dateOfBirth).toLocaleDateString(
-                                "es-ES"
+                                "es-ES",
                               )}
                             </span>
                           </div>

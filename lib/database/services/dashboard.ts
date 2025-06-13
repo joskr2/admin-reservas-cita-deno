@@ -1,7 +1,13 @@
 /// <reference lib="deno.ns" />
 /// <reference lib="deno.unstable" />
 
-import type { IDashboardService, IUserRepository, IPatientRepository, IAppointmentRepository, IRoomRepository } from "../interfaces.ts";
+import type {
+  IAppointmentRepository,
+  IDashboardService,
+  IPatientRepository,
+  IRoomRepository,
+  IUserRepository,
+} from "../interfaces.ts";
 
 // Service siguiendo el principio de responsabilidad única
 export class DashboardService implements IDashboardService {
@@ -9,7 +15,7 @@ export class DashboardService implements IDashboardService {
     private userRepository: IUserRepository,
     private patientRepository: IPatientRepository,
     private appointmentRepository: IAppointmentRepository,
-    private roomRepository: IRoomRepository
+    private roomRepository: IRoomRepository,
   ) {}
 
   public async getStats(): Promise<{
@@ -31,7 +37,9 @@ export class DashboardService implements IDashboardService {
 
       return {
         totalUsers: users.length,
-        totalPsychologists: users.filter((u) => u.role === "psychologist").length,
+        totalPsychologists: users.filter((u) =>
+          u.role === "psychologist"
+        ).length,
         totalAppointments: appointments.length,
         totalPatients: patients.length,
         totalRooms: rooms.length,
@@ -39,7 +47,7 @@ export class DashboardService implements IDashboardService {
       };
     } catch (error) {
       console.error("Error getting dashboard stats:", error);
-      
+
       // Retornar estadísticas vacías en caso de error
       return {
         totalUsers: 0,
@@ -52,27 +60,33 @@ export class DashboardService implements IDashboardService {
     }
   }
 
-  public async getRecentAppointments(limit = 10): Promise<Array<{
-    id: string;
-    patientName: string;
-    psychologistEmail: string;
-    appointmentDate: string;
-    appointmentTime: string;
-    status: string;
-  }>> {
+  public async getRecentAppointments(limit = 10): Promise<
+    Array<{
+      id: string;
+      patientName: string;
+      psychologistEmail: string;
+      appointmentDate: string;
+      appointmentTime: string;
+      status: string;
+    }>
+  > {
     try {
       const appointments = await this.appointmentRepository.getAll();
-      
+
       // Ordenar por fecha/hora más reciente y limitar
       const recentAppointments = appointments
         .sort((a, b) => {
-          const dateTimeA = new Date(`${a.appointmentDate} ${a.appointmentTime}`).getTime();
-          const dateTimeB = new Date(`${b.appointmentDate} ${b.appointmentTime}`).getTime();
+          const dateTimeA = new Date(
+            `${a.appointmentDate} ${a.appointmentTime}`,
+          ).getTime();
+          const dateTimeB = new Date(
+            `${b.appointmentDate} ${b.appointmentTime}`,
+          ).getTime();
           return dateTimeB - dateTimeA; // Orden descendente
         })
         .slice(0, limit);
 
-      return recentAppointments.map(appointment => ({
+      return recentAppointments.map((appointment) => ({
         id: appointment.id,
         patientName: appointment.patientName,
         psychologistEmail: appointment.psychologistEmail,
@@ -91,8 +105,9 @@ export class DashboardService implements IDashboardService {
       const appointments = await this.appointmentRepository.getAll();
       const statusCounts: Record<string, number> = {};
 
-      appointments.forEach(appointment => {
-        statusCounts[appointment.status] = (statusCounts[appointment.status] || 0) + 1;
+      appointments.forEach((appointment) => {
+        statusCounts[appointment.status] =
+          (statusCounts[appointment.status] || 0) + 1;
       });
 
       return statusCounts;
@@ -102,14 +117,18 @@ export class DashboardService implements IDashboardService {
     }
   }
 
-  public async getMonthlyAppointmentTrend(): Promise<Array<{ month: string; count: number }>> {
+  public async getMonthlyAppointmentTrend(): Promise<
+    Array<{ month: string; count: number }>
+  > {
     try {
       const appointments = await this.appointmentRepository.getAll();
       const monthCounts: Record<string, number> = {};
 
-      appointments.forEach(appointment => {
+      appointments.forEach((appointment) => {
         const date = new Date(appointment.appointmentDate);
-        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        const monthKey = `${date.getFullYear()}-${
+          String(date.getMonth() + 1).padStart(2, "0")
+        }`;
         monthCounts[monthKey] = (monthCounts[monthKey] || 0) + 1;
       });
 

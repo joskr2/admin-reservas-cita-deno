@@ -65,7 +65,7 @@ export const handler: Handlers<LoginData> = {
       await kv.set(
         ["sessions", sessionId],
         { userEmail: email },
-        { expireIn: 7 * 24 * 60 * 60 * 1000 }
+        { expireIn: 7 * 24 * 60 * 60 * 1000 },
       );
 
       // Crear respuesta con cookie

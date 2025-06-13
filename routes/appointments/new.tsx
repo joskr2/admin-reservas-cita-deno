@@ -319,7 +319,7 @@ export default function NewAppointmentPage({
                       <Icon name="user" className="h-4 w-4 inline mr-2" />
                       Paciente
                     </label>
-                    <PatientSelect patients={patients} required={true} />
+                    <PatientSelect patients={patients} required />
                   </div>
 
                   <div>

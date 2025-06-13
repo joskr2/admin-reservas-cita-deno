@@ -46,10 +46,10 @@ export interface Patient extends BaseEntity {
   address?: string | undefined;
   emergencyContact?:
     | {
-        name: string;
-        phone: string;
-        relationship: string;
-      }
+      name: string;
+      phone: string;
+      relationship: string;
+    }
     | undefined;
   medicalHistory?: string | undefined;
   notes?: string | undefined;
@@ -74,49 +74,23 @@ export interface CreatePatientForm {
   address?: string | undefined;
   emergencyContact?:
     | {
-        name: string;
-        phone: string;
-        relationship: string;
-      }
+      name: string;
+      phone: string;
+      relationship: string;
+    }
     | undefined;
   medicalHistory?: string | undefined;
   notes?: string | undefined;
 }
 
 // === TIPOS DE SALAS ===
-export type RoomId =
-  | "A"
-  | "B"
-  | "C"
-  | "D"
-  | "E"
-  | "F"
-  | "G"
-  | "H"
-  | "I"
-  | "J"
-  | "K"
-  | "L"
-  | "M"
-  | "N"
-  | "O"
-  | "P"
-  | "Q"
-  | "R"
-  | "S"
-  | "T"
-  | "U"
-  | "V"
-  | "W"
-  | "X"
-  | "Y"
-  | "Z";
+export type RoomId = string; // Cambiado de letras A-Z a string para UUIDs
 
-export interface Room {
+export interface Room extends BaseEntity {
   id: RoomId;
   name: string;
   isAvailable: boolean;
-  equipment?: string[] | undefined;
+  equipment: string[];
   capacity?: number | undefined;
   roomType?:
     | "individual"
@@ -129,10 +103,9 @@ export interface Room {
 }
 
 export interface CreateRoomForm {
-  id: RoomId;
   name: string;
   isAvailable: boolean;
-  equipment?: string[] | undefined;
+  equipment: string[];
   capacity?: number | undefined;
   roomType?:
     | "individual"
@@ -244,12 +217,12 @@ export type KVAppointmentKey = ["appointments", string];
 export type KVAppointmentByPsychologistKey = [
   "appointments_by_psychologist",
   string,
-  string
+  string,
 ];
 export type KVAppointmentByPatientKey = [
   "appointments_by_patient",
   string,
-  string
+  string,
 ];
 export type KVSessionKey = ["sessions", string];
 export type KVRoomKey = ["rooms", RoomId];

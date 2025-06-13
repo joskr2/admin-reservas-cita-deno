@@ -5,12 +5,12 @@
 // usando la nueva arquitectura SOLID internamente
 
 import {
-  getUserRepository,
   getAppointmentRepository,
+  getConnection,
+  getDashboardService,
   getRoomRepository,
   getSessionRepository,
-  getDashboardService,
-  getConnection,
+  getUserRepository,
 } from "./database/index.ts";
 
 import type {
@@ -51,7 +51,10 @@ export async function getUsersByRole(role: string): Promise<UserProfile[]> {
   return await getUserRepository().getUsersByRole(role);
 }
 
-export async function updateUser(email: string, updates: Partial<User>): Promise<boolean> {
+export async function updateUser(
+  email: string,
+  updates: Partial<User>,
+): Promise<boolean> {
   return await getUserRepository().update(email, updates);
 }
 
@@ -60,15 +63,21 @@ export async function deleteUser(email: string): Promise<boolean> {
 }
 
 // Appointment-related functions (mantienen la misma API)
-export async function createAppointment(appointment: Appointment): Promise<boolean> {
+export async function createAppointment(
+  appointment: Appointment,
+): Promise<boolean> {
   return await getAppointmentRepository().create(appointment);
 }
 
-export async function getAppointmentById(id: string): Promise<Appointment | null> {
+export async function getAppointmentById(
+  id: string,
+): Promise<Appointment | null> {
   return await getAppointmentRepository().getById(id);
 }
 
-export async function getAppointmentsByPsychologist(email: string): Promise<Appointment[]> {
+export async function getAppointmentsByPsychologist(
+  email: string,
+): Promise<Appointment[]> {
   return await getAppointmentRepository().getAppointmentsByPsychologist(email);
 }
 
@@ -76,7 +85,10 @@ export async function getAllAppointments(): Promise<Appointment[]> {
   return await getAppointmentRepository().getAll();
 }
 
-export async function updateAppointment(id: string, updates: Partial<Appointment>): Promise<boolean> {
+export async function updateAppointment(
+  id: string,
+  updates: Partial<Appointment>,
+): Promise<boolean> {
   return await getAppointmentRepository().update(id, updates);
 }
 
@@ -97,24 +109,36 @@ export async function getRoomById(id: RoomId): Promise<Room | null> {
   return await getRoomRepository().getById(id);
 }
 
-export async function updateRoomAvailability(id: RoomId, isAvailable: boolean): Promise<boolean> {
+export async function updateRoomAvailability(
+  id: RoomId,
+  isAvailable: boolean,
+): Promise<boolean> {
   return await getRoomRepository().updateAvailability(id, isAvailable);
 }
 
 export async function getAvailableRooms(
   date: string,
   time: string,
-  excludeAppointmentId?: string
+  excludeAppointmentId?: string,
 ): Promise<Room[]> {
-  return await getRoomRepository().getAvailableRooms(date, time, excludeAppointmentId);
+  return await getRoomRepository().getAvailableRooms(
+    date,
+    time,
+    excludeAppointmentId,
+  );
 }
 
 // Session management (mantienen la misma API)
-export async function createSession(sessionId: string, userEmail: string): Promise<void> {
+export async function createSession(
+  sessionId: string,
+  userEmail: string,
+): Promise<void> {
   return await getSessionRepository().createSession(sessionId, userEmail);
 }
 
-export async function getSession(sessionId: string): Promise<{ userEmail: string } | null> {
+export async function getSession(
+  sessionId: string,
+): Promise<{ userEmail: string } | null> {
   return await getSessionRepository().getSession(sessionId);
 }
 

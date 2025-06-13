@@ -5,7 +5,8 @@ import type { IDatabaseConnection, IRepository } from "../interfaces.ts";
 import { DatabaseConnection } from "../connection.ts";
 
 // Base Repository siguiendo DRY y Single Responsibility Principle
-export abstract class BaseRepository<T, K = string> implements IRepository<T, K> {
+export abstract class BaseRepository<T, K = string>
+  implements IRepository<T, K> {
   protected connection: IDatabaseConnection;
   protected abstract keyPrefix: string[];
 
@@ -32,7 +33,10 @@ export abstract class BaseRepository<T, K = string> implements IRepository<T, K>
       const result = await kv.set(key, entity);
       return result.ok;
     } catch (error) {
-      console.error(`Error creating entity in ${this.keyPrefix.join('/')}:`, error);
+      console.error(
+        `Error creating entity in ${this.keyPrefix.join("/")}:`,
+        error,
+      );
       return false;
     }
   }
@@ -44,7 +48,10 @@ export abstract class BaseRepository<T, K = string> implements IRepository<T, K>
       const result = await kv.get<T>(key);
       return result.value;
     } catch (error) {
-      console.error(`Error getting entity by id ${id} in ${this.keyPrefix.join('/')}:`, error);
+      console.error(
+        `Error getting entity by id ${id} in ${this.keyPrefix.join("/")}:`,
+        error,
+      );
       return null;
     }
   }
@@ -61,7 +68,10 @@ export abstract class BaseRepository<T, K = string> implements IRepository<T, K>
 
       return entities;
     } catch (error) {
-      console.error(`Error getting all entities in ${this.keyPrefix.join('/')}:`, error);
+      console.error(
+        `Error getting all entities in ${this.keyPrefix.join("/")}:`,
+        error,
+      );
       return [];
     }
   }
@@ -77,7 +87,10 @@ export abstract class BaseRepository<T, K = string> implements IRepository<T, K>
       const result = await kv.set(key, updated);
       return result.ok;
     } catch (error) {
-      console.error(`Error updating entity ${id} in ${this.keyPrefix.join('/')}:`, error);
+      console.error(
+        `Error updating entity ${id} in ${this.keyPrefix.join("/")}:`,
+        error,
+      );
       return false;
     }
   }
@@ -89,7 +102,10 @@ export abstract class BaseRepository<T, K = string> implements IRepository<T, K>
       await kv.delete(key);
       return true;
     } catch (error) {
-      console.error(`Error deleting entity ${id} in ${this.keyPrefix.join('/')}:`, error);
+      console.error(
+        `Error deleting entity ${id} in ${this.keyPrefix.join("/")}:`,
+        error,
+      );
       return false;
     }
   }

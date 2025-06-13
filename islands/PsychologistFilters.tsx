@@ -25,7 +25,7 @@ export default function PsychologistFilters({
   const buildUrl = (params: Record<string, string | number | undefined>) => {
     const url = new URL(
       "/psychologists",
-      globalThis.location?.origin || "http://localhost:8000"
+      globalThis.location?.origin || "http://localhost:8000",
     );
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== "") {
@@ -169,8 +169,7 @@ export default function PsychologistFilters({
               <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
                 <Icon name="check" className="h-4 w-4 text-green-500" />
                 <span>
-                  Filtros aplicados:{" "}
-                  {[
+                  Filtros aplicados: {[
                     filters.search && "Búsqueda",
                     filters.role && "Rol",
                     filters.status && "Estado",

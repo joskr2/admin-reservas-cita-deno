@@ -1,4 +1,4 @@
-import { useState, useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { Icon } from "../components/ui/Icon.tsx";
 import type { Patient } from "../types/index.ts";
 
@@ -9,27 +9,29 @@ interface PatientSelectProps {
   required?: boolean;
 }
 
-export default function PatientSelect({ 
-  patients, 
-  value = "", 
+export default function PatientSelect({
+  patients,
+  value = "",
   onChange,
-  required = false 
+  required = false,
 }: PatientSelectProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [showNewPatientDialog, setShowNewPatientDialog] = useState(false);
+  const [_showNewPatientDialog, _setShowNewPatientDialog] = useState(false);
 
   // Filtrar pacientes basado en la búsqueda
-  const filteredPatients = patients.filter(patient =>
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (patient.email && patient.email.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredPatients = patients.filter(
+    (patient) =>
+      patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (patient.email &&
+        patient.email.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   // Efecto para sincronizar el paciente seleccionado con el valor
   useEffect(() => {
     if (value) {
-      const patient = patients.find(p => p.name === value);
+      const patient = patients.find((p) => p.name === value);
       setSelectedPatient(patient || null);
       setSearchTerm(patient?.name || value);
     }
@@ -46,7 +48,7 @@ export default function PatientSelect({
     const target = e.target as HTMLInputElement;
     setSearchTerm(target.value);
     setIsOpen(true);
-    
+
     // Si no hay selección específica, usar el texto de búsqueda como valor
     if (!selectedPatient || selectedPatient.name !== target.value) {
       onChange?.(target.value);
@@ -54,8 +56,7 @@ export default function PatientSelect({
   };
 
   const handleNewPatient = () => {
-    setShowNewPatientDialog(false);
-    window.open('/patients/new', '_blank');
+    globalThis.open("/patients/new", "_blank");
   };
 
   return (
@@ -74,11 +75,7 @@ export default function PatientSelect({
           class="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
         />
         <div class="absolute inset-y-0 right-0 flex items-center pr-3">
-          <Icon 
-            name="search" 
-            size={16} 
-            className="text-gray-400" 
-          />
+          <Icon name="search" size={16} className="text-gray-400" />
         </div>
       </div>
 
@@ -111,11 +108,13 @@ export default function PatientSelect({
                       )}
                     </div>
                     <div class="flex items-center">
-                      <span class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                        patient.isActive 
-                          ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                          : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                      }`}>
+                      <span
+                        class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          patient.isActive
+                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                            : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                        }`}
+                      >
                         {patient.isActive ? "Activo" : "Inactivo"}
                       </span>
                     </div>
@@ -125,10 +124,12 @@ export default function PatientSelect({
             </>
           ) : (
             <div class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
-              {searchTerm ? "No se encontraron pacientes" : "Escriba para buscar pacientes"}
+              {searchTerm
+                ? "No se encontraron pacientes"
+                : "Escriba para buscar pacientes"}
             </div>
           )}
-          
+
           {/* Botón para crear nuevo paciente */}
           <button
             type="button"
@@ -152,15 +153,24 @@ export default function PatientSelect({
                 Paciente seleccionado
               </h4>
               <div class="mt-1 text-sm text-blue-700 dark:text-blue-300">
-                <div><strong>Nombre:</strong> {selectedPatient.name}</div>
+                <div>
+                  <strong>Nombre:</strong> {selectedPatient.name}
+                </div>
                 {selectedPatient.email && (
-                  <div><strong>Email:</strong> {selectedPatient.email}</div>
+                  <div>
+                    <strong>Email:</strong> {selectedPatient.email}
+                  </div>
                 )}
                 {selectedPatient.phone && (
-                  <div><strong>Teléfono:</strong> {selectedPatient.phone}</div>
+                  <div>
+                    <strong>Teléfono:</strong> {selectedPatient.phone}
+                  </div>
                 )}
                 {selectedPatient.dateOfBirth && (
-                  <div><strong>Fecha de nacimiento:</strong> {selectedPatient.dateOfBirth}</div>
+                  <div>
+                    <strong>Fecha de nacimiento:</strong>{" "}
+                    {selectedPatient.dateOfBirth}
+                  </div>
                 )}
               </div>
             </div>

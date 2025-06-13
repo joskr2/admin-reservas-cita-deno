@@ -25,7 +25,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     const newAvailability = !room.isAvailable;
     const success = await roomRepository.updateAvailability(
       roomId,
-      newAvailability
+      newAvailability,
     );
 
     if (success) {
@@ -48,7 +48,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
           {
             status: 200,
             headers: { "Content-Type": "application/json" },
-          }
+          },
         );
       } else {
         // Redirección para formularios tradicionales
@@ -65,7 +65,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         {
           status: 500,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
     }
   } catch (error) {
@@ -75,7 +75,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 }

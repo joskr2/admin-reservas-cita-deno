@@ -1,4 +1,4 @@
-import { useState, useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { Icon } from "../components/ui/Icon.tsx";
 import { Badge } from "../components/ui/Badge.tsx";
 import { Button } from "../components/ui/Button.tsx";
@@ -84,17 +84,10 @@ export default function AppointmentCalendar({
   const generateCalendarDays = (): CalendarDay[] => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
-
-    // Primer día del mes
     const firstDay = new Date(year, month, 1);
-    // Último día del mes
-    const lastDay = new Date(year, month + 1, 0);
-
-    // Primer día de la semana (lunes = 1, domingo = 0)
+    const _lastDay = new Date(year, month + 1, 0);
     const startDate = new Date(firstDay);
-    const dayOfWeek = firstDay.getDay();
-    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-    startDate.setDate(firstDay.getDate() - daysToSubtract);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
 
     // Generar 42 días (6 semanas)
     const days: CalendarDay[] = [];
@@ -163,12 +156,12 @@ export default function AppointmentCalendar({
     setCurrentDate(newDate);
   };
 
-  const navigateWeek = (direction: "prev" | "next") => {
+  const _navigateWeek = (direction: "prev" | "next") => {
     const newDate = new Date(currentDate);
     if (direction === "prev") {
-      newDate.setDate(currentDate.getDate() - 7);
+      newDate.setDate(newDate.getDate() - 7);
     } else {
-      newDate.setDate(currentDate.getDate() + 7);
+      newDate.setDate(newDate.getDate() + 7);
     }
     setCurrentDate(newDate);
   };
@@ -245,37 +238,33 @@ export default function AppointmentCalendar({
 
           {/* Controles de navegación */}
           <div class="flex items-center space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                viewMode === "month"
-                  ? navigateMonth("prev")
-                  : navigateWeek("prev")
-              }
+            <button
+              type="button"
+              onClick={() => navigateMonth("prev")}
+              class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              title="Mes anterior"
             >
-              <Icon name="arrow-left" size={16} />
-            </Button>
+              <Icon name="arrow-left" size={20} />
+            </button>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentDate(new Date())}
-            >
-              Hoy
-            </Button>
-
-            <Button
-              variant="outline"
-              size="sm"
+            <button
+              type="button"
               onClick={() =>
-                viewMode === "month"
-                  ? navigateMonth("next")
-                  : navigateWeek("next")
+                setViewMode(viewMode === "month" ? "week" : "month")
               }
+              class="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
-              <Icon name="arrow-left" size={16} className="rotate-180" />
-            </Button>
+              {viewMode === "month" ? "Vista Semanal" : "Vista Mensual"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigateMonth("next")}
+              class="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              title="Mes siguiente"
+            >
+              <Icon name="arrow-left" size={20} className="rotate-180" />
+            </button>
           </div>
         </div>
 
@@ -414,14 +403,12 @@ export default function AppointmentCalendar({
               day.appointments.length === 0 &&
               (day.isCurrentMonth || viewMode === "week") && (
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleCreateAppointment(day.dateString);
-                  }}
-                  title={`Crear cita para el ${day.dateString}`}
-                  class="w-full mt-2 p-1 text-xs text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 border border-dashed border-gray-300 dark:border-gray-600 rounded hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
+                  type="button"
+                  onClick={() => handleCreateAppointment(day.dateString)}
+                  class="w-full text-left p-1 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                  title={`Crear cita para ${day.dateString}`}
                 >
-                  <Icon name="plus" size={12} className="mx-auto" />
+                  + Nueva cita
                 </button>
               )}
           </div>

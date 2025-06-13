@@ -2,7 +2,7 @@ import { type FreshContext, type PageProps } from "$fresh/server.ts";
 import {
   type AppState,
   type CreateRoomForm,
-  type RoomId,
+  type Room,
 } from "../../types/index.ts";
 import { getRoomRepository } from "../../lib/database/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
@@ -14,7 +14,6 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       const roomRepository = getRoomRepository();
 
       const roomData: CreateRoomForm = {
-        id: formData.get("id") as RoomId,
         name: formData.get("name") as string,
         isAvailable: formData.get("isAvailable") === "true",
         equipment: formData.get("equipment")
@@ -40,37 +39,32 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       };
 
       // Validaciones
-      if (!roomData.id || !roomData.name) {
+      if (!roomData.name) {
         return ctx.render({
-          error: "ID y nombre de la sala son requeridos",
+          error: "El nombre de la sala es requerido",
           formData: roomData,
         });
       }
 
-      // Verificar si ya existe una sala con ese ID
-      const existingRoom = await roomRepository.getById(roomData.id);
-      if (existingRoom) {
-        return ctx.render({
-          error: "Ya existe una sala con ese ID",
-          formData: roomData,
-        });
-      }
-
-      const success = await roomRepository.create({
-        ...roomData,
-        id: roomData.id,
+      // Crear la sala con UUID generado automáticamente
+      const room: Room = {
+        id: crypto.randomUUID(),
         name: roomData.name,
         isAvailable: roomData.isAvailable,
         equipment: roomData.equipment,
         capacity: roomData.capacity,
         roomType: roomData.roomType,
         description: roomData.description,
-      });
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      const success = await roomRepository.create(room);
 
       if (success) {
         return new Response("", {
           status: 302,
-          headers: { Location: "/rooms" },
+          headers: { Location: "/rooms?success=room_created" },
         });
       } else {
         return ctx.render({
@@ -97,35 +91,6 @@ export default function NewRoomPage({
   AppState
 >) {
   const { error, formData } = data;
-
-  const availableRoomIds: RoomId[] = [
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "I",
-    "J",
-    "K",
-    "L",
-    "M",
-    "N",
-    "O",
-    "P",
-    "Q",
-    "R",
-    "S",
-    "T",
-    "U",
-    "V",
-    "W",
-    "X",
-    "Y",
-    "Z",
-  ];
 
   return (
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -163,30 +128,7 @@ export default function NewRoomPage({
           <form method="POST" class="space-y-6">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    htmlFor="id"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                  >
-                    ID de la Sala *
-                  </label>
-                  <select
-                    id="id"
-                    name="id"
-                    required
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                    value={formData?.id || ""}
-                  >
-                    <option value="">Seleccionar ID</option>
-                    {availableRoomIds.map((id) => (
-                      <option key={id} value={id}>
-                        {id}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
+                <div class="md:col-span-2">
                   <label
                     htmlFor="name"
                     class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
@@ -200,7 +142,7 @@ export default function NewRoomPage({
                     required
                     value={formData?.name || ""}
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="Ej: Sala A - Terapia Individual"
+                    placeholder="Ej: Sala de Terapia Individual"
                   />
                 </div>
 
@@ -218,9 +160,9 @@ export default function NewRoomPage({
                     value={formData?.roomType || ""}
                   >
                     <option value="">Seleccionar tipo</option>
-                    <option value="individual">Individual</option>
-                    <option value="family">Familiar</option>
-                    <option value="group">Grupal</option>
+                    <option value="individual">Terapia Individual</option>
+                    <option value="family">Terapia Familiar</option>
+                    <option value="group">Terapia de Grupo</option>
                     <option value="evaluation">Evaluación</option>
                     <option value="relaxation">Relajación</option>
                   </select>
@@ -231,7 +173,7 @@ export default function NewRoomPage({
                     htmlFor="capacity"
                     class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                   >
-                    Capacidad (personas)
+                    Capacidad
                   </label>
                   <input
                     type="number"
@@ -241,24 +183,7 @@ export default function NewRoomPage({
                     max="20"
                     value={formData?.capacity || ""}
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="Ej: 2"
-                  />
-                </div>
-
-                <div class="md:col-span-2">
-                  <label
-                    htmlFor="description"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
-                  >
-                    Descripción
-                  </label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    rows={3}
-                    value={formData?.description || ""}
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="Descripción opcional de la sala"
+                    placeholder="Número de personas"
                   />
                 </div>
 
@@ -275,11 +200,28 @@ export default function NewRoomPage({
                     name="equipment"
                     value={formData?.equipment?.join(", ") || ""}
                     class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="Separar elementos con comas: Sillón, Mesa, Proyector"
+                    placeholder="Ej: Sillón, Mesa, Lámpara (separar con comas)"
                   />
                   <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Separar cada elemento con comas
+                    Separe cada elemento con una coma
                   </p>
+                </div>
+
+                <div class="md:col-span-2">
+                  <label
+                    htmlFor="description"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Descripción
+                  </label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    rows={3}
+                    value={formData?.description || ""}
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    placeholder="Descripción adicional de la sala..."
+                  />
                 </div>
 
                 <div class="md:col-span-2">
@@ -296,26 +238,24 @@ export default function NewRoomPage({
                       htmlFor="isAvailable"
                       class="ml-2 block text-sm text-gray-700 dark:text-gray-300"
                     >
-                      Sala disponible
+                      Sala disponible para uso
                     </label>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="flex items-center justify-end gap-4">
+            <div class="flex justify-end space-x-3">
               <a
                 href="/rooms"
-                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
               >
-                <Icon name="arrow-left" size={16} className="mr-2" />
                 Cancelar
               </a>
               <button
                 type="submit"
-                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
               >
-                <Icon name="check" size={16} className="mr-2" />
                 Crear Sala
               </button>
             </div>

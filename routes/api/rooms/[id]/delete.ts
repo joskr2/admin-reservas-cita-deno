@@ -41,7 +41,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         {
           status: 404,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
     }
 
@@ -62,7 +62,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         }),
         {
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
     } else {
       if (method === "POST") {
@@ -80,7 +80,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         {
           status: 500,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
     }
   } catch (error) {
@@ -100,7 +100,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 }

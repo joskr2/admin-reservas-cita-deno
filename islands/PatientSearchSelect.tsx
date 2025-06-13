@@ -1,4 +1,4 @@
-import { useState, useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { Icon } from "../components/ui/Icon.tsx";
 
 interface PatientSearchSelectProps {
@@ -35,41 +35,23 @@ export default function PatientSearchSelect({
     loadRecentPatients();
   }, []);
 
-  const loadRecentPatients = async () => {
-    try {
-      // Simular carga de pacientes recientes desde las citas
-      // En una implementación real, esto vendría de una API
-      const mockPatients: Patient[] = [
-        {
-          name: "María García López",
-          lastAppointment: "2024-01-15",
-          appointmentCount: 5,
-        },
-        {
-          name: "Juan Carlos Rodríguez",
-          lastAppointment: "2024-01-14",
-          appointmentCount: 3,
-        },
-        {
-          name: "Ana Sofía Martínez",
-          lastAppointment: "2024-01-13",
-          appointmentCount: 8,
-        },
-        {
-          name: "Pedro Luis Hernández",
-          lastAppointment: "2024-01-12",
-          appointmentCount: 2,
-        },
-        {
-          name: "Carmen Elena Vásquez",
-          lastAppointment: "2024-01-11",
-          appointmentCount: 6,
-        },
-      ];
-      setRecentPatients(mockPatients);
-    } catch (error) {
-      console.error("Error loading recent patients:", error);
-    }
+  const loadRecentPatients = () => {
+    // Simular carga de pacientes recientes
+    // En una implementación real, esto vendría de una API
+    setRecentPatients([
+      {
+        name: "María García",
+        lastAppointment: "2024-01-15",
+        appointmentCount: 5,
+      },
+      {
+        name: "Juan Pérez",
+        lastAppointment: "2024-01-10",
+        appointmentCount: 3,
+      },
+      { name: "Ana López", lastAppointment: "2024-01-08", appointmentCount: 7 },
+    ]);
+    setIsLoading(false);
   };
 
   const searchPatients = async (query: string) => {

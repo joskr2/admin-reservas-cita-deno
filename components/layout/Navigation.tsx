@@ -154,11 +154,9 @@ export default function Navigation({
           <Icon
             name={item.icon}
             size={getIconSize()}
-            className={
-              item.active
-                ? "text-blue-600 dark:text-blue-400"
-                : "text-gray-600 dark:text-gray-300"
-            }
+            className={item.active
+              ? "text-blue-600 dark:text-blue-400"
+              : "text-gray-600 dark:text-gray-300"}
           />
           <span class={variant === "sidebar" ? "text-base" : "text-sm"}>
             {item.label}

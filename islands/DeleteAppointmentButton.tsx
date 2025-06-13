@@ -21,7 +21,7 @@ export default function DeleteAppointmentButton({
           `/api/appointments/${appointmentId}/delete`,
           {
             method: "DELETE",
-          }
+          },
         );
 
         if (response.ok) {

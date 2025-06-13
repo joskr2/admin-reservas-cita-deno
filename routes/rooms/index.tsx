@@ -51,7 +51,7 @@ export default function RoomsPage({
     };
     return type
       ? typeColors[type] ||
-          "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+        "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
       : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
   };
 
@@ -155,10 +155,10 @@ export default function RoomsPage({
                   <p class="text-2xl font-bold text-gray-900 dark:text-white">
                     {rooms.length > 0
                       ? Math.round(
-                          (rooms.filter((r) => !r.isAvailable).length /
-                            rooms.length) *
-                            100
-                        )
+                        (rooms.filter((r) => !r.isAvailable).length /
+                          rooms.length) *
+                          100,
+                      )
                       : 0}
                     %
                   </p>
@@ -217,9 +217,11 @@ export default function RoomsPage({
                           Tipo
                         </h4>
                         <span
-                          class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoomTypeColor(
-                            room.roomType
-                          )}`}
+                          class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            getRoomTypeColor(
+                              room.roomType,
+                            )
+                          }`}
                         >
                           {getRoomTypeLabel(room.roomType)}
                         </span>
