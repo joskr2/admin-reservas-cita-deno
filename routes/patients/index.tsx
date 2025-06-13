@@ -44,7 +44,7 @@ export default function PatientsPage({
             </div>
           </div>
 
-          {/* Estad�sticas */}
+          {/* Estadísticas */}
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div class="flex items-center">
@@ -177,7 +177,7 @@ export default function PatientsPage({
                               {patient.email || "Sin email"}
                             </div>
                             <div class="text-sm text-gray-500 dark:text-gray-400">
-                              {patient.phone || "Sin tel�fono"}
+                              {patient.phone || "Sin teléfono"}
                             </div>
                           </td>
                           <td class="px-6 py-4 whitespace-nowrap">

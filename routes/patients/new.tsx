@@ -19,12 +19,12 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         notes: formData.get("notes") as string || undefined,
       };
 
-      // Validaciones b�sicas
+      // Validaciones básicas
       if (!patientData.name || patientData.name.trim().length === 0) {
         return ctx.render({ error: "El nombre es requerido" });
       }
 
-      // Crear contacto de emergencia si se proporcion� informaci�n
+      // Crear contacto de emergencia si se proporciona información
       const emergencyName = formData.get("emergencyName") as string;
       const emergencyPhone = formData.get("emergencyPhone") as string;
       const emergencyRelationship = formData.get("emergencyRelationship") as string;
@@ -105,10 +105,10 @@ export default function NewPatientPage({
 
           <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
             <form method="POST" class="px-6 py-6 space-y-6">
-              {/* Informaci�n Personal */}
+              {/* Informacion Personal */}
               <div>
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                  Informaci�n Personal
+                  Información Personal
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -137,7 +137,7 @@ export default function NewPatientPage({
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      G�nero
+                      Género
                     </label>
                     <select
                       title="Género"
@@ -154,10 +154,10 @@ export default function NewPatientPage({
                 </div>
               </div>
 
-              {/* Informaci�n de Contacto */}
+              {/* Información de Contacto */}
               <div>
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                  Informaci�n de Contacto
+                  Información de Contacto
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
@@ -173,7 +173,7 @@ export default function NewPatientPage({
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Tel�fono
+                      Teléfono
                     </label>
                     <input
                       type="tel"
@@ -184,13 +184,13 @@ export default function NewPatientPage({
                   </div>
                   <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Direcci�n
+                      Dirección
                     </label>
                     <textarea
                       name="address"
                       rows={3}
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                      placeholder="Direcci�n completa"
+                      placeholder="Dirección completa"
                     ></textarea>
                   </div>
                 </div>
@@ -215,7 +215,7 @@ export default function NewPatientPage({
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Tel�fono
+                      Teléfono
                     </label>
                     <input
                       type="tel"
@@ -226,7 +226,7 @@ export default function NewPatientPage({
                   </div>
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Relaci�n
+                      Relación
                     </label>
                     <input
                       type="text"
@@ -238,21 +238,21 @@ export default function NewPatientPage({
                 </div>
               </div>
 
-              {/* Informaci�n M�dica */}
+              {/* Información Médica */}
               <div>
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                  Informaci�n M�dica
+                  Información Médica
                 </h3>
                 <div class="space-y-6">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Historial M�dico
+                      Historial Médico
                     </label>
                     <textarea
                       name="medicalHistory"
                       rows={4}
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                      placeholder="Condiciones m�dicas relevantes, medicamentos, alergias, etc."
+                      placeholder="Condiciones médicas relevantes, medicamentos, alergias, etc."
                     ></textarea>
                   </div>
                   <div>
@@ -263,7 +263,7 @@ export default function NewPatientPage({
                       name="notes"
                       rows={3}
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                      placeholder="Informaci�n adicional relevante"
+                      placeholder="Información adicional relevante"
                     ></textarea>
                   </div>
                 </div>
