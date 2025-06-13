@@ -155,15 +155,6 @@ export default function RoomsPage({
       : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
   };
 
-  // Calcular estadísticas de todas las salas (no solo las de la página actual)
-  const allRoomsCount = totalCount;
-  const availableRoomsCount = rooms.filter((r) => r.isAvailable).length;
-  const unavailableRoomsCount = rooms.filter((r) => !r.isAvailable).length;
-  const occupancyRate =
-    allRoomsCount > 0
-      ? Math.round((unavailableRoomsCount / allRoomsCount) * 100)
-      : 0;
-
   return (
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
       <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -305,7 +296,6 @@ export default function RoomsPage({
             </form>
           </div>
 
-
           {/* Lista de salas */}
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {rooms.map((room) => (
@@ -436,17 +426,10 @@ export default function RoomsPage({
                     {/* Footer de la tarjeta - siempre al final */}
                     <div class="mt-6 flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                       <div class="flex items-center gap-3">
-                        <a
-                          href={`/rooms/${room.id}`}
-                          title="Ver detalles"
-                        >
+                        <a href={`/rooms/${room.id}`} title="Ver detalles">
                           <Icon name="eye" size={14} className="mr-1" />
                         </a>
-                        <a
-                          href={`/rooms/edit/${room.id}`}
-
-                          title="Editar"
-                        >
+                        <a href={`/rooms/edit/${room.id}`} title="Editar">
                           <Icon name="edit" size={14} className="mr-1" />
                         </a>
                       </div>
