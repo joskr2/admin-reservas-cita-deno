@@ -27,10 +27,10 @@ export default function PatientsPage({
           <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                Gestión de Pacientes
+                GestiÃ³n de Pacientes
               </h1>
               <p class="mt-2 text-gray-600 dark:text-gray-400">
-                Administra la información de los pacientes
+                Administra la informaciÃ³n de los pacientes
               </p>
             </div>
             <div class="mt-4 sm:mt-0">
@@ -44,7 +44,7 @@ export default function PatientsPage({
             </div>
           </div>
 
-          {/* Estadísticas */}
+          {/* Estadï¿½sticas */}
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div class="flex items-center">
@@ -177,7 +177,7 @@ export default function PatientsPage({
                               {patient.email || "Sin email"}
                             </div>
                             <div class="text-sm text-gray-500 dark:text-gray-400">
-                              {patient.phone || "Sin teléfono"}
+                              {patient.phone || "Sin telï¿½fono"}
                             </div>
                           </td>
                           <td class="px-6 py-4 whitespace-nowrap">
