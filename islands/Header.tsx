@@ -29,7 +29,6 @@ export default function Header({
   const isHomePage = currentPath === "/";
   const isDashboardPage = currentPath === "/dashboard";
   const isAppointmentsPage = currentPath === "/appointments";
-  //const isNewAppointmentPage = currentPath === "/appointments/new";
   const isPatientsPage = currentPath.startsWith("/patients");
   const isProfilesPage = currentPath.startsWith("/psychologists");
   const isRoomsPage = currentPath.startsWith("/rooms");
@@ -231,7 +230,7 @@ export default function Header({
               <nav class="flex flex-col gap-2 mb-4">
                 {visibleItems.slice(1).map((item) => {
                   const linkClasses = [
-                    "px-4 py-3 rounded-lg transition-colors w-full text-left font-medium",
+                    "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full text-left font-medium",
                     item.active
                       ? "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400"
                       : "text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50",
@@ -244,6 +243,11 @@ export default function Header({
                       class={linkClasses}
                       onClick={() => setIsMenuOpen(false)}
                     >
+                      <Icon
+                        name={item.icon}
+                        size={18}
+                        className="text-current flex-shrink-0"
+                      />
                       {item.label}
                     </a>
                   );
@@ -258,13 +262,13 @@ export default function Header({
                   <p class="text-gray-700 dark:text-gray-300 text-sm">
                     Bienvenido/a {user?.name || user?.email}
                   </p>
-
                 </div>
                 <a
                   href="/api/auth/logout"
-                  class="flex items-center justify-center w-full px-8 py-2 text-blue-600 dark:text-blue-400 bg-transparent border border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 font-semibold rounded-xl transition-all duration-300"
+                  class="flex items-center justify-center gap-2 w-full px-8 py-2 text-blue-600 dark:text-blue-400 bg-transparent border border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 font-semibold rounded-xl transition-all duration-300"
                   onClick={() => setIsMenuOpen(false)}
                 >
+                  <Icon name="logout" size={16} className="text-current" />
                   Salir
                 </a>
               </div>
@@ -272,37 +276,13 @@ export default function Header({
               <a href="/login">
                 <button
                   type="button"
-                  class="flex items-center justify-center w-full px-8 py-2 text-blue-600 dark:text-blue-400 bg-transparent border border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 font-semibold rounded-xl transition-all duration-300"
+                  class="flex items-center justify-center gap-2 w-full px-8 py-2 text-blue-600 dark:text-blue-400 bg-transparent border border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 font-semibold rounded-xl transition-all duration-300"
                   onClick={() => setIsMenuOpen(false)}
                 >
+                  <Icon name="login" size={16} className="text-current" />
                   Inicio de sesión
                 </button>
               </a>
-            )}
-
-            {/* Navegación móvil */}
-            {isAuthenticated && (
-              <nav class="flex md:hidden items-center gap-1">
-                {visibleItems.slice(1, 3).map((item) => {
-                  const linkClasses = [
-                    "flex items-center gap-1 px-3 py-2 rounded-lg transition-all duration-200 text-sm",
-                    item.active
-                      ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50"
-                      : "text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50",
-                  ].join(" ");
-
-                  return (
-                    <a key={item.href} href={item.href} class={linkClasses}>
-                      <Icon
-                        name={item.icon}
-                        size={14}
-                        className="text-current"
-                      />
-                      <span class="hidden sm:inline">{item.label}</span>
-                    </a>
-                  );
-                })}
-              </nav>
             )}
           </div>
         )}

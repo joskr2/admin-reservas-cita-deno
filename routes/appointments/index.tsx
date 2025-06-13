@@ -510,8 +510,83 @@ export default function AppointmentsPage({
 
               {/* Paginación */}
               {totalPages > 1 && (
-                <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 px-6 py-4">
-                  <div class="flex items-center justify-between">
+                <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4">
+                  {/* Información de resultados - Móvil */}
+                  <div class="sm:hidden text-center mb-4">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">
+                      Página {currentPage} de {totalPages}
+                    </span>
+                    <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                      {totalCount} citas en total
+                    </div>
+                  </div>
+
+                  {/* Paginación móvil - Solo botones anterior/siguiente y página actual */}
+                  <div class="sm:hidden flex items-center justify-between">
+                    <a
+                      href={
+                        currentPage > 1
+                          ? buildUrl({ ...filters, page: currentPage - 1 })
+                          : "#"
+                      }
+                      class={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        currentPage > 1
+                          ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
+                          : "text-gray-400 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700"
+                      }`}
+                    >
+                      <Icon name="arrow-left" size={16} className="mr-1" />
+                      Anterior
+                    </a>
+
+                    <div class="flex items-center space-x-1">
+                      {/* Solo mostrar página actual y adyacentes en móvil */}
+                      {currentPage > 1 && (
+                        <a
+                          href={buildUrl({ ...filters, page: currentPage - 1 })}
+                          class="px-2 py-1 rounded text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                          {currentPage - 1}
+                        </a>
+                      )}
+
+                      <span class="px-3 py-1 rounded bg-blue-600 text-white text-sm font-medium">
+                        {currentPage}
+                      </span>
+
+                      {currentPage < totalPages && (
+                        <a
+                          href={buildUrl({ ...filters, page: currentPage + 1 })}
+                          class="px-2 py-1 rounded text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                          {currentPage + 1}
+                        </a>
+                      )}
+                    </div>
+
+                    <a
+                      href={
+                        currentPage < totalPages
+                          ? buildUrl({ ...filters, page: currentPage + 1 })
+                          : "#"
+                      }
+                      class={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        currentPage < totalPages
+                          ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
+                          : "text-gray-400 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700"
+                      }`}
+                    >
+                      Siguiente
+                      <Icon
+                        name="arrow-left"
+                        size={16}
+                        className="ml-1 rotate-180"
+                      />
+                    </a>
+                  </div>
+
+                  {/* Paginación desktop - Versión completa */}
+                  <div class="hidden sm:flex items-center justify-between">
                     <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
                       <span>
                         Mostrando {(currentPage - 1) * 10 + 1} -{" "}
