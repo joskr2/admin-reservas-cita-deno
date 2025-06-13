@@ -5,6 +5,15 @@ import { Icon } from "../../components/ui/Icon.tsx";
 import DeleteRoomButton from "../../islands/DeleteRoomButton.tsx";
 
 export async function handler(_req: Request, ctx: FreshContext<AppState>) {
+  // Verificar autenticación
+  const currentUser = ctx.state.user;
+  if (!currentUser) {
+    return new Response("", {
+      status: 302,
+      headers: { Location: "/login" },
+    });
+  }
+
   const roomId = ctx.params.id as RoomId;
 
   try {
@@ -15,17 +24,24 @@ export async function handler(_req: Request, ctx: FreshContext<AppState>) {
       return new Response("Sala no encontrada", { status: 404 });
     }
 
-    return ctx.render({ room });
+    return ctx.render({ room, userRole: currentUser.role });
   } catch (error) {
     console.error("Error loading room:", error);
-    return ctx.render({ error: "Error al cargar la sala", room: null });
+    return ctx.render({
+      error: "Error al cargar la sala",
+      room: null,
+      userRole: currentUser.role,
+    });
   }
 }
 
 export default function RoomDetailsPage({
   data,
-}: PageProps<{ room: Room | null; error?: string }, AppState>) {
-  const { room, error } = data;
+}: PageProps<
+  { room: Room | null; error?: string; userRole: string },
+  AppState
+>) {
+  const { room, error, userRole } = data;
 
   if (error || !room) {
     return (
@@ -84,17 +100,19 @@ export default function RoomDetailsPage({
                 />
                 <span class="truncate">Volver a Salas</span>
               </a>
-              <a
-                href={`/rooms/edit/${room.id}`}
-                class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors text-xs sm:text-sm min-h-[40px] w-full sm:w-auto"
-              >
-                <Icon
-                  name="edit"
-                  size={14}
-                  className="mr-1.5 sm:mr-2 flex-shrink-0"
-                />
-                <span class="truncate">Editar Sala</span>
-              </a>
+              {userRole === "superadmin" && (
+                <a
+                  href={`/rooms/edit/${room.id}`}
+                  class="inline-flex items-center justify-center px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors text-xs sm:text-sm min-h-[40px] w-full sm:w-auto"
+                >
+                  <Icon
+                    name="edit"
+                    size={14}
+                    className="mr-1.5 sm:mr-2 flex-shrink-0"
+                  />
+                  <span class="truncate">Editar Sala</span>
+                </a>
+              )}
             </div>
           </div>
 
@@ -206,7 +224,7 @@ export default function RoomDetailsPage({
                               year: "numeric",
                               month: "long",
                               day: "numeric",
-                            },
+                            }
                           )}
                         </span>
                       </div>
@@ -222,7 +240,7 @@ export default function RoomDetailsPage({
                                 year: "numeric",
                                 month: "long",
                                 day: "numeric",
-                              },
+                              }
                             )}
                           </span>
                         </div>
@@ -265,23 +283,25 @@ export default function RoomDetailsPage({
                 </div>
               )}
 
-              {/* Acciones rápidas */}
-              <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  Acciones
-                </h3>
-                <div class="space-y-3">
-                  <a
-                    href={`/rooms/edit/${room.id}`}
-                    class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
-                  >
-                    <Icon name="edit" size={16} className="mr-2" />
-                    Editar Sala
-                  </a>
+              {/* Acciones rápidas - Solo para superadmin */}
+              {userRole === "superadmin" && (
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    Acciones
+                  </h3>
+                  <div class="space-y-3">
+                    <a
+                      href={`/rooms/edit/${room.id}`}
+                      class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+                    >
+                      <Icon name="edit" size={16} className="mr-2" />
+                      Editar Sala
+                    </a>
 
-                  <DeleteRoomButton roomId={room.id} roomName={room.name} />
+                    <DeleteRoomButton roomId={room.id} roomName={room.name} />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

@@ -19,6 +19,28 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     return new Response("Method not allowed", { status: 405 });
   }
 
+  // Verificar autenticación y permisos
+  const currentUser = ctx.state.user;
+  if (!currentUser) {
+    return new Response("", {
+      status: 302,
+      headers: { Location: "/login" },
+    });
+  }
+
+  if (currentUser.role !== "superadmin") {
+    if (method === "POST") {
+      return new Response("", {
+        status: 302,
+        headers: { Location: "/rooms?error=permisos_insuficientes" },
+      });
+    }
+    return new Response(JSON.stringify({ error: "Permisos insuficientes" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const roomId = ctx.params.id as RoomId;
     const roomRepository = getRoomRepository();
@@ -41,7 +63,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         {
           status: 404,
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
     }
 
@@ -62,7 +84,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         }),
         {
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
     } else {
       if (method === "POST") {
@@ -80,7 +102,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         {
           status: 500,
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
     }
   } catch (error) {
@@ -100,7 +122,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      },
+      }
     );
   }
 }

@@ -7,6 +7,22 @@ import { Icon } from "../../../components/ui/Icon.tsx";
 type RoomType = "individual" | "family" | "group" | "evaluation" | "relaxation";
 
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
+  // Verificar autenticación y permisos
+  const currentUser = ctx.state.user;
+  if (!currentUser) {
+    return new Response("", {
+      status: 302,
+      headers: { Location: "/login" },
+    });
+  }
+
+  if (currentUser.role !== "superadmin") {
+    return new Response("", {
+      status: 302,
+      headers: { Location: "/rooms?error=permisos_insuficientes" },
+    });
+  }
+
   const roomId = ctx.params.id as RoomId;
 
   if (req.method === "POST") {
@@ -34,9 +50,9 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         isAvailable: formData.get("isAvailable") === "true",
         equipment: formData.get("equipment")
           ? (formData.get("equipment") as string)
-            .split(",")
-            .map((item) => item.trim())
-            .filter(Boolean)
+              .split(",")
+              .map((item) => item.trim())
+              .filter(Boolean)
           : [],
         capacity: formData.get("capacity")
           ? parseInt(formData.get("capacity") as string)

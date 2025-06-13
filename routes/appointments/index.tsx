@@ -1,6 +1,10 @@
 import { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
-import { getAllAppointments, getUsersByRole } from "../../lib/kv.ts";
+import {
+  getAllAppointments,
+  getUsersByRole,
+  getAppointmentsByPsychologist,
+} from "../../lib/kv-compat.ts";
 import AppointmentDetailsModal from "../../islands/AppointmentDetailsModal.tsx";
 import AppointmentStatusSelector from "../../islands/AppointmentStatusSelector.tsx";
 import AppointmentFilters from "../../islands/AppointmentFilters.tsx";
@@ -10,6 +14,7 @@ import type {
   Appointment,
   AppointmentStatus,
   UserProfile,
+  AppState,
 } from "../../types/index.ts";
 import DeleteAppointmentButton from "../../islands/DeleteAppointmentButton.tsx";
 
@@ -19,7 +24,6 @@ interface AppointmentsPageData {
   currentPage: number;
   totalPages: number;
   psychologists: UserProfile[];
-  currentUser: UserProfile | null;
   filters: {
     search?: string;
     status?: AppointmentStatus;
@@ -28,7 +32,7 @@ interface AppointmentsPageData {
   };
 }
 
-export const handler: Handlers<AppointmentsPageData> = {
+export const handler: Handlers<AppointmentsPageData, AppState> = {
   async GET(req, ctx) {
     const url = new URL(req.url);
     const page = parseInt(url.searchParams.get("page") || "1");
@@ -38,10 +42,25 @@ export const handler: Handlers<AppointmentsPageData> = {
     const psychologist = url.searchParams.get("psychologist") || "";
     const date = url.searchParams.get("date") || "";
 
+    const currentUser = ctx.state.user;
+    if (!currentUser) {
+      return Response.redirect(new URL("/login", url.origin), 302);
+    }
+
     try {
-      let allAppointments = await getAllAppointments();
+      let allAppointments: Appointment[];
       const psychologists = await getUsersByRole("psychologist");
-      const currentUser = ctx.state.user as UserProfile | null;
+
+      // Filtrar citas según el rol del usuario
+      if (currentUser.role === "superadmin") {
+        // Superadmin ve todas las citas
+        allAppointments = await getAllAppointments();
+      } else {
+        // Psicólogos solo ven sus propias citas
+        allAppointments = await getAppointmentsByPsychologist(
+          currentUser.email
+        );
+      }
 
       // Aplicar filtros
       if (search) {
@@ -52,13 +71,13 @@ export const handler: Handlers<AppointmentsPageData> = {
             (apt.psychologistName &&
               apt.psychologistName.toLowerCase().includes(searchLower)) ||
             apt.psychologistEmail.toLowerCase().includes(searchLower) ||
-            apt.id.toLowerCase().includes(searchLower),
+            apt.id.toLowerCase().includes(searchLower)
         );
       }
 
       if (status) {
         allAppointments = allAppointments.filter(
-          (apt) => apt.status === status,
+          (apt) => apt.status === status
         );
       }
 
@@ -75,7 +94,7 @@ export const handler: Handlers<AppointmentsPageData> = {
 
       if (date) {
         allAppointments = allAppointments.filter(
-          (apt) => apt.appointmentDate === date,
+          (apt) => apt.appointmentDate === date
         );
       }
 
@@ -84,7 +103,7 @@ export const handler: Handlers<AppointmentsPageData> = {
       const startIndex = (page - 1) * limit;
       const appointments = allAppointments.slice(
         startIndex,
-        startIndex + limit,
+        startIndex + limit
       );
 
       return ctx.render({
@@ -93,7 +112,6 @@ export const handler: Handlers<AppointmentsPageData> = {
         currentPage: page,
         totalPages,
         psychologists,
-        currentUser,
         filters: { search, status, psychologist, date },
       });
     } catch (error) {
@@ -104,7 +122,6 @@ export const handler: Handlers<AppointmentsPageData> = {
         currentPage: 1,
         totalPages: 1,
         psychologists: [],
-        currentUser: null,
         filters: {},
       });
     }
@@ -120,14 +137,13 @@ export default function AppointmentsPage({
     currentPage,
     totalPages,
     psychologists,
-    currentUser,
     filters,
   } = data;
 
   const buildUrl = (params: Record<string, string | number | undefined>) => {
     const url = new URL(
       "/appointments",
-      globalThis.location?.origin || "http://localhost:8000",
+      globalThis.location?.origin || "http://localhost:8000"
     );
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== "") {
@@ -207,13 +223,11 @@ export default function AppointmentsPage({
 
           {/* Filtros */}
           <div class="mb-8">
-            {currentUser && (
-              <AppointmentFilters
-                psychologists={psychologists}
-                currentUser={currentUser}
-                filters={filters}
-              />
-            )}
+            <AppointmentFilters
+              psychologists={psychologists}
+              currentUser={null}
+              filters={filters}
+            />
           </div>
 
           {/* Estadísticas rápidas */}
@@ -296,379 +310,383 @@ export default function AppointmentsPage({
           </div>
 
           {/* Contenido principal */}
-          {appointments.length === 0
-            ? (
-              <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+          {appointments.length === 0 ? (
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center">
+              <Icon
+                name="calendar"
+                className="h-16 w-16 text-gray-400 mx-auto mb-4"
+              />
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                No se encontraron citas
+              </h3>
+              <p class="text-gray-600 dark:text-gray-400 mb-6">
+                {totalCount === 0
+                  ? "Aún no hay citas registradas en el sistema."
+                  : "No hay citas que coincidan con los filtros aplicados."}
+              </p>
+              <a
+                href="/appointments/new"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
                 <Icon
-                  name="calendar"
-                  className="h-16 w-16 text-gray-400 mx-auto mb-4"
+                  name="calendar-plus"
+                  className="h-5 w-5 filter brightness-0 invert"
+                  disableAutoFilter
                 />
-                <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                  No se encontraron citas
-                </h3>
-                <p class="text-gray-600 dark:text-gray-400 mb-6">
-                  {totalCount === 0
-                    ? "Aún no hay citas registradas en el sistema."
-                    : "No hay citas que coincidan con los filtros aplicados."}
-                </p>
-                <a
-                  href="/appointments/new"
-                  class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                  <Icon
-                    name="calendar-plus"
-                    className="h-5 w-5 filter brightness-0 invert"
-                    disableAutoFilter
-                  />
-                  Crear Primera Cita
-                </a>
-              </div>
-            )
-            : (
-              <>
-                {/* Tabla para desktop */}
-                <div class="hidden lg:block bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-                  <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                      <thead class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800">
-                        <tr>
-                          <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            ID / Paciente
-                          </th>
-                          <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Psicólogo
-                          </th>
-                          <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Fecha y Hora
-                          </th>
-                          <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Estado
-                          </th>
-                          <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                            Acciones
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                        {appointments.map((appointment, index) => (
-                          <tr
-                            key={appointment.id}
-                            class={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
-                              index % 2 === 0
-                                ? "bg-white dark:bg-gray-800"
-                                : "bg-gray-50/50 dark:bg-gray-700/50"
-                            }`}
-                          >
-                            <td class="px-6 py-4 whitespace-nowrap">
-                              <div class="flex items-center space-x-3">
-                                <div class="h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
-                                  {appointment.patientName
-                                    .charAt(0)
-                                    .toUpperCase()}
+                Crear Primera Cita
+              </a>
+            </div>
+          ) : (
+            <>
+              {/* Tabla para desktop */}
+              <div class="hidden lg:block bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="overflow-x-auto">
+                  <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800">
+                      <tr>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          ID / Paciente
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Psicólogo
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Fecha y Hora
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Estado
+                        </th>
+                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                          Acciones
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                      {appointments.map((appointment, index) => (
+                        <tr
+                          key={appointment.id}
+                          class={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
+                            index % 2 === 0
+                              ? "bg-white dark:bg-gray-800"
+                              : "bg-gray-50/50 dark:bg-gray-700/50"
+                          }`}
+                        >
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center space-x-3">
+                              <div class="h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
+                                {appointment.patientName
+                                  .charAt(0)
+                                  .toUpperCase()}
+                              </div>
+                              <div>
+                                <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                  {appointment.patientName}
                                 </div>
-                                <div>
-                                  <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                    {appointment.patientName}
-                                  </div>
-                                  <div class="text-xs text-gray-500 dark:text-gray-400 font-mono">
-                                    {appointment.id.substring(0, 8)}...
-                                  </div>
+                                <div class="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                                  {appointment.id.substring(0, 8)}...
                                 </div>
                               </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                              <div class="text-sm text-gray-900 dark:text-white">
-                                {appointment.psychologistName ||
-                                  appointment.psychologistEmail}
-                              </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                              <div class="text-sm text-gray-900 dark:text-white">
-                                {appointment.appointmentDate}
-                              </div>
-                              <div class="text-xs text-gray-500 dark:text-gray-400">
-                                {appointment.appointmentTime}
-                              </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                              <AppointmentStatusSelector
-                                appointmentId={appointment.id}
-                                currentStatus={appointment.status}
-                              />
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                              <div class="flex items-center space-x-2">
-                                {/* Botón Ver */}
-                                <AppointmentDetailsModal
-                                  appointment={appointment}
-                                />
-
-                                {/* Botón Editar */}
-                                <a
-                                  href={`/appointments/edit/${appointment.id}`}
-                                  class="p-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                  title="Editar cita"
-                                >
-                                  <Icon
-                                    name="edit"
-                                    size={16}
-                                    className="text-current"
-                                  />
-                                </a>
-
-                                {/* Botón Eliminar */}
-                                <DeleteAppointmentButton
-                                  appointmentId={appointment.id}
-                                  className="p-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                                >
-                                  <Icon
-                                    name="trash-2"
-                                    size={16}
-                                    className="text-current"
-                                  />
-                                </DeleteAppointmentButton>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                {/* Cards para mobile/tablet */}
-                <div class="lg:hidden space-y-4">
-                  {appointments.map((appointment) => (
-                    <div
-                      key={appointment.id}
-                      class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
-                    >
-                      <div class="flex items-center space-x-3 mb-4">
-                        <div class="h-12 w-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
-                          {appointment.patientName.charAt(0).toUpperCase()}
-                        </div>
-                        <div class="flex-1">
-                          <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                            {appointment.patientName}
-                          </h3>
-                          <p class="text-sm text-gray-500 dark:text-gray-400 font-mono">
-                            {appointment.id.substring(0, 8)}...
-                          </p>
-                        </div>
-                      </div>
-
-                      <div class="space-y-4 mb-4">
-                        <div class="grid grid-cols-2 gap-4">
-                          <div>
-                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                              Psicólogo
-                            </p>
-                            <p class="text-sm text-gray-900 dark:text-white mt-1">
+                            </div>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900 dark:text-white">
                               {appointment.psychologistName ||
                                 appointment.psychologistEmail}
-                            </p>
-                          </div>
-                          <div>
-                            <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                              Fecha y Hora
-                            </p>
-                            <p class="text-sm text-gray-900 dark:text-white mt-1">
+                            </div>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900 dark:text-white">
                               {appointment.appointmentDate}
-                            </p>
-                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                            </div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400">
                               {appointment.appointmentTime}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div>
-                          <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                            Estado de la Cita
-                          </p>
-                          <AppointmentStatusSelector
-                            appointmentId={appointment.id}
-                            currentStatus={appointment.status}
-                          />
-                        </div>
-                      </div>
-
-                      <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <AppointmentDetailsModal appointment={appointment} />
-                        <div class="flex items-center space-x-2">
-                          <a
-                            href={`/appointments/edit/${appointment.id}`}
-                            class="p-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                            title="Editar cita"
-                          >
-                            <Icon
-                              name="edit"
-                              size={16}
-                              className="text-current"
+                            </div>
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap">
+                            <AppointmentStatusSelector
+                              appointmentId={appointment.id}
+                              currentStatus={appointment.status}
                             />
-                          </a>
-                          <DeleteAppointmentButton
-                            appointmentId={appointment.id}
-                            className="p-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                          >
-                            <Icon
-                              name="trash-2"
-                              size={16}
-                              className="text-current"
-                            />
-                          </DeleteAppointmentButton>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                          </td>
+                          <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex items-center space-x-2">
+                              {/* Botón Ver */}
+                              <AppointmentDetailsModal
+                                appointment={appointment}
+                              />
+
+                              {/* Botón Editar */}
+                              <a
+                                href={`/appointments/edit/${appointment.id}`}
+                                class="p-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                title="Editar cita"
+                              >
+                                <Icon
+                                  name="edit"
+                                  size={16}
+                                  className="text-current"
+                                />
+                              </a>
+
+                              {/* Botón Eliminar */}
+                              <DeleteAppointmentButton
+                                appointmentId={appointment.id}
+                                className="p-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                              >
+                                <Icon
+                                  name="trash-2"
+                                  size={16}
+                                  className="text-current"
+                                />
+                              </DeleteAppointmentButton>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
+              </div>
 
-                {/* Paginación */}
-                {totalPages > 1 && (
-                  <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4">
-                    {/* Información de resultados - Móvil */}
-                    <div class="sm:hidden text-center mb-4">
-                      <span class="text-sm text-gray-600 dark:text-gray-400">
-                        Página {currentPage} de {totalPages}
-                      </span>
-                      <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                        {totalCount} citas en total
+              {/* Cards para mobile/tablet */}
+              <div class="lg:hidden space-y-4">
+                {appointments.map((appointment) => (
+                  <div
+                    key={appointment.id}
+                    class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+                  >
+                    <div class="flex items-center space-x-3 mb-4">
+                      <div class="h-12 w-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
+                        {appointment.patientName.charAt(0).toUpperCase()}
+                      </div>
+                      <div class="flex-1">
+                        <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                          {appointment.patientName}
+                        </h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 font-mono">
+                          {appointment.id.substring(0, 8)}...
+                        </p>
                       </div>
                     </div>
 
-                    {/* Paginación móvil - Solo botones anterior/siguiente y página actual */}
-                    <div class="sm:hidden flex items-center justify-between">
-                      <a
-                        href={currentPage > 1
+                    <div class="space-y-4 mb-4">
+                      <div class="grid grid-cols-2 gap-4">
+                        <div>
+                          <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Psicólogo
+                          </p>
+                          <p class="text-sm text-gray-900 dark:text-white mt-1">
+                            {appointment.psychologistName ||
+                              appointment.psychologistEmail}
+                          </p>
+                        </div>
+                        <div>
+                          <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Fecha y Hora
+                          </p>
+                          <p class="text-sm text-gray-900 dark:text-white mt-1">
+                            {appointment.appointmentDate}
+                          </p>
+                          <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {appointment.appointmentTime}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                          Estado de la Cita
+                        </p>
+                        <AppointmentStatusSelector
+                          appointmentId={appointment.id}
+                          currentStatus={appointment.status}
+                        />
+                      </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <AppointmentDetailsModal appointment={appointment} />
+                      <div class="flex items-center space-x-2">
+                        <a
+                          href={`/appointments/edit/${appointment.id}`}
+                          class="p-2 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                          title="Editar cita"
+                        >
+                          <Icon
+                            name="edit"
+                            size={16}
+                            className="text-current"
+                          />
+                        </a>
+                        <DeleteAppointmentButton
+                          appointmentId={appointment.id}
+                          className="p-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                        >
+                          <Icon
+                            name="trash-2"
+                            size={16}
+                            className="text-current"
+                          />
+                        </DeleteAppointmentButton>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Paginación */}
+              {totalPages > 1 && (
+                <div class="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 px-4 sm:px-6 py-4">
+                  {/* Información de resultados - Móvil */}
+                  <div class="sm:hidden text-center mb-4">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">
+                      Página {currentPage} de {totalPages}
+                    </span>
+                    <div class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                      {totalCount} citas en total
+                    </div>
+                  </div>
+
+                  {/* Paginación móvil - Solo botones anterior/siguiente y página actual */}
+                  <div class="sm:hidden flex items-center justify-between">
+                    <a
+                      href={
+                        currentPage > 1
                           ? buildUrl({ ...filters, page: currentPage - 1 })
-                          : "#"}
-                        class={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          : "#"
+                      }
+                      class={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        currentPage > 1
+                          ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
+                          : "text-gray-400 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700"
+                      }`}
+                    >
+                      <Icon name="arrow-left" size={16} className="mr-1" />
+                      Anterior
+                    </a>
+
+                    <div class="flex items-center space-x-1">
+                      {/* Solo mostrar página actual y adyacentes en móvil */}
+                      {currentPage > 1 && (
+                        <a
+                          href={buildUrl({
+                            ...filters,
+                            page: currentPage - 1,
+                          })}
+                          class="px-2 py-1 rounded text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                          {currentPage - 1}
+                        </a>
+                      )}
+
+                      <span class="px-3 py-1 rounded bg-blue-600 text-white text-sm font-medium">
+                        {currentPage}
+                      </span>
+
+                      {currentPage < totalPages && (
+                        <a
+                          href={buildUrl({
+                            ...filters,
+                            page: currentPage + 1,
+                          })}
+                          class="px-2 py-1 rounded text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                          {currentPage + 1}
+                        </a>
+                      )}
+                    </div>
+
+                    <a
+                      href={
+                        currentPage < totalPages
+                          ? buildUrl({ ...filters, page: currentPage + 1 })
+                          : "#"
+                      }
+                      class={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        currentPage < totalPages
+                          ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
+                          : "text-gray-400 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700"
+                      }`}
+                    >
+                      Siguiente
+                      <Icon
+                        name="arrow-left"
+                        size={16}
+                        className="ml-1 rotate-180"
+                      />
+                    </a>
+                  </div>
+
+                  {/* Paginación desktop - Versión completa */}
+                  <div class="hidden sm:flex items-center justify-between">
+                    <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+                      <span>
+                        Mostrando {(currentPage - 1) * 10 + 1} -{" "}
+                        {Math.min(currentPage * 10, totalCount)} de {totalCount}{" "}
+                        citas
+                      </span>
+                    </div>
+
+                    <div class="flex items-center space-x-1">
+                      {/* Botón anterior */}
+                      <a
+                        href={
                           currentPage > 1
-                            ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
-                            : "text-gray-400 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700"
+                            ? buildUrl({ ...filters, page: currentPage - 1 })
+                            : "#"
+                        }
+                        class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          currentPage > 1
+                            ? "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            : "text-gray-400 dark:text-gray-600 cursor-not-allowed"
                         }`}
                       >
-                        <Icon name="arrow-left" size={16} className="mr-1" />
                         Anterior
                       </a>
 
-                      <div class="flex items-center space-x-1">
-                        {/* Solo mostrar página actual y adyacentes en móvil */}
-                        {currentPage > 1 && (
-                          <a
-                            href={buildUrl({
-                              ...filters,
-                              page: currentPage - 1,
-                            })}
-                            class="px-2 py-1 rounded text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          >
-                            {currentPage - 1}
-                          </a>
-                        )}
-
-                        <span class="px-3 py-1 rounded bg-blue-600 text-white text-sm font-medium">
-                          {currentPage}
+                      {/* Números de página */}
+                      {getPaginationPages().map((page, index) => (
+                        <span key={index}>
+                          {page === "..." ? (
+                            <span class="px-3 py-2 text-gray-400 dark:text-gray-600">
+                              ...
+                            </span>
+                          ) : (
+                            <a
+                              href={buildUrl({ ...filters, page })}
+                              class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                                currentPage === page
+                                  ? "bg-blue-600 text-white"
+                                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                              }`}
+                            >
+                              {page}
+                            </a>
+                          )}
                         </span>
+                      ))}
 
-                        {currentPage < totalPages && (
-                          <a
-                            href={buildUrl({
-                              ...filters,
-                              page: currentPage + 1,
-                            })}
-                            class="px-2 py-1 rounded text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          >
-                            {currentPage + 1}
-                          </a>
-                        )}
-                      </div>
-
+                      {/* Botón siguiente */}
                       <a
-                        href={currentPage < totalPages
-                          ? buildUrl({ ...filters, page: currentPage + 1 })
-                          : "#"}
-                        class={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        href={
                           currentPage < totalPages
-                            ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
-                            : "text-gray-400 dark:text-gray-600 cursor-not-allowed border border-gray-200 dark:border-gray-700"
+                            ? buildUrl({ ...filters, page: currentPage + 1 })
+                            : "#"
+                        }
+                        class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          currentPage < totalPages
+                            ? "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            : "text-gray-400 dark:text-gray-600 cursor-not-allowed"
                         }`}
                       >
                         Siguiente
-                        <Icon
-                          name="arrow-left"
-                          size={16}
-                          className="ml-1 rotate-180"
-                        />
                       </a>
                     </div>
-
-                    {/* Paginación desktop - Versión completa */}
-                    <div class="hidden sm:flex items-center justify-between">
-                      <div class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
-                        <span>
-                          Mostrando {(currentPage - 1) * 10 + 1} -{" "}
-                          {Math.min(currentPage * 10, totalCount)} de{" "}
-                          {totalCount} citas
-                        </span>
-                      </div>
-
-                      <div class="flex items-center space-x-1">
-                        {/* Botón anterior */}
-                        <a
-                          href={currentPage > 1
-                            ? buildUrl({ ...filters, page: currentPage - 1 })
-                            : "#"}
-                          class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            currentPage > 1
-                              ? "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                              : "text-gray-400 dark:text-gray-600 cursor-not-allowed"
-                          }`}
-                        >
-                          Anterior
-                        </a>
-
-                        {/* Números de página */}
-                        {getPaginationPages().map((page, index) => (
-                          <span key={index}>
-                            {page === "..."
-                              ? (
-                                <span class="px-3 py-2 text-gray-400 dark:text-gray-600">
-                                  ...
-                                </span>
-                              )
-                              : (
-                                <a
-                                  href={buildUrl({ ...filters, page })}
-                                  class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                    currentPage === page
-                                      ? "bg-blue-600 text-white"
-                                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                  }`}
-                                >
-                                  {page}
-                                </a>
-                              )}
-                          </span>
-                        ))}
-
-                        {/* Botón siguiente */}
-                        <a
-                          href={currentPage < totalPages
-                            ? buildUrl({ ...filters, page: currentPage + 1 })
-                            : "#"}
-                          class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            currentPage < totalPages
-                              ? "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                              : "text-gray-400 dark:text-gray-600 cursor-not-allowed"
-                          }`}
-                        >
-                          Siguiente
-                        </a>
-                      </div>
-                    </div>
                   </div>
-                )}
-              </>
-            )}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
     </>

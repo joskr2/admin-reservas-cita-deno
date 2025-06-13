@@ -18,6 +18,7 @@ export function Icon({
     // Iconos de navegación
     home: "/icons/home.svg",
     dashboard: "/icons/bar-chart-3.svg",
+    "bar-chart-3": "/icons/bar-chart-3.svg",
     calendar: "/icons/calendar.svg",
     "calendar-plus": "/icons/calendar-plus.svg",
     "user-plus": "/icons/user-plus.svg",
@@ -132,6 +133,7 @@ export function getAvailableIcons(): string[] {
   const iconMap: Record<string, string> = {
     home: "/icons/home.svg",
     dashboard: "/icons/bar-chart-3.svg",
+    "bar-chart-3": "/icons/bar-chart-3.svg",
     calendar: "/icons/calendar.svg",
     "calendar-plus": "/icons/calendar-plus.svg",
     "user-plus": "/icons/user-plus.svg",

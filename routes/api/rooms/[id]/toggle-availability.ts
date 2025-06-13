@@ -7,6 +7,22 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     return new Response("Method not allowed", { status: 405 });
   }
 
+  // Verificar autenticación y permisos
+  const currentUser = ctx.state.user;
+  if (!currentUser) {
+    return new Response(JSON.stringify({ error: "No autenticado" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  if (currentUser.role !== "superadmin") {
+    return new Response(JSON.stringify({ error: "Permisos insuficientes" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
   const roomId = ctx.params.id as RoomId;
 
   try {
@@ -25,7 +41,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     const newAvailability = !room.isAvailable;
     const success = await roomRepository.updateAvailability(
       roomId,
-      newAvailability,
+      newAvailability
     );
 
     if (success) {
@@ -48,7 +64,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
           {
             status: 200,
             headers: { "Content-Type": "application/json" },
-          },
+          }
         );
       } else {
         // Redirección para formularios tradicionales
@@ -65,7 +81,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         {
           status: 500,
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
     }
   } catch (error) {
@@ -75,7 +91,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      },
+      }
     );
   }
 }

@@ -17,6 +17,7 @@ interface RoomsPageData {
     type?: string;
   };
   success?: string | null;
+  userRole: string;
 }
 
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
@@ -27,6 +28,11 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
   const status = url.searchParams.get("status") || "";
   const type = url.searchParams.get("type") || "";
   const success = url.searchParams.get("success");
+
+  const currentUser = ctx.state.user;
+  if (!currentUser) {
+    return Response.redirect(new URL("/login", url.origin), 302);
+  }
 
   try {
     const roomRepository = getRoomRepository();
@@ -65,6 +71,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       totalPages,
       filters: { search, status, type },
       success,
+      userRole: currentUser.role,
     });
   } catch (error) {
     console.error("Error loading rooms:", error);
@@ -75,6 +82,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       totalPages: 1,
       filters: {},
       success: null,
+      userRole: currentUser?.role || "psychologist",
     });
   }
 }
@@ -181,19 +189,25 @@ export default function RoomsPage({
           <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                Gestión de Salas
+                {data.userRole === "superadmin"
+                  ? "Gestión de Salas"
+                  : "Salas Disponibles"}
               </h1>
               <p class="mt-2 text-gray-600 dark:text-gray-400">
-                Administra las salas de terapia y su disponibilidad
+                {data.userRole === "superadmin"
+                  ? "Administra las salas de terapia y su disponibilidad"
+                  : "Consulta el estado y disponibilidad de las salas de terapia"}
               </p>
             </div>
-            <div class="mt-4 sm:mt-0 flex gap-3">
-              <a href="/rooms/new">
-                <Button variant="primary" leftIcon="plus">
-                  Nueva Sala
-                </Button>
-              </a>
-            </div>
+            {data.userRole === "superadmin" && (
+              <div class="mt-4 sm:mt-0 flex gap-3">
+                <a href="/rooms/new">
+                  <Button variant="primary" leftIcon="plus">
+                    Nueva Sala
+                  </Button>
+                </a>
+              </div>
+            )}
           </div>
 
           {/* Filtros */}
@@ -346,18 +360,32 @@ export default function RoomsPage({
                           >
                             <Icon name="eye" size={16} />
                           </a>
-                          <a
-                            href={`/rooms/edit/${room.id}`}
-                            title="Editar"
-                            class="text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
-                          >
-                            <Icon name="edit" size={16} />
-                          </a>
+                          {data.userRole === "superadmin" && (
+                            <a
+                              href={`/rooms/edit/${room.id}`}
+                              title="Editar"
+                              class="text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 transition-colors"
+                            >
+                              <Icon name="edit" size={16} />
+                            </a>
+                          )}
                         </div>
-                        <RoomToggleButton
-                          roomId={room.id}
-                          isAvailable={room.isAvailable}
-                        />
+                        {data.userRole === "superadmin" ? (
+                          <RoomToggleButton
+                            roomId={room.id}
+                            isAvailable={room.isAvailable}
+                          />
+                        ) : (
+                          <span
+                            class={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                              room.isAvailable
+                                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                                : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                            }`}
+                          >
+                            {room.isAvailable ? "Disponible" : "Ocupada"}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -37,6 +37,11 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
   const type = url.searchParams.get("type") || "";
   const period = url.searchParams.get("period") || "week";
 
+  const currentUser = ctx.state.user;
+  if (!currentUser) {
+    return Response.redirect(new URL("/login", url.origin), 302);
+  }
+
   try {
     const dashboardService = getDashboardService();
     const appointmentRepository = getAppointmentRepository();
@@ -46,11 +51,40 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
     const dashboardData = await dashboardService.getStats();
 
-    // Obtener datos recientes
-    let recentAppointments = await appointmentRepository.getAll();
-    let recentPatients = await patientRepository.getAllPatientsAsProfiles();
-    let recentUsers = await userRepository.getAllUsersAsProfiles();
-    let recentRooms = await roomRepository.getAll();
+    // Obtener datos recientes según el rol del usuario
+    let recentAppointments: Appointment[];
+    let recentPatients: PatientProfile[];
+    let recentUsers: UserProfile[];
+    let recentRooms: Room[];
+
+    if (currentUser.role === "superadmin") {
+      // Superadmin ve todo
+      recentAppointments = await appointmentRepository.getAll();
+      recentPatients = await patientRepository.getAllPatientsAsProfiles();
+      recentUsers = await userRepository.getAllUsersAsProfiles();
+      recentRooms = await roomRepository.getAll();
+    } else {
+      // Psicólogos solo ven sus propias citas y datos relacionados
+      recentAppointments =
+        await appointmentRepository.getAppointmentsByPsychologist(
+          currentUser.email
+        );
+
+      // Para pacientes, solo mostrar aquellos que tienen citas con este psicólogo
+      const allPatients = await patientRepository.getAllPatientsAsProfiles();
+      const patientNamesWithAppointments = new Set(
+        recentAppointments.map((apt) => apt.patientName)
+      );
+      recentPatients = allPatients.filter((patient) =>
+        patientNamesWithAppointments.has(patient.name)
+      );
+
+      // Los psicólogos no ven otros usuarios
+      recentUsers = [];
+
+      // Los psicólogos pueden ver las salas (información general)
+      recentRooms = await roomRepository.getAll();
+    }
 
     // Filtrar por período
     const now = new Date();
