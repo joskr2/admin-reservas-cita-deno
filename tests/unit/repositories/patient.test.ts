@@ -10,7 +10,10 @@ describe("PatientRepository", () => {
   let patientRepository: PatientRepository;
   let connection: DatabaseConnection;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Limpiar datos de prueba antes de cada test
+    await testUtils.cleanupTestData();
+
     connection = DatabaseConnection.getInstance();
     patientRepository = new PatientRepository(connection);
   });

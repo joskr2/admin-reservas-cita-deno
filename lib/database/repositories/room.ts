@@ -26,8 +26,26 @@ export class RoomRepository extends BaseRepository<Room, RoomId>
       entity.id.length > 0 &&
       typeof entity.name === "string" &&
       entity.name.length > 0 &&
-      typeof entity.isAvailable === "boolean"
+      typeof entity.isAvailable === "boolean" &&
+      Array.isArray(entity.equipment) &&
+      (entity.capacity === undefined || (typeof entity.capacity === "number" && entity.capacity > 0))
     );
+  }
+
+  public override async create(room: Room): Promise<boolean> {
+    if (!this.validate(room)) {
+      console.warn("Invalid room data provided to create:", room);
+      return false;
+    }
+
+    try {
+      const kv = await this.getKv();
+      const result = await kv.set(["rooms", room.id], room);
+      return result.ok;
+    } catch (error) {
+      console.error("Error creating room:", error);
+      return false;
+    }
   }
 
   public async updateAvailability(

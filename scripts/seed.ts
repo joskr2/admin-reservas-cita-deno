@@ -9,7 +9,12 @@ import {
   type User,
 } from "../types/index.ts";
 import { createAppointment, createUser } from "../lib/kv.ts";
-import { PatientRepository } from "../lib/database/repositories/patient.ts";
+import { 
+  getPatientRepository, 
+  getUserRepository, 
+  getRoomRepository, 
+  getAppointmentRepository 
+} from "../lib/database/index.ts";
 
 // Define all users to be seeded
 const usersToSeed = [
@@ -389,8 +394,8 @@ function generateAppointments(roomIds: RoomId[]): Appointment[] {
     "cancelled",
   ];
 
-  // Generar 200 citas
-  for (let i = 1; i <= 200; i++) {
+  // Generar 150 citas (reducido para testing más rápido)
+  for (let i = 1; i <= 150; i++) {
     const psychologist =
       psychologists[Math.floor(Math.random() * psychologists.length)]!;
     const patient =
@@ -489,7 +494,7 @@ function generateAppointments(roomIds: RoomId[]): Appointment[] {
   return appointments;
 }
 
-// Datos de pacientes
+// Datos de pacientes expandidos para mejor testing
 const patientsData = [
   {
     name: "María González",
@@ -537,56 +542,181 @@ const patientsData = [
     medicalHistory: "Terapia familiar en curso, conflictos de pareja",
     notes: "Excelente disposición al cambio, comprometida con el proceso",
   },
+  {
+    name: "Pedro Sánchez",
+    email: "pedro.sanchez@email.com",
+    phone: "+56945678901",
+    dateOfBirth: "1982-05-12",
+    gender: "male" as const,
+    address: "Los Pinos 321, La Serena",
+    emergencyContact: {
+      name: "Isabel Sánchez",
+      phone: "+56976543210",
+      relationship: "Esposa",
+    },
+    medicalHistory: "Trastorno obsesivo-compulsivo",
+    notes: "Paciente muy motivado, excelente adherencia al tratamiento",
+  },
+  {
+    name: "Sofía López",
+    email: "sofia.lopez@email.com",
+    phone: "+56956789012",
+    dateOfBirth: "1995-09-28",
+    gender: "female" as const,
+    address: "Av. Libertad 654, Antofagasta",
+    emergencyContact: {
+      name: "Luis López",
+      phone: "+56965432109",
+      relationship: "Padre",
+    },
+    medicalHistory: "Trastorno de la alimentación en recuperación",
+    notes: "Progreso notable, requiere monitoreo nutricional",
+  },
+  {
+    name: "Diego Fernández",
+    email: "diego.fernandez@email.com",
+    phone: "+56967890123",
+    dateOfBirth: "1988-12-03",
+    gender: "male" as const,
+    address: "Calle Nueva 987, Temuco",
+    emergencyContact: {
+      name: "Carmen Fernández",
+      phone: "+56954321098",
+      relationship: "Hermana",
+    },
+    medicalHistory: "Trastorno de estrés postraumático",
+    notes: "Trauma laboral, respondiendo bien a EMDR",
+  },
 ];
 
 // Define sample appointments to be seeded - se generarán después de crear las salas
 let appointmentsToSeed: Appointment[] = [];
+
+/**
+ * Función para verificar y mostrar el estado actual de la base de datos
+ */
+async function checkDatabaseStatus(kv: Deno.Kv): Promise<void> {
+  console.log("📊 Estado actual de la base de datos:");
+  
+  const prefixes = [
+    ["users"],
+    ["rooms"],
+    ["patients"],
+    ["appointments"],
+    ["sessions"],
+  ];
+
+  for (const prefix of prefixes) {
+    const entries = kv.list({ prefix });
+    let count = 0;
+    for await (const _entry of entries) {
+      count++;
+    }
+    console.log(`   ${prefix[0]}: ${count} registros`);
+  }
+}
+
+/**
+ * Función para crear datos de testing específicos
+ */
+async function createTestData(_kv: Deno.Kv): Promise<void> {
+  console.log("🧪 Creando datos específicos para testing...");
+  
+  // Crear usuario de testing para las pruebas automatizadas
+  const userRepo = getUserRepository();
+  const testUser: User = {
+    id: "test-user-id",
+    email: "test@horizonte.com",
+    passwordHash: await hash("password123"),
+    role: "superadmin",
+    name: "Usuario de Prueba",
+    createdAt: new Date().toISOString(),
+    isActive: true,
+  };
+  
+  await userRepo.create(testUser);
+  console.log("   ✅ Usuario de testing creado");
+  
+  // Crear algunos pacientes con datos predecibles para testing
+  const patientRepo = getPatientRepository();
+  const testPatients = [
+    {
+      id: "test-patient-1",
+      name: "Paciente Test 1",
+      email: "test.patient1@email.com",
+      phone: "+56900000001",
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: "test-patient-2", 
+      name: "Paciente Test 2",
+      email: "test.patient2@email.com",
+      phone: "+56900000002",
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  ];
+  
+  for (const patient of testPatients) {
+    await patientRepo.create(patient as Patient);
+    console.log(`   ✅ ${patient.name} creado para testing`);
+  }
+}
 
 async function seedDatabase() {
   const kv = await Deno.openKv();
 
   try {
     console.log("🌱 Iniciando proceso de seed...");
+    
+    // Mostrar estado actual
+    await checkDatabaseStatus(kv);
 
-    // Clear existing data
-    console.log("🧹 Limpiando datos existentes...");
+    // Clear existing data using repository pattern where possible
+    console.log("\n🧹 Limpiando datos existentes...");
 
-    // Delete all existing users
-    const existingUsers = kv.list({ prefix: ["users"] });
-    for await (const entry of existingUsers) {
-      await kv.delete(entry.key);
+    // Clean up using repositories
+    const userRepo = getUserRepository();
+    const patientRepo = getPatientRepository();
+    const roomRepo = getRoomRepository();
+    const appointmentRepo = getAppointmentRepository();
+
+    // Get all existing data and delete
+    const existingUsers = await userRepo.getAll();
+    for (const user of existingUsers) {
+      await userRepo.delete(user.id);
     }
 
-    // Delete all existing users_by_role indexes
-    const existingUsersByRole = kv.list({ prefix: ["users_by_role"] });
-    for await (const entry of existingUsersByRole) {
-      await kv.delete(entry.key);
+    const existingPatients = await patientRepo.getAll();
+    for (const patient of existingPatients) {
+      await patientRepo.delete(patient.id);
     }
 
-    // Delete all existing sessions
-    const existingSessions = kv.list({ prefix: ["sessions"] });
-    for await (const entry of existingSessions) {
-      await kv.delete(entry.key);
+    const existingRooms = await roomRepo.getAll();
+    for (const room of existingRooms) {
+      await roomRepo.delete(room.id);
     }
 
-    // Delete all existing appointments
-    const existingAppointments = kv.list({ prefix: ["appointments"] });
-    for await (const entry of existingAppointments) {
-      await kv.delete(entry.key);
+    const existingAppointments = await appointmentRepo.getAll();
+    for (const appointment of existingAppointments) {
+      await appointmentRepo.delete(appointment.id);
     }
 
-    // Delete all existing appointments_by_psychologist indexes
-    const existingAppointmentsByPsychologist = kv.list({
-      prefix: ["appointments_by_psychologist"],
-    });
-    for await (const entry of existingAppointmentsByPsychologist) {
-      await kv.delete(entry.key);
-    }
+    // Clean up any remaining direct KV entries that might not be handled by repositories
+    const kvPrefixes = [
+      ["users_by_role"],
+      ["sessions"],
+      ["appointments_by_psychologist"],
+    ];
 
-    // Delete all existing rooms
-    const existingRooms = kv.list({ prefix: ["rooms"] });
-    for await (const entry of existingRooms) {
-      await kv.delete(entry.key);
+    for (const prefix of kvPrefixes) {
+      const entries = kv.list({ prefix });
+      for await (const entry of entries) {
+        await kv.delete(entry.key);
+      }
     }
 
     // Seed users using the createUser function to ensure proper indexing
@@ -613,18 +743,21 @@ async function seedDatabase() {
       }
     }
 
-    // Seed rooms
+    // Seed rooms using repository
     console.log("🏠 Creando salas...");
     const createdRoomIds: RoomId[] = [];
     for (const room of roomsToSeed) {
-      await kv.set(["rooms", room.id], room);
-      createdRoomIds.push(room.id);
-      console.log(`   ✅ Sala creada: ${room.name}`);
+      const success = await roomRepo.create(room);
+      if (success) {
+        createdRoomIds.push(room.id);
+        console.log(`   ✅ Sala creada: ${room.name}`);
+      } else {
+        console.log(`   ❌ Error creando sala: ${room.name}`);
+      }
     }
 
-    // Seed patients
+    // Seed patients using repository
     console.log("👤 Creando pacientes...");
-    const patientRepo = new PatientRepository();
     for (const patientData of patientsData) {
       const patient: Patient = {
         id: crypto.randomUUID(),
@@ -657,6 +790,9 @@ async function seedDatabase() {
         console.log(`   ❌ Error creando cita: ${appointment.id}`);
       }
     }
+
+    // Create specific test data
+    await createTestData(kv);
 
     console.log("\n🎉 ¡Seed completado exitosamente!");
     console.log("\n📊 Resumen:");

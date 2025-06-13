@@ -1,927 +1,449 @@
 // tests/integration/api/rooms.test.ts - Tests de integración para API de salas
-import { assertEquals, assert } from "$std/testing/asserts.ts";
-import { describe, it, beforeEach } from "$std/testing/bdd.ts";
-import { mockRequest } from "../../setup.ts";
+import { assertEquals, assertExists } from "$std/testing/asserts.ts";
+import { describe, it, beforeEach, afterEach } from "$std/testing/bdd.ts";
+import {
+  createTestServer,
+  cleanupTestData,
+  authenticateUser,
+  createApiRequest,
+  type TestServer,
+  cleanupTestResources,
+} from "../../helpers/integration.ts";
+import type { Room } from "../../../types/index.ts";
 
 describe("Rooms API Integration Tests", () => {
-  let _testServer: {
-    request: (path: string, init?: RequestInit) => Promise<Response>;
-  };
-  let baseUrl: string;
+  let testServer: TestServer;
+  let adminCookies: Record<string, string>;
 
-  beforeEach(() => {
-    // Configurar servidor de pruebas
-    baseUrl = "http://localhost:8000";
-    _testServer = {
-      request: (path: string, init?: RequestInit) =>
-        fetch(`${baseUrl}${path}`, init),
-    };
+  beforeEach(async () => {
+    // Limpiar datos de prueba
+    await cleanupTestData();
+
+    // Crear servidor de pruebas
+    testServer = await createTestServer();
+
+    // Autenticar como admin
+    const authResult = await authenticateUser(
+      testServer,
+      "admin@horizonte.com",
+      "admin123"
+    );
+    adminCookies = authResult.cookies;
   });
 
-  describe("DELETE /api/rooms/:id/delete", () => {
-    it("should delete room successfully", () => {
-      const _roomId = "room-test-001";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/delete",
-        {
-          method: "DELETE",
-        }
-      );
-
-      const mockResponse = {
-        ok: true,
-        status: 200,
-        json: () =>
-          Promise.resolve({
-            success: true,
-            message: "Sala eliminada exitosamente",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, true);
-      assertEquals(mockResponse.status, 200);
-      assert(mockResponse.json);
-    });
-
-    it("should handle non-existent room", () => {
-      const _roomId = "non-existent-room";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/non-existent-room/delete",
-        {
-          method: "DELETE",
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 404,
-        json: () =>
-          Promise.resolve({
-            error: "Sala no encontrada",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 404);
-    });
-
-    it("should handle unauthorized deletion", () => {
-      const _roomId = "room-test-001";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/delete",
-        {
-          method: "DELETE",
-          // Sin autorización
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 401,
-        json: () =>
-          Promise.resolve({
-            error: "No autorizado",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 401);
-    });
-
-    it("should prevent deletion of room with active appointments", () => {
-      const _roomId = "room-with-appointments";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-with-appointments/delete",
-        {
-          method: "DELETE",
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 409,
-        json: () =>
-          Promise.resolve({
-            error: "No se puede eliminar una sala con citas activas",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 409);
-    });
-
-    it("should handle database connection errors", () => {
-      const _roomId = "room-test-001";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/delete",
-        {
-          method: "DELETE",
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 503,
-        json: () =>
-          Promise.resolve({
-            error: "Error de conexión a la base de datos",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 503);
-    });
-  });
-
-  describe("POST /api/rooms/:id/toggle-availability", () => {
-    it("should toggle room availability successfully", () => {
-      const _roomId = "room-test-001";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/toggle-availability",
-        {
-          method: "POST",
-        }
-      );
-
-      const mockResponse = {
-        ok: true,
-        status: 200,
-        json: () =>
-          Promise.resolve({
-            success: true,
-            room: {
-              id: "room-test-001",
-              name: "Sala de Terapia 1",
-              isAvailable: false, // Cambiado de true a false
-              updatedAt: new Date().toISOString(),
-            },
-          }),
-      };
-
-      assertEquals(mockResponse.ok, true);
-      assertEquals(mockResponse.status, 200);
-      assert(mockResponse.json);
-    });
-
-    it("should handle non-existent room", () => {
-      const _roomId = "non-existent-room";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/non-existent-room/toggle-availability",
-        {
-          method: "POST",
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 404,
-        json: () =>
-          Promise.resolve({
-            error: "Sala no encontrada",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 404);
-    });
-
-    it("should handle unauthorized access", () => {
-      const _roomId = "room-test-001";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/toggle-availability",
-        {
-          method: "POST",
-          // Sin autorización
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 401,
-        json: () =>
-          Promise.resolve({
-            error: "No autorizado",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 401);
-    });
-
-    it("should handle invalid room ID", () => {
-      const _roomId = "";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms//toggle-availability",
-        {
-          method: "POST",
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 400,
-        json: () =>
-          Promise.resolve({
-            error: "ID de sala inválido",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 400);
-    });
-
-    it("should handle database connection errors", () => {
-      const _roomId = "room-test-001";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/toggle-availability",
-        {
-          method: "POST",
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 503,
-        json: () =>
-          Promise.resolve({
-            error: "Error de conexión a la base de datos",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 503);
-    });
-
-    it("should handle concurrent availability changes", () => {
-      const _roomId = "room-test-001";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/toggle-availability",
-        {
-          method: "POST",
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 409,
-        json: () =>
-          Promise.resolve({
-            error: "La sala está siendo modificada por otro usuario",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 409);
-    });
-
-    it("should handle room with active appointments", () => {
-      const _roomId = "room-with-appointments";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-with-appointments/toggle-availability",
-        {
-          method: "POST",
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 409,
-        json: () =>
-          Promise.resolve({
-            error:
-              "No se puede cambiar la disponibilidad de una sala con citas activas",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 409);
-    });
+  afterEach(async () => {
+    if (testServer) {
+      await testServer.close();
+    }
+    await cleanupTestData();
+    await cleanupTestResources();
   });
 
   describe("GET /api/rooms", () => {
-    it("should return list of rooms", () => {
-      const _mockRequest = mockRequest("http://localhost:8000/api/rooms", {
-        method: "GET",
+    it("should return list of rooms", async () => {
+      const response = await testServer.request("/api/rooms", {
+        headers: {
+          Cookie: Object.entries(adminCookies)
+            .map(([key, value]) => `${key}=${value}`)
+            .join("; "),
+        },
       });
 
-      const mockRooms = [
-        {
-          id: "room-001",
-          name: "Sala de Terapia 1",
-          description: "Sala principal para terapias individuales",
-          capacity: 2,
-          isAvailable: true,
-          equipment: ["Sillas", "Mesa", "Pizarra"],
-          createdAt: "2024-01-01T00:00:00Z",
-          updatedAt: "2024-01-01T00:00:00Z",
-        },
-        {
-          id: "room-002",
-          name: "Sala de Terapia 2",
-          description: "Sala para terapias grupales",
-          capacity: 8,
-          isAvailable: false,
-          equipment: ["Sillas", "Proyector"],
-          createdAt: "2024-01-01T00:00:00Z",
-          updatedAt: "2024-01-01T00:00:00Z",
-        },
-      ];
+      assertEquals(response.status, 200);
 
-      const mockResponse = {
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ rooms: mockRooms }),
-      };
-
-      assertEquals(mockResponse.ok, true);
-      assertEquals(mockResponse.status, 200);
-      assert(mockResponse.json);
+      const data = await response.json();
+      assertExists(data.rooms);
+      assertEquals(Array.isArray(data.rooms), true);
     });
 
-    it("should handle filter parameters", () => {
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms?available=true&capacity=2",
-        {
-          method: "GET",
-          // Con parámetros de filtro: ?available=true&capacity=2
-        }
-      );
+    it("should handle unauthorized access", async () => {
+      const response = await testServer.request("/api/rooms");
 
-      const mockFilteredRooms = [
-        {
-          id: "room-001",
-          name: "Sala de Terapia 1",
-          capacity: 2,
-          isAvailable: true,
-        },
-      ];
-
-      const mockResponse = {
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ rooms: mockFilteredRooms }),
-      };
-
-      assertEquals(mockResponse.ok, true);
-      assertEquals(mockResponse.status, 200);
-    });
-
-    it("should handle pagination", () => {
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms?page=1&limit=10",
-        {
-          method: "GET",
-          // Con parámetros de paginación: ?page=1&limit=10
-        }
-      );
-
-      const mockResponse = {
-        ok: true,
-        status: 200,
-        json: () =>
-          Promise.resolve({
-            rooms: [],
-            pagination: {
-              page: 1,
-              limit: 10,
-              total: 0,
-              totalPages: 0,
-            },
-          }),
-      };
-
-      assertEquals(mockResponse.ok, true);
-      assertEquals(mockResponse.status, 200);
-    });
-
-    it("should handle unauthorized access", () => {
-      const _mockRequest = mockRequest("http://localhost:8000/api/rooms", {
-        method: "GET",
-        // Sin autorización
-      });
-
-      const mockResponse = {
-        ok: false,
-        status: 401,
-        json: () =>
-          Promise.resolve({
-            error: "No autorizado",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 401);
+      // Debería redirigir al login o devolver 401
+      assertEquals(response.status === 401 || response.status === 302, true);
     });
   });
 
   describe("POST /api/rooms/create", () => {
-    it("should create room successfully", () => {
+    it("should create room successfully", async () => {
       const roomData = {
-        name: "Nueva Sala",
-        description: "Descripción de la nueva sala",
+        name: "Sala de Prueba",
+        description: "Sala creada en test",
         capacity: 4,
         equipment: ["Sillas", "Mesa"],
+        roomType: "individual",
       };
 
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/create",
-        {
-          method: "POST",
-          body: JSON.stringify(roomData),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+      const response = await testServer.request(
+        "/api/rooms/create",
+        createApiRequest("POST", roomData, {
+          Cookie: Object.entries(adminCookies)
+            .map(([key, value]) => `${key}=${value}`)
+            .join("; "),
+        })
       );
 
-      const mockResponse = {
-        ok: true,
-        status: 201,
-        json: () =>
-          Promise.resolve({
-            success: true,
-            room: {
-              id: "room-new-001",
-              ...roomData,
-              isAvailable: true,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            },
-          }),
-      };
+      assertEquals(response.status, 201);
 
-      assertEquals(mockResponse.ok, true);
-      assertEquals(mockResponse.status, 201);
-      assert(mockResponse.json);
+      const result = await response.json();
+      assertEquals(result.success, true);
+      assertExists(result.room);
+      assertEquals(result.room.name, roomData.name);
     });
 
-    it("should validate required fields", () => {
+    it("should validate required fields", async () => {
       const invalidData = {
-        // Faltan campos requeridos
         description: "Solo descripción",
       };
 
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/create",
-        {
-          method: "POST",
-          body: JSON.stringify(invalidData),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+      const response = await testServer.request(
+        "/api/rooms/create",
+        createApiRequest("POST", invalidData, {
+          Cookie: Object.entries(adminCookies)
+            .map(([key, value]) => `${key}=${value}`)
+            .join("; "),
+        })
       );
 
-      const mockResponse = {
-        ok: false,
-        status: 400,
-        json: () =>
-          Promise.resolve({
-            error: "Campos requeridos faltantes",
-            details: ["El nombre es requerido", "La capacidad es requerida"],
-          }),
-      };
+      assertEquals(response.status, 400);
 
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 400);
+      const result = await response.json();
+      assertEquals(result.success, false);
+      assertExists(result.error);
     });
 
-    it("should handle duplicate room ID", () => {
+    it("should handle unauthorized creation", async () => {
       const roomData = {
-        name: "Sala Duplicada",
-        description: "Sala con ID existente",
+        name: "Sala No Autorizada",
         capacity: 2,
       };
 
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/create",
-        {
-          method: "POST",
-          body: JSON.stringify(roomData),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+      const response = await testServer.request(
+        "/api/rooms/create",
+        createApiRequest("POST", roomData)
       );
 
-      const mockResponse = {
-        ok: false,
-        status: 409,
-        json: () =>
-          Promise.resolve({
-            error: "Ya existe una sala con ese nombre",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 409);
-    });
-
-    it("should handle malformed JSON", () => {
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/create",
-        {
-          method: "POST",
-          body: "invalid json",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 400,
-        json: () =>
-          Promise.resolve({
-            error: "JSON inválido",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 400);
-    });
-
-    it("should handle unauthorized creation", () => {
-      const roomData = {
-        name: "Nueva Sala",
-        capacity: 2,
-      };
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/create",
-        {
-          method: "POST",
-          body: JSON.stringify(roomData),
-          headers: {
-            "Content-Type": "application/json",
-            // Sin token de autorización
-          },
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 401,
-        json: () =>
-          Promise.resolve({
-            error: "No autorizado",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 401);
+      // Debería redirigir al login o devolver 401
+      assertEquals(response.status === 401 || response.status === 302, true);
     });
   });
 
   describe("PUT /api/rooms/:id/update", () => {
-    it("should update room successfully", () => {
+    let testRoom: Room;
+
+    beforeEach(async () => {
+      // Crear una sala de prueba
+      const roomData = {
+        name: "Sala para Actualizar",
+        description: "Sala que será actualizada",
+        capacity: 2,
+        equipment: ["Sillas"],
+        roomType: "individual",
+      };
+
+      const createResponse = await testServer.request(
+        "/api/rooms/create",
+        createApiRequest("POST", roomData, {
+          Cookie: Object.entries(adminCookies)
+            .map(([key, value]) => `${key}=${value}`)
+            .join("; "),
+        })
+      );
+
+      const createResult = await createResponse.json();
+      testRoom = createResult.room;
+    });
+
+    it("should update room successfully", async () => {
       const updateData = {
         name: "Sala Actualizada",
         capacity: 6,
         equipment: ["Sillas", "Mesa", "Proyector"],
       };
 
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-001/update",
-        {
-          method: "PUT",
-          body: JSON.stringify(updateData),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+      const response = await testServer.request(
+        `/api/rooms/${testRoom.id}/update`,
+        createApiRequest("PUT", updateData, {
+          Cookie: Object.entries(adminCookies)
+            .map(([key, value]) => `${key}=${value}`)
+            .join("; "),
+        })
       );
 
-      const mockResponse = {
-        ok: true,
-        status: 200,
-        json: () =>
-          Promise.resolve({
-            success: true,
-            room: {
-              id: "room-001",
-              ...updateData,
-              description: "Descripción existente",
-              isAvailable: true,
-              updatedAt: new Date().toISOString(),
-            },
-          }),
-      };
+      assertEquals(response.status, 200);
 
-      assertEquals(mockResponse.ok, true);
-      assertEquals(mockResponse.status, 200);
-      assert(mockResponse.json);
+      const result = await response.json();
+      assertEquals(result.success, true);
+      assertExists(result.room);
+      assertEquals(result.room.name, updateData.name);
+      assertEquals(result.room.capacity, updateData.capacity);
     });
 
-    it("should handle non-existent room", () => {
-      const _roomId = "non-existent-room";
+    it("should handle non-existent room", async () => {
       const updateData = {
-        name: "Sala Actualizada",
+        name: "Sala Inexistente",
       };
 
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/non-existent-room/update",
-        {
-          method: "PUT",
-          body: JSON.stringify(updateData),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+      const response = await testServer.request(
+        "/api/rooms/non-existent-id/update",
+        createApiRequest("PUT", updateData, {
+          Cookie: Object.entries(adminCookies)
+            .map(([key, value]) => `${key}=${value}`)
+            .join("; "),
+        })
       );
 
-      const mockResponse = {
-        ok: false,
-        status: 404,
-        json: () =>
-          Promise.resolve({
-            error: "Sala no encontrada",
-          }),
-      };
+      assertEquals(response.status, 404);
 
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 404);
+      const result = await response.json();
+      assertEquals(result.success, false);
+      assertExists(result.error);
     });
 
-    it("should validate update data", () => {
-      const _roomId = "room-test-001";
+    it("should validate update data", async () => {
       const invalidData = {
         capacity: -1, // Capacidad inválida
       };
 
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/update",
-        {
-          method: "PUT",
-          body: JSON.stringify(invalidData),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+      const response = await testServer.request(
+        `/api/rooms/${testRoom.id}/update`,
+        createApiRequest("PUT", invalidData, {
+          Cookie: Object.entries(adminCookies)
+            .map(([key, value]) => `${key}=${value}`)
+            .join("; "),
+        })
       );
 
-      const mockResponse = {
-        ok: false,
-        status: 400,
-        json: () =>
-          Promise.resolve({
-            error: "Datos de actualización inválidos",
-            details: ["La capacidad debe ser mayor a 0"],
-          }),
+      assertEquals(response.status, 400);
+
+      const result = await response.json();
+      assertEquals(result.success, false);
+      assertExists(result.error);
+    });
+  });
+
+  describe("POST /api/rooms/:id/toggle-availability", () => {
+    let testRoom: Room;
+
+    beforeEach(async () => {
+      // Crear una sala de prueba
+      const roomData = {
+        name: "Sala para Toggle",
+        description: "Sala para probar toggle",
+        capacity: 2,
+        equipment: ["Sillas"],
+        roomType: "individual",
       };
 
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 400);
+      const createResponse = await testServer.request(
+        "/api/rooms/create",
+        createApiRequest("POST", roomData, {
+          Cookie: Object.entries(adminCookies)
+            .map(([key, value]) => `${key}=${value}`)
+            .join("; "),
+        })
+      );
+
+      const createResult = await createResponse.json();
+      testRoom = createResult.room;
+    });
+
+    it("should toggle room availability successfully", async () => {
+      const initialAvailability = testRoom.isAvailable;
+
+      const response = await testServer.request(
+        `/api/rooms/${testRoom.id}/toggle-availability`,
+        createApiRequest(
+          "POST",
+          {},
+          {
+            Cookie: Object.entries(adminCookies)
+              .map(([key, value]) => `${key}=${value}`)
+              .join("; "),
+          }
+        )
+      );
+
+      assertEquals(response.status, 200);
+
+      const result = await response.json();
+      assertEquals(result.success, true);
+      assertExists(result.room);
+      assertEquals(result.room.isAvailable, !initialAvailability);
+    });
+
+    it("should handle non-existent room", async () => {
+      const response = await testServer.request(
+        "/api/rooms/non-existent-id/toggle-availability",
+        createApiRequest(
+          "POST",
+          {},
+          {
+            Cookie: Object.entries(adminCookies)
+              .map(([key, value]) => `${key}=${value}`)
+              .join("; "),
+          }
+        )
+      );
+
+      assertEquals(response.status, 404);
+
+      const result = await response.json();
+      assertEquals(result.success, false);
+      assertExists(result.error);
+    });
+
+    it("should handle unauthorized access", async () => {
+      const response = await testServer.request(
+        `/api/rooms/${testRoom.id}/toggle-availability`,
+        createApiRequest("POST", {})
+      );
+
+      // Debería redirigir al login o devolver 401
+      assertEquals(response.status === 401 || response.status === 302, true);
+    });
+  });
+
+  describe("DELETE /api/rooms/:id/delete", () => {
+    let testRoom: Room;
+
+    beforeEach(async () => {
+      // Crear una sala de prueba
+      const roomData = {
+        name: "Sala para Eliminar",
+        description: "Sala que será eliminada",
+        capacity: 2,
+        equipment: ["Sillas"],
+        roomType: "individual",
+      };
+
+      const createResponse = await testServer.request(
+        "/api/rooms/create",
+        createApiRequest("POST", roomData, {
+          Cookie: Object.entries(adminCookies)
+            .map(([key, value]) => `${key}=${value}`)
+            .join("; "),
+        })
+      );
+
+      const createResult = await createResponse.json();
+      testRoom = createResult.room;
+    });
+
+    it("should delete room successfully", async () => {
+      const response = await testServer.request(
+        `/api/rooms/${testRoom.id}/delete`,
+        createApiRequest(
+          "DELETE",
+          {},
+          {
+            Cookie: Object.entries(adminCookies)
+              .map(([key, value]) => `${key}=${value}`)
+              .join("; "),
+          }
+        )
+      );
+
+      assertEquals(response.status, 200);
+
+      const result = await response.json();
+      assertEquals(result.success, true);
+      assertExists(result.message);
+    });
+
+    it("should handle non-existent room", async () => {
+      const response = await testServer.request(
+        "/api/rooms/non-existent-id/delete",
+        createApiRequest(
+          "DELETE",
+          {},
+          {
+            Cookie: Object.entries(adminCookies)
+              .map(([key, value]) => `${key}=${value}`)
+              .join("; "),
+          }
+        )
+      );
+
+      assertEquals(response.status, 404);
+
+      const result = await response.json();
+      assertEquals(result.success, false);
+      assertExists(result.error);
+    });
+
+    it("should handle unauthorized deletion", async () => {
+      const response = await testServer.request(
+        `/api/rooms/${testRoom.id}/delete`,
+        createApiRequest("DELETE", {})
+      );
+
+      // Debería redirigir al login o devolver 401
+      assertEquals(response.status === 401 || response.status === 302, true);
     });
   });
 
   describe("Error Handling", () => {
-    it("should handle malformed requests", () => {
-      const _roomId = "room-test-001";
+    it("should handle malformed JSON requests", async () => {
+      const response = await testServer.request("/api/rooms/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: Object.entries(adminCookies)
+            .map(([key, value]) => `${key}=${value}`)
+            .join("; "),
+        },
+        body: "invalid json",
+      });
 
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/toggle-availability",
-        {
-          method: "POST",
-          body: "invalid json",
-        }
-      );
+      assertEquals(response.status, 400);
 
-      const mockResponse = {
-        ok: false,
-        status: 400,
-        json: () =>
-          Promise.resolve({
-            error: "Formato de solicitud inválido",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 400);
+      const result = await response.json();
+      assertEquals(result.success, false);
+      assertExists(result.error);
     });
 
-    it("should handle missing content type", () => {
-      const _roomId = "room-test-001";
+    it("should handle missing content type", async () => {
+      const response = await testServer.request("/api/rooms/create", {
+        method: "POST",
+        headers: {
+          Cookie: Object.entries(adminCookies)
+            .map(([key, value]) => `${key}=${value}`)
+            .join("; "),
+        },
+        body: JSON.stringify({ name: "Test Room" }),
+      });
 
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/toggle-availability",
-        {
-          method: "POST",
-          // Sin Content-Type
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 400,
-        json: () =>
-          Promise.resolve({
-            error: "Content-Type requerido",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 400);
+      // Debería manejar la falta de Content-Type
+      assertEquals(response.status >= 400, true);
     });
 
-    it("should handle rate limiting", () => {
-      const _roomId = "room-test-001";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/toggle-availability",
-        {
-          method: "POST",
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 429,
-        json: () =>
-          Promise.resolve({
-            error: "Demasiadas solicitudes",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 429);
-    });
-
-    it("should handle service unavailable", () => {
-      const _roomId = "room-test-001";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/delete",
-        {
-          method: "DELETE",
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 503,
-        json: () =>
-          Promise.resolve({
-            error: "Servicio no disponible",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 503);
-    });
-
-    it("should handle network timeouts", () => {
-      const _roomId = "room-test-001";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/toggle-availability",
-        {
-          method: "POST",
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 408,
-        json: () =>
-          Promise.resolve({
-            error: "Tiempo de espera agotado",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 408);
-    });
-
-    it("should handle internal server errors", () => {
-      const _roomId = "room-test-001";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/delete",
-        {
-          method: "DELETE",
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 500,
-        json: () =>
-          Promise.resolve({
-            error: "Error interno del servidor",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 500);
-    });
-
-    it("should handle permission denied", () => {
-      const _roomId = "room-test-001";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/delete",
-        {
-          method: "DELETE",
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 403,
-        json: () =>
-          Promise.resolve({
-            error: "Permisos insuficientes",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 403);
-    });
-
-    it("should handle invalid HTTP methods", () => {
-      const _roomId = "room-test-001";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/toggle-availability",
+    it("should handle invalid HTTP methods", async () => {
+      const response = await testServer.request(
+        "/api/rooms/test-id/toggle-availability",
         {
           method: "GET", // Método incorrecto
+          headers: {
+            Cookie: Object.entries(adminCookies)
+              .map(([key, value]) => `${key}=${value}`)
+              .join("; "),
+          },
         }
       );
 
-      const mockResponse = {
-        ok: false,
-        status: 405,
-        json: () =>
-          Promise.resolve({
-            error: "Método no permitido",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 405);
+      assertEquals(response.status, 405);
     });
 
-    it("should handle CORS preflight requests", () => {
-      const _roomId = "room-test-001";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/toggle-availability",
+    it("should handle CORS preflight requests", async () => {
+      const response = await testServer.request(
+        "/api/rooms/test-id/toggle-availability",
         {
           method: "OPTIONS",
         }
       );
 
-      const mockResponse = {
-        ok: true,
-        status: 200,
-        headers: new Headers({
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "POST, DELETE, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        }),
-      };
-
-      assertEquals(mockResponse.ok, true);
-      assertEquals(mockResponse.status, 200);
-      assert(mockResponse.headers);
-    });
-
-    it("should handle large payload requests", () => {
-      const _roomId = "room-test-001";
-
-      const _mockRequest = mockRequest(
-        "http://localhost:8000/api/rooms/room-test-001/toggle-availability",
-        {
-          method: "POST",
-          body: "x".repeat(10000), // Payload muy grande
-        }
-      );
-
-      const mockResponse = {
-        ok: false,
-        status: 413,
-        json: () =>
-          Promise.resolve({
-            error: "Payload demasiado grande",
-          }),
-      };
-
-      assertEquals(mockResponse.ok, false);
-      assertEquals(mockResponse.status, 413);
+      assertEquals(response.status, 200);
+      assertExists(response.headers.get("Access-Control-Allow-Origin"));
     });
   });
 });

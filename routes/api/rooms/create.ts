@@ -1,6 +1,6 @@
 import { type FreshContext } from "$fresh/server.ts";
-import { type AppState, type RoomId } from "../../../../types/index.ts";
-import { getRoomRepository } from "../../../../lib/database/index.ts";
+import { type AppState, type Room } from "../../../types/index.ts";
+import { getRoomRepository } from "../../../lib/database/index.ts";
 
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
   // Manejar CORS preflight
@@ -35,50 +35,65 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     });
   }
 
-  const roomId = ctx.params.id as RoomId;
-
   try {
-    const roomRepository = getRoomRepository();
+    let roomData;
 
-    // Obtener la sala actual
-    const room = await roomRepository.getById(roomId);
-    if (!room) {
+    // Intentar parsear JSON con manejo de errores
+    try {
+      roomData = await req.json();
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Sala no encontrada",
+          error: "JSON inválido",
         }),
         {
-          status: 404,
+          status: 400,
           headers: { "Content-Type": "application/json" },
         }
       );
     }
 
-    // Cambiar la disponibilidad
-    const newAvailability = !room.isAvailable;
-    const success = await roomRepository.updateAvailability(
-      roomId,
-      newAvailability
-    );
+    // Validar campos requeridos
+    if (!roomData.name || !roomData.roomType) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Nombre y tipo de sala son requeridos",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const roomRepository = getRoomRepository();
+
+    // Crear la entidad Room completa
+    const newRoom: Room = {
+      id: crypto.randomUUID(),
+      name: roomData.name,
+      roomType: roomData.roomType,
+      capacity: roomData.capacity || 1,
+      equipment: roomData.equipment || [],
+      isAvailable: roomData.isAvailable ?? true,
+      description: roomData.description || "",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    const success = await roomRepository.create(newRoom);
 
     if (success) {
-      const message = newAvailability
-        ? `Sala ${roomId} marcada como disponible`
-        : `Sala ${roomId} marcada como ocupada`;
-
-      // Obtener la sala actualizada
-      const updatedRoom = await roomRepository.getById(roomId);
-
-      // Siempre devolver respuesta JSON
       return new Response(
         JSON.stringify({
           success: true,
-          message,
-          room: updatedRoom,
+          room: newRoom,
         }),
         {
-          status: 200,
+          status: 201,
           headers: {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
@@ -89,7 +104,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: "Error al actualizar la disponibilidad",
+          error: "Error al crear la sala",
         }),
         {
           status: 500,
@@ -98,7 +113,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       );
     }
   } catch (error) {
-    console.error("Error toggling room availability:", error);
+    console.error("Error creating room:", error);
     return new Response(
       JSON.stringify({
         success: false,

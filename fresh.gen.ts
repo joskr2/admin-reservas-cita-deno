@@ -12,9 +12,16 @@ import * as $api_appointments_create from "./routes/api/appointments/create.ts";
 import * as $api_appointments_index from "./routes/api/appointments/index.ts";
 import * as $api_auth_check from "./routes/api/auth/check.ts";
 import * as $api_auth_clear_cookies from "./routes/api/auth/clear-cookies.ts";
+import * as $api_auth_login from "./routes/api/auth/login.ts";
 import * as $api_auth_logout from "./routes/api/auth/logout.ts";
+import * as $api_patients_id_ from "./routes/api/patients/[id].ts";
+import * as $api_patients_by_psychologist_email_ from "./routes/api/patients/by-psychologist/[email].ts";
+import * as $api_patients_index from "./routes/api/patients/index.ts";
 import * as $api_rooms_id_delete from "./routes/api/rooms/[id]/delete.ts";
 import * as $api_rooms_id_toggle_availability from "./routes/api/rooms/[id]/toggle-availability.ts";
+import * as $api_rooms_id_update from "./routes/api/rooms/[id]/update.ts";
+import * as $api_rooms_create from "./routes/api/rooms/create.ts";
+import * as $api_rooms_index from "./routes/api/rooms/index.ts";
 import * as $appointments_id_ from "./routes/appointments/[id].tsx";
 import * as $appointments_edit_id_ from "./routes/appointments/edit/[id].tsx";
 import * as $appointments_index from "./routes/appointments/index.tsx";
@@ -68,10 +75,18 @@ const manifest = {
     "./routes/api/appointments/index.ts": $api_appointments_index,
     "./routes/api/auth/check.ts": $api_auth_check,
     "./routes/api/auth/clear-cookies.ts": $api_auth_clear_cookies,
+    "./routes/api/auth/login.ts": $api_auth_login,
     "./routes/api/auth/logout.ts": $api_auth_logout,
+    "./routes/api/patients/[id].ts": $api_patients_id_,
+    "./routes/api/patients/by-psychologist/[email].ts":
+      $api_patients_by_psychologist_email_,
+    "./routes/api/patients/index.ts": $api_patients_index,
     "./routes/api/rooms/[id]/delete.ts": $api_rooms_id_delete,
     "./routes/api/rooms/[id]/toggle-availability.ts":
       $api_rooms_id_toggle_availability,
+    "./routes/api/rooms/[id]/update.ts": $api_rooms_id_update,
+    "./routes/api/rooms/create.ts": $api_rooms_create,
+    "./routes/api/rooms/index.ts": $api_rooms_index,
     "./routes/appointments/[id].tsx": $appointments_id_,
     "./routes/appointments/edit/[id].tsx": $appointments_edit_id_,
     "./routes/appointments/index.tsx": $appointments_index,

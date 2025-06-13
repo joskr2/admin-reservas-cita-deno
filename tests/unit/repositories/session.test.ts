@@ -3,12 +3,18 @@ import { assertEquals, assertRejects, assert } from "$std/testing/asserts.ts";
 import { describe, it, beforeEach } from "$std/testing/bdd.ts";
 import { SessionRepository } from "../../../lib/database/repositories/session.ts";
 import type { IDatabaseConnection } from "../../../lib/database/interfaces.ts";
+import { DatabaseConnection } from "../../../lib/database/connection.ts";
+import { testUtils } from "../../setup.ts";
 
 describe("SessionRepository", () => {
   let sessionRepository: SessionRepository;
   let mockConnection: IDatabaseConnection;
+  let connection: DatabaseConnection;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Limpiar datos de prueba antes de cada test
+    await testUtils.cleanupTestData();
+
     // Mock de IDatabaseConnection
     const mockKv = {
       get: () => Promise.resolve({ key: [], value: null, versionstamp: "" }),
@@ -45,7 +51,8 @@ describe("SessionRepository", () => {
       close: () => {},
     };
 
-    sessionRepository = new SessionRepository(mockConnection);
+    connection = DatabaseConnection.getInstance();
+    sessionRepository = new SessionRepository(connection);
   });
 
   describe("createSession", () => {

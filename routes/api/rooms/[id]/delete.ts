@@ -3,38 +3,20 @@ import { type AppState, type RoomId } from "../../../../types/index.ts";
 import { getRoomRepository } from "../../../../lib/database/index.ts";
 
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
-  const method = req.method;
-  let actualMethod = method;
-
-  // Soportar POST con _method=DELETE para formularios HTML
-  if (method === "POST") {
-    const formData = await req.formData();
-    const methodOverride = formData.get("_method");
-    if (methodOverride === "DELETE") {
-      actualMethod = "DELETE";
-    }
-  }
-
-  if (actualMethod !== "DELETE") {
+  if (req.method !== "DELETE") {
     return new Response("Method not allowed", { status: 405 });
   }
 
   // Verificar autenticación y permisos
   const currentUser = ctx.state.user;
   if (!currentUser) {
-    return new Response("", {
-      status: 302,
-      headers: { Location: "/login" },
+    return new Response(JSON.stringify({ error: "No autenticado" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
     });
   }
 
   if (currentUser.role !== "superadmin") {
-    if (method === "POST") {
-      return new Response("", {
-        status: 302,
-        headers: { Location: "/rooms?error=permisos_insuficientes" },
-      });
-    }
     return new Response(JSON.stringify({ error: "Permisos insuficientes" }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
@@ -46,15 +28,8 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     const roomRepository = getRoomRepository();
 
     // Verificar que la sala existe
-    const room = await roomRepository.getById(roomId);
-    if (!room) {
-      if (method === "POST") {
-        // Redirigir con error para formularios
-        return new Response("", {
-          status: 302,
-          headers: { Location: "/rooms?error=room_not_found" },
-        });
-      }
+    const existingRoom = await roomRepository.getById(roomId);
+    if (!existingRoom) {
       return new Response(
         JSON.stringify({
           success: false,
@@ -70,30 +45,17 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     const success = await roomRepository.delete(roomId);
 
     if (success) {
-      if (method === "POST") {
-        // Redirigir con éxito para formularios
-        return new Response("", {
-          status: 302,
-          headers: { Location: "/rooms?success=sala_eliminada" },
-        });
-      }
       return new Response(
         JSON.stringify({
           success: true,
           message: "Sala eliminada exitosamente",
         }),
         {
+          status: 200,
           headers: { "Content-Type": "application/json" },
         }
       );
     } else {
-      if (method === "POST") {
-        // Redirigir con error para formularios
-        return new Response("", {
-          status: 302,
-          headers: { Location: "/rooms?error=delete_failed" },
-        });
-      }
       return new Response(
         JSON.stringify({
           success: false,
@@ -107,13 +69,6 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     }
   } catch (error) {
     console.error("Error deleting room:", error);
-    if (req.method === "POST") {
-      // Redirigir con error para formularios
-      return new Response("", {
-        status: 302,
-        headers: { Location: "/rooms?error=server_error" },
-      });
-    }
     return new Response(
       JSON.stringify({
         success: false,

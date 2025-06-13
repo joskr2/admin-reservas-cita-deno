@@ -101,27 +101,49 @@ export function createCookieHeaders(
  */
 export async function authenticateUser(
   server: TestServer,
-  email: string = "test@example.com",
+  email: string = "admin@horizonte.com",
   password: string = "password123"
 ): Promise<{ cookies: Record<string, string>; user: User }> {
-  // Primero crear el usuario si no existe
-  const _user = testUtils.createUser({
-    email,
-    passwordHash: password, // Usar passwordHash en lugar de password
-  });
+  // Crear el usuario de prueba directamente en la base de datos de test
+  const kv = await Deno.openKv();
 
-  // Simular login
+  // Importar hash function
+  const { hash } = await import("https://deno.land/x/bcrypt@v0.4.1/mod.ts");
+
+  const passwordHash = await hash(password);
+  const testUser: User = {
+    id: crypto.randomUUID(),
+    email,
+    passwordHash,
+    role: "superadmin",
+    name: "Test Admin",
+    createdAt: new Date().toISOString(),
+    isActive: true,
+  };
+
+  // Guardar usuario en la base de datos de test
+  await kv.set(["users", email], testUser);
+  await kv.close();
+
+  // Intentar login
   const loginResponse = await server.request(
     "/api/auth/login",
     createApiRequest("POST", { email, password })
   );
 
   if (!loginResponse.ok) {
-    throw new Error(`Failed to authenticate user: ${loginResponse.status}`);
+    const errorText = await loginResponse.text();
+    throw new Error(
+      `Failed to authenticate user: ${loginResponse.status} - ${errorText}`
+    );
   }
 
   const cookies = extractCookies(loginResponse);
   const userData = await loginResponse.json();
+
+  if (!userData.success) {
+    throw new Error(`Authentication failed: ${userData.error}`);
+  }
 
   return { cookies, user: userData.user };
 }
@@ -216,4 +238,21 @@ export function generateTestData(prefix: string = "test"): {
     name: `${prefix} User ${timestamp}`,
     id: `${prefix}-${timestamp}-${random}`,
   };
+}
+
+/**
+ * Helper para limpiar recursos después de los tests
+ */
+export async function cleanupTestResources() {
+  try {
+    // Cerrar conexiones KV abiertas
+    const kv = await Deno.openKv();
+    kv.close();
+  } catch (error) {
+    // Ignorar errores de limpieza
+    console.warn(
+      "Warning during cleanup:",
+      error instanceof Error ? error.message : String(error)
+    );
+  }
 }

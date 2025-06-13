@@ -10,7 +10,10 @@ describe("UserRepository", () => {
   let userRepository: UserRepository;
   let connection: DatabaseConnection;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    // Limpiar datos de prueba antes de cada test
+    await testUtils.cleanupTestData();
+
     connection = DatabaseConnection.getInstance();
     userRepository = new UserRepository(connection);
   });
