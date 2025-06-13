@@ -51,7 +51,7 @@ export default function RoomsPage({
     };
     return type
       ? typeColors[type] ||
-        "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+          "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
       : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
   };
 
@@ -155,10 +155,10 @@ export default function RoomsPage({
                   <p class="text-2xl font-bold text-gray-900 dark:text-white">
                     {rooms.length > 0
                       ? Math.round(
-                        (rooms.filter((r) => !r.isAvailable).length /
-                          rooms.length) *
-                          100,
-                      )
+                          (rooms.filter((r) => !r.isAvailable).length /
+                            rooms.length) *
+                            100
+                        )
                       : 0}
                     %
                   </p>
@@ -172,9 +172,10 @@ export default function RoomsPage({
             {rooms.map((room) => (
               <div
                 key={room.id}
-                class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow flex flex-col h-full"
               >
-                <div class="p-6">
+                <div class="p-6 flex flex-col flex-1">
+                  {/* Header de la tarjeta */}
                   <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center">
                       <div
@@ -201,96 +202,123 @@ export default function RoomsPage({
                     </div>
                   </div>
 
-                  <div class="space-y-3">
-                    <div>
-                      <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Nombre
-                      </h4>
-                      <p class="text-sm text-gray-600 dark:text-gray-400">
-                        {room.name}
-                      </p>
-                    </div>
-
-                    {room.roomType && (
+                  {/* Contenido principal - flex-1 para ocupar espacio disponible */}
+                  <div class="flex-1 flex flex-col justify-between">
+                    <div class="space-y-3">
+                      {/* Información básica siempre visible */}
                       <div>
                         <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Tipo
+                          ID de Sala
                         </h4>
-                        <span
-                          class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                            getRoomTypeColor(
-                              room.roomType,
-                            )
-                          }`}
-                        >
-                          {getRoomTypeLabel(room.roomType)}
-                        </span>
-                      </div>
-                    )}
-
-                    {room.capacity && (
-                      <div>
-                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Capacidad
-                        </h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
-                          <Icon name="users" size={14} className="mr-1" />
-                          {room.capacity} personas
+                        <p class="text-sm text-gray-600 dark:text-gray-400 font-mono">
+                          {room.id}
                         </p>
                       </div>
-                    )}
 
-                    {room.description && (
-                      <div>
-                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Descripción
-                        </h4>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">
-                          {room.description}
-                        </p>
-                      </div>
-                    )}
-
-                    {room.equipment && room.equipment.length > 0 && (
-                      <div>
-                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                          Equipamiento
-                        </h4>
-                        <div class="flex flex-wrap gap-1">
-                          {room.equipment.map((item, index) => (
-                            <span
-                              key={index}
-                              class="inline-flex px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded"
-                            >
-                              {item}
-                            </span>
-                          ))}
+                      {room.roomType && (
+                        <div>
+                          <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Tipo
+                          </h4>
+                          <span
+                            class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoomTypeColor(
+                              room.roomType
+                            )}`}
+                          >
+                            {getRoomTypeLabel(room.roomType)}
+                          </span>
                         </div>
-                      </div>
-                    )}
-                  </div>
+                      )}
 
-                  <div class="mt-6 flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <div class="flex items-center gap-2">
-                      <a
-                        href={`/rooms/${room.id}`}
-                        class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
-                        title="Ver detalles"
-                      >
-                        <Icon name="eye" size={16} />
-                      </a>
-                      <a
-                        href={`/rooms/edit/${room.id}`}
-                        class="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
-                        title="Editar"
-                      >
-                        <Icon name="edit" size={16} />
-                      </a>
+                      {room.capacity && (
+                        <div>
+                          <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Capacidad
+                          </h4>
+                          <p class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+                            <Icon name="users" size={14} className="mr-1" />
+                            {room.capacity} personas
+                          </p>
+                        </div>
+                      )}
+
+                      {room.description && (
+                        <div>
+                          <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Descripción
+                          </h4>
+                          <p class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                            {room.description}
+                          </p>
+                        </div>
+                      )}
+
+                      {room.equipment && room.equipment.length > 0 && (
+                        <div>
+                          <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Equipamiento
+                          </h4>
+                          <div class="flex flex-wrap gap-1">
+                            {room.equipment.slice(0, 3).map((item, index) => (
+                              <span
+                                key={index}
+                                class="inline-flex px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded"
+                              >
+                                {item}
+                              </span>
+                            ))}
+                            {room.equipment.length > 3 && (
+                              <span class="inline-flex px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded">
+                                +{room.equipment.length - 3} más
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Información adicional para consistencia */}
+                      <div>
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Creada
+                        </h4>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                          {new Date(room.createdAt).toLocaleDateString(
+                            "es-ES",
+                            {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            }
+                          )}
+                        </p>
+                      </div>
                     </div>
-                    <RoomToggleButton
-                      roomId={room.id}
-                      isAvailable={room.isAvailable}
-                    />
+
+                    {/* Footer de la tarjeta - siempre al final */}
+                    <div class="mt-6 flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <div class="flex items-center gap-3">
+                        <a
+                          href={`/rooms/${room.id}`}
+                          class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-950 rounded-md transition-colors"
+                          title="Ver detalles"
+                        >
+                          <Icon name="eye" size={14} className="mr-1" />
+                          Ver
+                        </a>
+                        <a
+                          href={`/rooms/edit/${room.id}`}
+                          class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300 bg-yellow-50 dark:bg-yellow-950/50 hover:bg-yellow-100 dark:hover:bg-yellow-950 rounded-md transition-colors"
+                          title="Editar"
+                        >
+                          <Icon name="edit" size={14} className="mr-1" />
+                          Editar
+                        </a>
+                      </div>
+                      <RoomToggleButton
+                        roomId={room.id}
+                        isAvailable={room.isAvailable}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
