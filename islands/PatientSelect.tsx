@@ -25,7 +25,7 @@ export default function PatientSelect({
     (patient) =>
       patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (patient.email &&
-        patient.email.toLowerCase().includes(searchTerm.toLowerCase()))
+        patient.email.toLowerCase().includes(searchTerm.toLowerCase())),
   );
 
   // Efecto para sincronizar el paciente seleccionado con el valor
@@ -82,53 +82,55 @@ export default function PatientSelect({
       {/* Dropdown de resultados */}
       {isOpen && (
         <div class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-auto">
-          {filteredPatients.length > 0 ? (
-            <>
-              {filteredPatients.map((patient) => (
-                <button
-                  key={patient.id}
-                  type="button"
-                  onClick={() => handleSelectPatient(patient)}
-                  class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
-                >
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <div class="font-medium text-gray-900 dark:text-white">
-                        {patient.name}
+          {filteredPatients.length > 0
+            ? (
+              <>
+                {filteredPatients.map((patient) => (
+                  <button
+                    key={patient.id}
+                    type="button"
+                    onClick={() => handleSelectPatient(patient)}
+                    class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                  >
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <div class="font-medium text-gray-900 dark:text-white">
+                          {patient.name}
+                        </div>
+                        {patient.email && (
+                          <div class="text-sm text-gray-500 dark:text-gray-400">
+                            {patient.email}
+                          </div>
+                        )}
+                        {patient.phone && (
+                          <div class="text-sm text-gray-500 dark:text-gray-400">
+                            {patient.phone}
+                          </div>
+                        )}
                       </div>
-                      {patient.email && (
-                        <div class="text-sm text-gray-500 dark:text-gray-400">
-                          {patient.email}
-                        </div>
-                      )}
-                      {patient.phone && (
-                        <div class="text-sm text-gray-500 dark:text-gray-400">
-                          {patient.phone}
-                        </div>
-                      )}
+                      <div class="flex items-center">
+                        <span
+                          class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            patient.isActive
+                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                              : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                          }`}
+                        >
+                          {patient.isActive ? "Activo" : "Inactivo"}
+                        </span>
+                      </div>
                     </div>
-                    <div class="flex items-center">
-                      <span
-                        class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          patient.isActive
-                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                            : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                        }`}
-                      >
-                        {patient.isActive ? "Activo" : "Inactivo"}
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </>
-          ) : (
-            <div class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
-              {searchTerm
-                ? "No se encontraron pacientes"
-                : "Escriba para buscar pacientes"}
-            </div>
-          )}
+                  </button>
+                ))}
+              </>
+            )
+            : (
+              <div class="px-4 py-3 text-center text-gray-500 dark:text-gray-400">
+                {searchTerm
+                  ? "No se encontraron pacientes"
+                  : "Escriba para buscar pacientes"}
+              </div>
+            )}
 
           {/* Botón para crear nuevo paciente */}
           <button

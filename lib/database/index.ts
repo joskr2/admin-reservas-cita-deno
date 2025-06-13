@@ -85,7 +85,7 @@ export class DatabaseFactory {
         this.getUserRepository(),
         this.getPatientRepository(),
         this.getAppointmentRepository(),
-        this.getRoomRepository()
+        this.getRoomRepository(),
       );
     }
     return this.dashboardService;

@@ -3,6 +3,9 @@ import { type AppState, type Room, type RoomId } from "../../../types/index.ts";
 import { getRoomRepository } from "../../../lib/database/index.ts";
 import { Icon } from "../../../components/ui/Icon.tsx";
 
+// Definir el tipo RoomType localmente
+type RoomType = "individual" | "family" | "group" | "evaluation" | "relaxation";
+
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
   const roomId = ctx.params.id as RoomId;
 
@@ -11,19 +14,34 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       const formData = await req.formData();
       const roomRepository = getRoomRepository();
 
-      const roomData = {
+      // Validar roomType
+      const roomTypeValue = formData.get("roomType") as string;
+      const validRoomTypes: RoomType[] = [
+        "individual",
+        "family",
+        "group",
+        "evaluation",
+        "relaxation",
+      ];
+      const roomType: RoomType | undefined =
+        roomTypeValue && validRoomTypes.includes(roomTypeValue as RoomType)
+          ? (roomTypeValue as RoomType)
+          : undefined;
+
+      const roomData: Partial<Room> = {
         id: roomId,
         name: formData.get("name") as string,
         isAvailable: formData.get("isAvailable") === "true",
         equipment: formData.get("equipment")
-          ? (formData.get("equipment") as string).split(",").map((item) =>
-            item.trim()
-          ).filter(Boolean)
+          ? (formData.get("equipment") as string)
+              .split(",")
+              .map((item) => item.trim())
+              .filter(Boolean)
           : [],
         capacity: formData.get("capacity")
           ? parseInt(formData.get("capacity") as string)
           : undefined,
-        roomType: (formData.get("roomType") as string) || undefined,
+        roomType,
         description: (formData.get("description") as string) || undefined,
       };
 
@@ -52,6 +70,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       }
     } catch (error) {
       console.error("Error updating room:", error);
+      const roomRepository = getRoomRepository();
       const room = await roomRepository.getById(roomId);
       return ctx.render({
         error: "Error interno del servidor",
@@ -102,7 +121,7 @@ export default function EditRoomPage({
         <div class="px-4 py-6 sm:px-0">
           <div class="mb-8">
             <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-              Editar Sala {room.id}
+              Editar Sala {room.name}
             </h1>
             <p class="mt-2 text-gray-600 dark:text-gray-400">
               Modificar la información de la sala

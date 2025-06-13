@@ -18,9 +18,9 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         isAvailable: formData.get("isAvailable") === "true",
         equipment: formData.get("equipment")
           ? (formData.get("equipment") as string)
-              .split(",")
-              .map((item) => item.trim())
-              .filter(Boolean)
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean)
           : [],
         capacity: formData.get("capacity")
           ? parseInt(formData.get("capacity") as string)
@@ -64,7 +64,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       if (success) {
         return new Response("", {
           status: 302,
-          headers: { Location: "/rooms?success=room_created" },
+          headers: { Location: "/rooms?success=sala_creada" },
         });
       } else {
         return ctx.render({

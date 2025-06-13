@@ -182,11 +182,11 @@ export default function RoomsPage({
                           room.isAvailable ? "bg-green-500" : "bg-red-500"
                         }`}
                       >
-                        {room.id}
+                        {room.name.charAt(0)}
                       </div>
                       <div class="ml-3">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                          Sala {room.id}
+                          {room.name}
                         </h3>
                         <span
                           class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${

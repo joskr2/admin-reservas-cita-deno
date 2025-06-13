@@ -217,7 +217,8 @@ export default function PatientSearchSelect({
         {/* Indicador de carga */}
         {isLoading && (
           <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
-            <div class="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent"></div>
+            <div class="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent">
+            </div>
           </div>
         )}
       </div>
@@ -231,45 +232,43 @@ export default function PatientSearchSelect({
             </div>
           )}
 
-          {(searchTerm.length === 0
-            ? recentPatients.slice(0, 5)
-            : suggestions
-          ).map((patient, index) => (
-            <button
-              key={`${patient.name}-${index}`}
-              type="button"
-              onClick={() => handlePatientSelect(patient)}
-              class="w-full px-3 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-700 focus:outline-none transition-colors"
-            >
-              <div class="flex items-center justify-between">
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                    {patient.name}
-                  </p>
-                  <div class="flex items-center space-x-2 mt-1">
-                    <span class="text-xs text-gray-500 dark:text-gray-400">
-                      {patient.appointmentCount} cita
-                      {patient.appointmentCount !== 1 ? "s" : ""}
-                    </span>
-                    {patient.lastAppointment && (
-                      <>
-                        <span class="text-xs text-gray-400">•</span>
-                        <span class="text-xs text-gray-500 dark:text-gray-400">
-                          Última:{" "}
-                          {formatLastAppointment(patient.lastAppointment)}
-                        </span>
-                      </>
-                    )}
+          {(searchTerm.length === 0 ? recentPatients.slice(0, 5) : suggestions)
+            .map((patient, index) => (
+              <button
+                key={`${patient.name}-${index}`}
+                type="button"
+                onClick={() => handlePatientSelect(patient)}
+                class="w-full px-3 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 focus:bg-gray-50 dark:focus:bg-gray-700 focus:outline-none transition-colors"
+              >
+                <div class="flex items-center justify-between">
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                      {patient.name}
+                    </p>
+                    <div class="flex items-center space-x-2 mt-1">
+                      <span class="text-xs text-gray-500 dark:text-gray-400">
+                        {patient.appointmentCount} cita
+                        {patient.appointmentCount !== 1 ? "s" : ""}
+                      </span>
+                      {patient.lastAppointment && (
+                        <>
+                          <span class="text-xs text-gray-400">•</span>
+                          <span class="text-xs text-gray-500 dark:text-gray-400">
+                            Última:{" "}
+                            {formatLastAppointment(patient.lastAppointment)}
+                          </span>
+                        </>
+                      )}
+                    </div>
                   </div>
+                  <Icon
+                    name="user"
+                    size={14}
+                    className="text-gray-400 dark:text-gray-500 ml-2"
+                  />
                 </div>
-                <Icon
-                  name="user"
-                  size={14}
-                  className="text-gray-400 dark:text-gray-500 ml-2"
-                />
-              </div>
-            </button>
-          ))}
+              </button>
+            ))}
 
           {searchTerm.length >= 2 && suggestions.length === 0 && !isLoading && (
             <div class="px-3 py-4 text-center">

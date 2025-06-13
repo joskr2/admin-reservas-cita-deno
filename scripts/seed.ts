@@ -379,7 +379,7 @@ function generateAppointments(roomIds: RoomId[]): Appointment[] {
   const startDate = new Date("2024-11-01");
   const endDate = new Date("2025-01-31");
   const psychologists = usersToSeed.filter(
-    (user) => user.role === "psychologist"
+    (user) => user.role === "psychologist",
   );
   const statuses: AppointmentStatus[] = [
     "pending",
@@ -418,7 +418,7 @@ function generateAppointments(roomIds: RoomId[]): Appointment[] {
     if (status !== "pending") {
       const scheduledAt = new Date(createdAt);
       scheduledAt.setDate(
-        scheduledAt.getDate() + Math.floor(Math.random() * 3) + 1
+        scheduledAt.getDate() + Math.floor(Math.random() * 3) + 1,
       );
       statusHistory.push({
         status: "scheduled" as AppointmentStatus,
@@ -430,7 +430,7 @@ function generateAppointments(roomIds: RoomId[]): Appointment[] {
 
       if (status === "in_progress" || status === "completed") {
         const inProgressAt = new Date(
-          appointmentDate + "T" + appointmentTime + ":00.000Z"
+          appointmentDate + "T" + appointmentTime + ":00.000Z",
         );
         statusHistory.push({
           status: "in_progress" as AppointmentStatus,
@@ -456,7 +456,7 @@ function generateAppointments(roomIds: RoomId[]): Appointment[] {
       if (status === "cancelled") {
         const cancelledAt = new Date(appointmentDate);
         cancelledAt.setDate(
-          cancelledAt.getDate() - Math.floor(Math.random() * 2) + 1
+          cancelledAt.getDate() - Math.floor(Math.random() * 2) + 1,
         );
         statusHistory.push({
           status: "cancelled" as AppointmentStatus,
@@ -606,7 +606,7 @@ async function seedDatabase() {
       const success = await createUser(userData);
       if (success) {
         console.log(
-          `   ✅ Usuario creado: ${userSeed.name} (${userSeed.email})`
+          `   ✅ Usuario creado: ${userSeed.name} (${userSeed.email})`,
         );
       } else {
         console.log(`   ❌ Error creando usuario: ${userSeed.email}`);
@@ -651,7 +651,7 @@ async function seedDatabase() {
       const success = await createAppointment(appointment);
       if (success) {
         console.log(
-          `   ✅ Cita creada: ${appointment.patientName} - ${appointment.appointmentDate} ${appointment.appointmentTime}`
+          `   ✅ Cita creada: ${appointment.patientName} - ${appointment.appointmentDate} ${appointment.appointmentTime}`,
         );
       } else {
         console.log(`   ❌ Error creando cita: ${appointment.id}`);

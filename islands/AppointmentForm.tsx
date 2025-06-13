@@ -88,9 +88,9 @@ export default function AppointmentForm({
     setIsCheckingAvailability(true);
     try {
       const response = await fetch(
-        `/api/rooms/available?date=${formData.appointmentDate}&time=${
-          formData.appointmentTime
-        }${initialData?.id ? `&exclude=${initialData.id}` : ""}`
+        `/api/rooms/available?date=${formData.appointmentDate}&time=${formData.appointmentTime}${
+          initialData?.id ? `&exclude=${initialData.id}` : ""
+        }`,
       );
 
       if (response.ok) {
@@ -198,10 +198,9 @@ export default function AppointmentForm({
     setErrors({});
 
     try {
-      const url =
-        mode === "edit" && initialData?.id
-          ? `/api/appointments/${initialData.id}/update`
-          : "/api/appointments/create";
+      const url = mode === "edit" && initialData?.id
+        ? `/api/appointments/${initialData.id}/update`
+        : "/api/appointments/create";
 
       const method = mode === "edit" ? "PUT" : "POST";
 
@@ -241,9 +240,11 @@ export default function AppointmentForm({
     for (let hour = 8; hour <= 18; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         if (hour === 18 && minute > 0) break; // No permitir después de 18:00
-        const timeString = `${hour.toString().padStart(2, "0")}:${minute
-          .toString()
-          .padStart(2, "0")}`;
+        const timeString = `${hour.toString().padStart(2, "0")}:${
+          minute
+            .toString()
+            .padStart(2, "0")
+        }`;
         options.push(timeString);
       }
     }
@@ -297,9 +298,8 @@ export default function AppointmentForm({
           onChange={(e) =>
             handleInputChange(
               "psychologistEmail",
-              (e.target as HTMLSelectElement).value
-            )
-          }
+              (e.target as HTMLSelectElement).value,
+            )}
           error={!!errors.psychologistEmail}
           disabled={currentUserRole === "psychologist"}
         >
@@ -334,9 +334,8 @@ export default function AppointmentForm({
             onChange={(e) =>
               handleInputChange(
                 "appointmentDate",
-                (e.target as HTMLInputElement).value
-              )
-            }
+                (e.target as HTMLInputElement).value,
+              )}
             error={!!errors.appointmentDate}
             min={new Date().toISOString().split("T")[0]}
           />
@@ -356,9 +355,8 @@ export default function AppointmentForm({
             onChange={(e) =>
               handleInputChange(
                 "appointmentTime",
-                (e.target as HTMLSelectElement).value
-              )
-            }
+                (e.target as HTMLSelectElement).value,
+              )}
             error={!!errors.appointmentTime}
           >
             <option value="">Seleccionar hora...</option>
@@ -389,8 +387,7 @@ export default function AppointmentForm({
         <Select
           value={formData.roomId}
           onChange={(e) =>
-            handleInputChange("roomId", (e.target as HTMLSelectElement).value)
-          }
+            handleInputChange("roomId", (e.target as HTMLSelectElement).value)}
           error={!!errors.roomId}
           disabled={isCheckingAvailability}
         >
@@ -409,10 +406,10 @@ export default function AppointmentForm({
         {availableRooms.length === 0 &&
           formData.appointmentDate &&
           formData.appointmentTime && (
-            <p class="mt-1 text-sm text-yellow-600 dark:text-yellow-400">
-              No hay salas disponibles en este horario
-            </p>
-          )}
+          <p class="mt-1 text-sm text-yellow-600 dark:text-yellow-400">
+            No hay salas disponibles en este horario
+          </p>
+        )}
       </div>
 
       {/* Estado (solo en modo edición para superadmin) */}
@@ -426,9 +423,8 @@ export default function AppointmentForm({
             onChange={(e) =>
               handleInputChange(
                 "status",
-                (e.target as HTMLSelectElement).value as AppointmentStatus
-              )
-            }
+                (e.target as HTMLSelectElement).value as AppointmentStatus,
+              )}
           >
             <option value="pending">Pendiente</option>
             <option value="scheduled">Programada</option>
@@ -447,8 +443,7 @@ export default function AppointmentForm({
         <textarea
           value={formData.notes}
           onChange={(e) =>
-            handleInputChange("notes", (e.target as HTMLTextAreaElement).value)
-          }
+            handleInputChange("notes", (e.target as HTMLTextAreaElement).value)}
           rows={3}
           class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 text-sm"
           placeholder="Observaciones adicionales sobre la cita..."

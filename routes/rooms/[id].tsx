@@ -61,7 +61,7 @@ export default function RoomDetailsPage({
               <div>
                 <h1 class="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                   <Icon name="briefcase" className="w-8 h-8 text-blue-600" />
-                  Sala {room.id}
+                  Sala {room.name}
                 </h1>
                 <p class="mt-2 text-gray-600 dark:text-gray-400">
                   Detalles de la sala de atención

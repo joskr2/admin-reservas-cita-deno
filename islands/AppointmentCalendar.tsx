@@ -100,7 +100,7 @@ export default function AppointmentCalendar({
 
       const dateString = date.toISOString().split("T")[0];
       const dayAppointments = filteredAppointments.filter(
-        (apt) => apt.appointmentDate === dateString
+        (apt) => apt.appointmentDate === dateString,
       );
 
       days.push({
@@ -131,7 +131,7 @@ export default function AppointmentCalendar({
 
       const dateString = date.toISOString().split("T")[0];
       const dayAppointments = filteredAppointments.filter(
-        (apt) => apt.appointmentDate === dateString
+        (apt) => apt.appointmentDate === dateString,
       );
 
       days.push({
@@ -193,8 +193,9 @@ export default function AppointmentCalendar({
     });
   };
 
-  const days =
-    viewMode === "month" ? generateCalendarDays() : generateWeekDays();
+  const days = viewMode === "month"
+    ? generateCalendarDays()
+    : generateWeekDays();
   const monthNames = [
     "Enero",
     "Febrero",
@@ -227,13 +228,13 @@ export default function AppointmentCalendar({
           >
             {viewMode === "month"
               ? `${
-                  monthNames[currentDate.getMonth()]
-                } ${currentDate.getFullYear()}`
+                monthNames[currentDate.getMonth()]
+              } ${currentDate.getFullYear()}`
               : `Semana del ${days[0]?.date.getDate() || ""} ${
-                  monthNames[days[0]?.date.getMonth() || 0]
-                } - ${days[6]?.date.getDate() || ""} ${
-                  monthNames[days[6]?.date.getMonth() || 0]
-                } ${currentDate.getFullYear()}`}
+                monthNames[days[0]?.date.getMonth() || 0]
+              } - ${days[6]?.date.getDate() || ""} ${
+                monthNames[days[6]?.date.getMonth() || 0]
+              } ${currentDate.getFullYear()}`}
           </h2>
 
           {/* Controles de navegación */}
@@ -250,8 +251,7 @@ export default function AppointmentCalendar({
             <button
               type="button"
               onClick={() =>
-                setViewMode(viewMode === "month" ? "week" : "month")
-              }
+                setViewMode(viewMode === "month" ? "week" : "month")}
               class="px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {viewMode === "month" ? "Vista Semanal" : "Vista Mensual"}
@@ -298,9 +298,8 @@ export default function AppointmentCalendar({
               size="sm"
               onClick={() =>
                 handleCreateAppointment(
-                  new Date().toISOString().split("T")[0] || ""
-                )
-              }
+                  new Date().toISOString().split("T")[0] || "",
+                )}
             >
               <Icon name="calendar-plus" size={16} className="mr-2" />
               Nueva Cita
@@ -341,10 +340,10 @@ export default function AppointmentCalendar({
               ${!day.isCurrentMonth && viewMode === "month" ? "opacity-40" : ""}
               ${day.isToday ? "ring-2 ring-blue-500 ring-inset" : ""}
               ${
-                selectedDate === day.dateString
-                  ? "bg-blue-50 dark:bg-blue-950/20"
-                  : ""
-              }
+              selectedDate === day.dateString
+                ? "bg-blue-50 dark:bg-blue-950/20"
+                : ""
+            }
             `}
           >
             {/* Número del día */}
@@ -378,9 +377,11 @@ export default function AppointmentCalendar({
                     text-xs p-1 rounded cursor-pointer hover:opacity-80 transition-opacity
                     ${getStatusColor(appointment.status)}
                   `}
-                  title={`${appointment.patientName} - ${formatTime(
-                    appointment.appointmentTime
-                  )} - ${getStatusText(appointment.status)}`}
+                  title={`${appointment.patientName} - ${
+                    formatTime(
+                      appointment.appointmentTime,
+                    )
+                  } - ${getStatusText(appointment.status)}`}
                 >
                   <div class="truncate font-medium">
                     {appointment.patientName}
@@ -402,15 +403,15 @@ export default function AppointmentCalendar({
             {showCreateButton &&
               day.appointments.length === 0 &&
               (day.isCurrentMonth || viewMode === "week") && (
-                <button
-                  type="button"
-                  onClick={() => handleCreateAppointment(day.dateString)}
-                  class="w-full text-left p-1 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-                  title={`Crear cita para ${day.dateString}`}
-                >
-                  + Nueva cita
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => handleCreateAppointment(day.dateString)}
+                class="w-full text-left p-1 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                title={`Crear cita para ${day.dateString}`}
+              >
+                + Nueva cita
+              </button>
+            )}
           </div>
         ))}
       </div>
