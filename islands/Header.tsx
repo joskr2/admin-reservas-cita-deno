@@ -121,6 +121,12 @@ export default function Header({
     if (item.showWhen === "authenticated") {
       // Ocultar Dashboard si ya estamos en esa página
       if (item.href === "/dashboard" && isDashboardPage) return false;
+
+      // Solo mostrar Psicólogos a superadmins
+      if (item.href === "/psychologists" && user?.role !== "superadmin") {
+        return false;
+      }
+
       return isAuthenticated;
     }
     return false;
@@ -220,27 +226,25 @@ export default function Header({
 
               {/* Botones de autenticación desktop */}
               <div class="hidden md:flex items-center gap-2">
-                {isAuthenticated
-                  ? (
-                    <form action="/api/auth/logout" method="post">
-                      <button
-                        type="submit"
-                        class="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors font-medium border border-transparent hover:border-red-200 dark:hover:border-red-800"
-                      >
-                        <Icon name="logout" size={18} />
-                        <span>Salir</span>
-                      </button>
-                    </form>
-                  )
-                  : (
-                    <a
-                      href="/login"
-                      class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg border border-blue-600 hover:border-blue-700"
+                {isAuthenticated ? (
+                  <form action="/api/auth/logout" method="post">
+                    <button
+                      type="submit"
+                      class="flex items-center gap-2 px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors font-medium border border-transparent hover:border-red-200 dark:hover:border-red-800"
                     >
-                      <Icon name="login" size={18} />
-                      <span>Inicio de sesión</span>
-                    </a>
-                  )}
+                      <Icon name="logout" size={18} />
+                      <span>Salir</span>
+                    </button>
+                  </form>
+                ) : (
+                  <a
+                    href="/login"
+                    class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-medium shadow-md hover:shadow-lg border border-blue-600 hover:border-blue-700"
+                  >
+                    <Icon name="login" size={18} />
+                    <span>Inicio de sesión</span>
+                  </a>
+                )}
               </div>
             </div>
           </div>
@@ -279,28 +283,26 @@ export default function Header({
 
               {/* Botones de autenticación móvil */}
               <div class="flex flex-col gap-2 px-4">
-                {isAuthenticated
-                  ? (
-                    <form action="/api/auth/logout" method="post">
-                      <button
-                        type="submit"
-                        class="flex items-center gap-2 w-full px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors font-medium text-left border border-transparent hover:border-red-200 dark:hover:border-red-800"
-                      >
-                        <Icon name="logout" size={18} />
-                        <span>Salir</span>
-                      </button>
-                    </form>
-                  )
-                  : (
-                    <a
-                      href="/login"
-                      class="flex items-center gap-2 w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-medium text-center justify-center shadow-md hover:shadow-lg border border-blue-600 hover:border-blue-700"
-                      onClick={() => setIsMenuOpen(false)}
+                {isAuthenticated ? (
+                  <form action="/api/auth/logout" method="post">
+                    <button
+                      type="submit"
+                      class="flex items-center gap-2 w-full px-4 py-3 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors font-medium text-left border border-transparent hover:border-red-200 dark:hover:border-red-800"
                     >
-                      <Icon name="login" size={18} />
-                      <span>Inicio de sesión</span>
-                    </a>
-                  )}
+                      <Icon name="logout" size={18} />
+                      <span>Salir</span>
+                    </button>
+                  </form>
+                ) : (
+                  <a
+                    href="/login"
+                    class="flex items-center gap-2 w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all duration-200 font-medium text-center justify-center shadow-md hover:shadow-lg border border-blue-600 hover:border-blue-700"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Icon name="login" size={18} />
+                    <span>Inicio de sesión</span>
+                  </a>
+                )}
               </div>
             </div>
           )}
