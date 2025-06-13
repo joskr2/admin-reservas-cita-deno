@@ -242,7 +242,7 @@ export default function RoomsPage({
                         <h4 class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">
                           ID de Sala
                         </h4>
-                        <p class="text-sm text-gray-900 dark:text-gray-100 font-mono bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded text-xs">
+                        <p class=" text-gray-900 dark:text-gray-100 font-mono bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded text-xs">
                           {room.id}
                         </p>
                       </div>
