@@ -3,12 +3,16 @@ import { type AppState, type Room } from "../../types/index.ts";
 import { getRoomRepository } from "../../lib/database/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
 
-export async function handler(_req: Request, ctx: FreshContext<AppState>) {
+export async function handler(req: Request, ctx: FreshContext<AppState>) {
   try {
     const roomRepository = getRoomRepository();
     const rooms = await roomRepository.getAll();
 
-    return ctx.render({ rooms });
+    // Detectar mensaje de éxito
+    const url = new URL(req.url);
+    const success = url.searchParams.get("success");
+
+    return ctx.render({ rooms, success });
   } catch (error) {
     console.error("Error loading rooms:", error);
     return ctx.render({ rooms: [] });
@@ -17,8 +21,8 @@ export async function handler(_req: Request, ctx: FreshContext<AppState>) {
 
 export default function RoomsPage({
   data,
-}: PageProps<{ rooms: Room[] }, AppState>) {
-  const { rooms } = data;
+}: PageProps<{ rooms: Room[]; success?: string | null }, AppState>) {
+  const { rooms, success } = data;
 
   const getRoomTypeLabel = (type?: string) => {
     const typeLabels: Record<string, string> = {
@@ -33,19 +37,44 @@ export default function RoomsPage({
 
   const getRoomTypeColor = (type?: string) => {
     const typeColors: Record<string, string> = {
-      individual: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      family: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      group: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
-      evaluation: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-      relaxation: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
+      individual:
+        "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      family:
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      group:
+        "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+      evaluation:
+        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+      relaxation:
+        "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
     };
-    return type ? typeColors[type] || "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200" : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+    return type
+      ? typeColors[type] ||
+          "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200"
+      : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
   };
 
   return (
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
       <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="px-4 py-6 sm:px-0">
+          {/* Mensaje de éxito */}
+          {success === "room_deleted" && (
+            <div class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+              <div class="flex items-center">
+                <Icon name="check" size={20} className="text-green-500 mr-3" />
+                <div>
+                  <h3 class="text-sm font-medium text-green-800 dark:text-green-200">
+                    Sala eliminada correctamente
+                  </h3>
+                  <p class="text-sm text-green-700 dark:text-green-300 mt-1">
+                    La sala ha sido eliminada del sistema.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
@@ -87,34 +116,26 @@ export default function RoomsPage({
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div class="flex items-center">
-                <Icon
-                  name="check"
-                  size={24}
-                  className="text-green-500 mr-3"
-                />
+                <Icon name="check" size={24} className="text-green-500 mr-3" />
                 <div>
                   <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
                     Disponibles
                   </p>
                   <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                    {rooms.filter(r => r.isAvailable).length}
+                    {rooms.filter((r) => r.isAvailable).length}
                   </p>
                 </div>
               </div>
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
               <div class="flex items-center">
-                <Icon
-                  name="x"
-                  size={24}
-                  className="text-red-500 mr-3"
-                />
+                <Icon name="x" size={24} className="text-red-500 mr-3" />
                 <div>
                   <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
                     No Disponibles
                   </p>
                   <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                    {rooms.filter(r => !r.isAvailable).length}
+                    {rooms.filter((r) => !r.isAvailable).length}
                   </p>
                 </div>
               </div>
@@ -131,7 +152,14 @@ export default function RoomsPage({
                     Tasa de Ocupación
                   </p>
                   <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                    {rooms.length > 0 ? Math.round((rooms.filter(r => !r.isAvailable).length / rooms.length) * 100) : 0}%
+                    {rooms.length > 0
+                      ? Math.round(
+                          (rooms.filter((r) => !r.isAvailable).length /
+                            rooms.length) *
+                            100
+                        )
+                      : 0}
+                    %
                   </p>
                 </div>
               </div>
@@ -141,24 +169,31 @@ export default function RoomsPage({
           {/* Lista de salas */}
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {rooms.map((room) => (
-              <div key={room.id} class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+              <div
+                key={room.id}
+                class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow"
+              >
                 <div class="p-6">
                   <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center">
-                      <div class={`w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-lg ${
-                        room.isAvailable ? "bg-green-500" : "bg-red-500"
-                      }`}>
+                      <div
+                        class={`w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-lg ${
+                          room.isAvailable ? "bg-green-500" : "bg-red-500"
+                        }`}
+                      >
                         {room.id}
                       </div>
                       <div class="ml-3">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
                           Sala {room.id}
                         </h3>
-                        <span class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          room.isAvailable
-                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
-                            : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                        }`}>
+                        <span
+                          class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            room.isAvailable
+                              ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                              : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                          }`}
+                        >
                           {room.isAvailable ? "Disponible" : "Ocupada"}
                         </span>
                       </div>
@@ -180,7 +215,11 @@ export default function RoomsPage({
                         <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                           Tipo
                         </h4>
-                        <span class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoomTypeColor(room.roomType)}`}>
+                        <span
+                          class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoomTypeColor(
+                            room.roomType
+                          )}`}
+                        >
                           {getRoomTypeLabel(room.roomType)}
                         </span>
                       </div>
@@ -244,16 +283,12 @@ export default function RoomsPage({
                       >
                         <Icon name="edit" size={16} />
                       </a>
-                      <button
-                        type="button"
-                        onclick={`if(confirm('¿Estás seguro de eliminar la sala ${room.id}?')) { fetch('/api/rooms/${room.id}/delete', {method: 'DELETE'}).then(() => location.reload()); }`}
-                        class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                        title="Eliminar"
-                      >
-                        <Icon name="trash" size={16} />
-                      </button>
                     </div>
-                    <form method="POST" action={`/api/rooms/${room.id}/toggle-availability`} class="inline">
+                    <form
+                      method="POST"
+                      action={`/api/rooms/${room.id}/toggle-availability`}
+                      class="inline"
+                    >
                       <button
                         type="submit"
                         class={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
@@ -262,7 +297,9 @@ export default function RoomsPage({
                             : "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40"
                         }`}
                       >
-                        {room.isAvailable ? "Marcar como Ocupada" : "Marcar como Disponible"}
+                        {room.isAvailable
+                          ? "Marcar como Ocupada"
+                          : "Marcar como Disponible"}
                       </button>
                     </form>
                   </div>
@@ -282,7 +319,8 @@ export default function RoomsPage({
                 No hay salas configuradas
               </h3>
               <p class="text-gray-600 dark:text-gray-400 mb-6">
-                Las salas se inicializan automáticamente al cargar la aplicación.
+                Las salas se inicializan automáticamente al cargar la
+                aplicación.
               </p>
             </div>
           )}

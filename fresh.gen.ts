@@ -29,6 +29,7 @@ import * as $psychologists_delete_id_ from "./routes/psychologists/delete/[id].t
 import * as $psychologists_edit_id_ from "./routes/psychologists/edit/[id].tsx";
 import * as $psychologists_index from "./routes/psychologists/index.tsx";
 import * as $psychologists_new from "./routes/psychologists/new.tsx";
+import * as $rooms_id_ from "./routes/rooms/[id].tsx";
 import * as $rooms_edit_id_ from "./routes/rooms/edit/[id].tsx";
 import * as $rooms_index from "./routes/rooms/index.tsx";
 import * as $rooms_new from "./routes/rooms/new.tsx";
@@ -42,6 +43,7 @@ import * as $AppointmentStatusSelector from "./islands/AppointmentStatusSelector
 import * as $Counter from "./islands/Counter.tsx";
 import * as $DashboardStats from "./islands/DashboardStats.tsx";
 import * as $DeleteAppointmentButton from "./islands/DeleteAppointmentButton.tsx";
+import * as $DeleteRoomButton from "./islands/DeleteRoomButton.tsx";
 import * as $Header from "./islands/Header.tsx";
 import * as $PatientSearchSelect from "./islands/PatientSearchSelect.tsx";
 import * as $PatientSelect from "./islands/PatientSelect.tsx";
@@ -78,6 +80,7 @@ const manifest = {
     "./routes/psychologists/edit/[id].tsx": $psychologists_edit_id_,
     "./routes/psychologists/index.tsx": $psychologists_index,
     "./routes/psychologists/new.tsx": $psychologists_new,
+    "./routes/rooms/[id].tsx": $rooms_id_,
     "./routes/rooms/edit/[id].tsx": $rooms_edit_id_,
     "./routes/rooms/index.tsx": $rooms_index,
     "./routes/rooms/new.tsx": $rooms_new,
@@ -93,6 +96,7 @@ const manifest = {
     "./islands/Counter.tsx": $Counter,
     "./islands/DashboardStats.tsx": $DashboardStats,
     "./islands/DeleteAppointmentButton.tsx": $DeleteAppointmentButton,
+    "./islands/DeleteRoomButton.tsx": $DeleteRoomButton,
     "./islands/Header.tsx": $Header,
     "./islands/PatientSearchSelect.tsx": $PatientSearchSelect,
     "./islands/PatientSelect.tsx": $PatientSelect,
