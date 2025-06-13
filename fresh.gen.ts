@@ -14,6 +14,7 @@ import * as $api_auth_check from "./routes/api/auth/check.ts";
 import * as $api_auth_clear_cookies from "./routes/api/auth/clear-cookies.ts";
 import * as $api_auth_logout from "./routes/api/auth/logout.ts";
 import * as $api_rooms_id_delete from "./routes/api/rooms/[id]/delete.ts";
+import * as $api_rooms_id_toggle_availability from "./routes/api/rooms/[id]/toggle-availability.ts";
 import * as $appointments_id_ from "./routes/appointments/[id].tsx";
 import * as $appointments_edit_id_ from "./routes/appointments/edit/[id].tsx";
 import * as $appointments_index from "./routes/appointments/index.tsx";
@@ -48,6 +49,7 @@ import * as $Header from "./islands/Header.tsx";
 import * as $PatientSearchSelect from "./islands/PatientSearchSelect.tsx";
 import * as $PatientSelect from "./islands/PatientSelect.tsx";
 import * as $PsychologistFilters from "./islands/PsychologistFilters.tsx";
+import * as $RoomToggleButton from "./islands/RoomToggleButton.tsx";
 import * as $ThemeToggle from "./islands/ThemeToggle.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
@@ -65,6 +67,8 @@ const manifest = {
     "./routes/api/auth/clear-cookies.ts": $api_auth_clear_cookies,
     "./routes/api/auth/logout.ts": $api_auth_logout,
     "./routes/api/rooms/[id]/delete.ts": $api_rooms_id_delete,
+    "./routes/api/rooms/[id]/toggle-availability.ts":
+      $api_rooms_id_toggle_availability,
     "./routes/appointments/[id].tsx": $appointments_id_,
     "./routes/appointments/edit/[id].tsx": $appointments_edit_id_,
     "./routes/appointments/index.tsx": $appointments_index,
@@ -101,6 +105,7 @@ const manifest = {
     "./islands/PatientSearchSelect.tsx": $PatientSearchSelect,
     "./islands/PatientSelect.tsx": $PatientSelect,
     "./islands/PsychologistFilters.tsx": $PsychologistFilters,
+    "./islands/RoomToggleButton.tsx": $RoomToggleButton,
     "./islands/ThemeToggle.tsx": $ThemeToggle,
   },
   baseUrl: import.meta.url,

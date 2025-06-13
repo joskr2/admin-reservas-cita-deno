@@ -187,13 +187,6 @@ export default function Header({
                   <span class="text-gray-700 dark:text-gray-300 text-sm">
                     Bienvenido/a {user?.name || user?.email}
                   </span>
-                  {user?.role === "superadmin" && (
-                    <div class="flex items-center gap-1">
-                      <span class="text-xs bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400 px-2 py-0.5 rounded-full font-medium">
-                        ✨ Super Admin
-                      </span>
-                    </div>
-                  )}
                 </div>
                 <a
                   href="/api/auth/logout"
@@ -265,11 +258,7 @@ export default function Header({
                   <p class="text-gray-700 dark:text-gray-300 text-sm">
                     Bienvenido/a {user?.name || user?.email}
                   </p>
-                  {user?.role === "superadmin" && (
-                    <span class="inline-block mt-1 text-xs bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-400 px-2 py-0.5 rounded-full font-medium">
-                      ✨ Super Admin
-                    </span>
-                  )}
+
                 </div>
                 <a
                   href="/api/auth/logout"

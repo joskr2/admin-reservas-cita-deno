@@ -2,6 +2,7 @@ import { type FreshContext, type PageProps } from "$fresh/server.ts";
 import { type AppState, type Room } from "../../types/index.ts";
 import { getRoomRepository } from "../../lib/database/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
+import RoomToggleButton from "../../islands/RoomToggleButton.tsx";
 
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
   try {
@@ -59,16 +60,16 @@ export default function RoomsPage({
       <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div class="px-4 py-6 sm:px-0">
           {/* Mensaje de éxito */}
-          {success === "room_deleted" && (
+          {success && (
             <div class="mb-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
               <div class="flex items-center">
                 <Icon name="check" size={20} className="text-green-500 mr-3" />
                 <div>
                   <h3 class="text-sm font-medium text-green-800 dark:text-green-200">
-                    Sala eliminada correctamente
+                    Operación exitosa
                   </h3>
                   <p class="text-sm text-green-700 dark:text-green-300 mt-1">
-                    La sala ha sido eliminada del sistema.
+                    {success}
                   </p>
                 </div>
               </div>
@@ -284,24 +285,10 @@ export default function RoomsPage({
                         <Icon name="edit" size={16} />
                       </a>
                     </div>
-                    <form
-                      method="POST"
-                      action={`/api/rooms/${room.id}/toggle-availability`}
-                      class="inline"
-                    >
-                      <button
-                        type="submit"
-                        class={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                          room.isAvailable
-                            ? "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
-                            : "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40"
-                        }`}
-                      >
-                        {room.isAvailable
-                          ? "Marcar como Ocupada"
-                          : "Marcar como Disponible"}
-                      </button>
-                    </form>
+                    <RoomToggleButton
+                      roomId={room.id}
+                      isAvailable={room.isAvailable}
+                    />
                   </div>
                 </div>
               </div>
