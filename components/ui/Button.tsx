@@ -10,6 +10,11 @@ export interface ButtonProps
   loading?: boolean;
   children: ComponentChildren;
   type?: "button" | "submit" | "reset";
+  // Nuevas props para iconos
+  leftIcon?: string;
+  rightIcon?: string;
+  iconSize?: number;
+  iconOnly?: boolean; // Para botones que solo tienen icono
 }
 
 // Estilos base para todos los botones
@@ -37,6 +42,13 @@ const sizeClasses = {
   lg: "px-6 py-3 text-lg",
 };
 
+// Estilos para botones solo con icono
+const iconOnlySizeClasses = {
+  sm: "p-1.5",
+  md: "p-2",
+  lg: "p-3",
+};
+
 export function Button({
   variant = "primary",
   size = "md",
@@ -45,13 +57,21 @@ export function Button({
   disabled = false,
   loading = false,
   type = "button",
+  leftIcon,
+  rightIcon,
+  iconSize,
+  iconOnly = false,
   ...props
 }: ButtonProps) {
+  // Determinar el tamaño del icono basado en el tamaño del botón
+  const defaultIconSize = iconSize ||
+    (size === "sm" ? 14 : size === "lg" ? 20 : 16);
+
   // Combinar todas las clases basadas en las props
   const finalClasses = [
     baseClasses,
     variantClasses[variant],
-    sizeClasses[size],
+    iconOnly ? iconOnlySizeClasses[size] : sizeClasses[size],
     disabled || loading ? "opacity-50 cursor-not-allowed" : "",
     className, // Permitir clases personalizadas
   ]
@@ -64,6 +84,9 @@ export function Button({
       type={type}
       class={finalClasses}
       disabled={disabled || loading}
+      aria-label={iconOnly && typeof children === "string"
+        ? children
+        : undefined}
     >
       {loading && (
         <svg
@@ -87,7 +110,34 @@ export function Button({
           />
         </svg>
       )}
-      {children}
+
+      {/* Icono izquierdo */}
+      {leftIcon && !loading && (
+        <img
+          src={`/icons/${leftIcon}.svg`}
+          alt=""
+          width={defaultIconSize}
+          height={defaultIconSize}
+          class={`${iconOnly ? "" : "mr-2"} filter-auto`}
+        />
+      )}
+
+      {/* Contenido del botón */}
+      {!iconOnly && children}
+
+      {/* Icono derecho */}
+      {rightIcon && !loading && (
+        <img
+          src={`/icons/${rightIcon}.svg`}
+          alt=""
+          width={defaultIconSize}
+          height={defaultIconSize}
+          class={`${iconOnly ? "" : "ml-2"} filter-auto`}
+        />
+      )}
+
+      {/* Para botones solo con icono, mostrar children como aria-label */}
+      {iconOnly && <span class="sr-only">{children}</span>}
     </button>
   );
 }

@@ -1,11 +1,9 @@
-import type { IconProps } from "../../types/index.ts";
-
-interface IconComponentProps extends Omit<IconProps, "name"> {
+export interface IconComponentProps {
   name: string;
-  size?: number | undefined;
-  className?: string | undefined;
-  alt?: string | undefined;
-  disableAutoFilter?: boolean | undefined;
+  size?: number;
+  className?: string;
+  alt?: string;
+  disableAutoFilter?: boolean;
 }
 
 export function Icon({
@@ -15,72 +13,74 @@ export function Icon({
   alt,
   disableAutoFilter = false,
 }: IconComponentProps) {
-  // Mapeo de iconos con sus variantes para modo oscuro
-  const iconMap: Record<string, { light: string; dark?: string }> = {
+  // Mapeo simplificado de iconos - todos usan currentColor
+  const iconMap: Record<string, string> = {
     // Iconos de navegación
-    home: { light: "/icons/home.svg" },
-    dashboard: { light: "/icons/bar-chart-3.svg" },
-    calendar: { light: "/icons/calendar.svg" },
-    "calendar-plus": { light: "/icons/calendar-plus.svg" },
-    "user-plus": { light: "/icons/user-plus.svg" },
-    users: { light: "/icons/users.svg" },
-    user: { light: "/icons/user.svg" },
-    "user-cog": { light: "/icons/user-cog.svg" },
+    home: "/icons/home.svg",
+    dashboard: "/icons/bar-chart-3.svg",
+    calendar: "/icons/calendar.svg",
+    "calendar-plus": "/icons/calendar-plus.svg",
+    "user-plus": "/icons/user-plus.svg",
+    users: "/icons/users.svg",
+    user: "/icons/user.svg",
+    "user-cog": "/icons/user-cog.svg",
 
     // Iconos de acciones
-    plus: { light: "/icons/plus.svg" },
-    check: { light: "/icons/check.svg" },
-    circle: { light: "/icons/circle.svg" },
-    x: { light: "/icons/x.svg" },
-    edit: { light: "/icons/edit.svg", dark: "/icons/edit-dark.svg" },
-    "trash-2": { light: "/icons/trash-2.svg" },
-    "file-digit": { light: "/icons/file-digit.svg" },
-    "file-warning": { light: "/icons/file-warning.svg" },
-    eye: { light: "/icons/eye.svg" },
+    plus: "/icons/plus.svg",
+    check: "/icons/check.svg",
+    circle: "/icons/circle.svg",
+    x: "/icons/x.svg",
+    edit: "/icons/edit.svg",
+    "trash-2": "/icons/trash-2.svg",
+    "file-digit": "/icons/file-digit.svg",
+    "file-warning": "/icons/file-warning.svg",
+    eye: "/icons/eye.svg",
 
     // Iconos de interfaz
-    "arrow-left": { light: "/icons/arrow-left.svg" },
-    menu: { light: "/icons/menu.svg" },
-    sun: { light: "/icons/sun.svg" },
-    moon: { light: "/icons/moon.svg" },
-    login: { light: "/icons/login.svg" },
-    logout: { light: "/icons/logout.svg" },
-    mail: { light: "/icons/mail.svg" },
-    lock: { light: "/icons/lock.svg" },
+    "arrow-left": "/icons/arrow-left.svg",
+    menu: "/icons/menu.svg",
+    sun: "/icons/sun.svg",
+    moon: "/icons/moon.svg",
+    login: "/icons/login.svg",
+    logout: "/icons/logout.svg",
+    mail: "/icons/mail.svg",
+    lock: "/icons/lock.svg",
 
     // Iconos de información
-    clock: { light: "/icons/clock.svg" },
-    hash: { light: "/icons/hash.svg" },
-    briefcase: { light: "/icons/briefcase.svg" },
-    activity: { light: "/icons/activity.svg" },
-    heart: { light: "/icons/heart.svg" },
-    "heart-handshake": { light: "/icons/heart-handshake.svg" },
-    shield: { light: "/icons/shield.svg" },
+    clock: "/icons/clock.svg",
+    hash: "/icons/hash.svg",
+    briefcase: "/icons/briefcase.svg",
+    activity: "/icons/activity.svg",
+    heart: "/icons/heart.svg",
+    "heart-handshake": "/icons/heart-handshake.svg",
+    shield: "/icons/shield.svg",
+
+    // Iconos adicionales que encontré en el proyecto
+    phone: "/icons/phone.svg",
+    "map-pin": "/icons/map-pin.svg",
+    loader: "/icons/loader.svg",
 
     // Logo
-    logo: { light: "/icons/logo.svg" },
+    logo: "/icons/logo.svg",
   };
 
-  const iconConfig = iconMap[name];
-  if (!iconConfig) {
-    console.warn(`Icon "${name}" not found in icon map`);
+  const iconSrc = iconMap[name];
+
+  if (!iconSrc) {
+    console.warn(`Icon "${name}" not found in iconMap`);
     return null;
   }
 
-  const iconSrc = iconConfig.light;
-  const iconAlt = alt || name;
-
-  const autoFilterClasses = disableAutoFilter
-    ? ""
-    : "dark:filter dark:invert dark:brightness-0 dark:contrast-100";
+  // Clases por defecto que funcionan bien con currentColor
+  const defaultClasses = disableAutoFilter ? "" : "text-current"; // Usar text-current para heredar el color del padre
 
   return (
     <img
       src={iconSrc}
-      alt={iconAlt}
+      alt={alt || `${name} icon`}
       width={size}
       height={size}
-      className={`inline-block ${className} ${autoFilterClasses}`}
+      class={`inline-block ${defaultClasses} ${className}`}
     />
   );
 }
@@ -101,8 +101,72 @@ export function ThemedIcon({
     <Icon
       name={name}
       size={size}
-      alt={alt}
+      {...(alt && { alt })}
       className={`${lightColor} dark:${darkColor} ${className}`}
     />
   );
+}
+
+// Componente para iconos con colores específicos (útil para estados)
+export function ColoredIcon({
+  name,
+  size = 24,
+  className = "",
+  alt,
+  color = "text-gray-500",
+}: IconComponentProps & {
+  color?: string;
+}) {
+  return (
+    <Icon
+      name={name}
+      size={size}
+      {...(alt && { alt })}
+      className={`${color} ${className}`}
+    />
+  );
+}
+
+// Hook para obtener la lista de iconos disponibles (útil para desarrollo)
+export function getAvailableIcons(): string[] {
+  const iconMap: Record<string, string> = {
+    home: "/icons/home.svg",
+    dashboard: "/icons/bar-chart-3.svg",
+    calendar: "/icons/calendar.svg",
+    "calendar-plus": "/icons/calendar-plus.svg",
+    "user-plus": "/icons/user-plus.svg",
+    users: "/icons/users.svg",
+    user: "/icons/user.svg",
+    "user-cog": "/icons/user-cog.svg",
+    plus: "/icons/plus.svg",
+    check: "/icons/check.svg",
+    circle: "/icons/circle.svg",
+    x: "/icons/x.svg",
+    edit: "/icons/edit.svg",
+    "trash-2": "/icons/trash-2.svg",
+    "file-digit": "/icons/file-digit.svg",
+    "file-warning": "/icons/file-warning.svg",
+    eye: "/icons/eye.svg",
+    "arrow-left": "/icons/arrow-left.svg",
+    menu: "/icons/menu.svg",
+    sun: "/icons/sun.svg",
+    moon: "/icons/moon.svg",
+    login: "/icons/login.svg",
+    logout: "/icons/logout.svg",
+    mail: "/icons/mail.svg",
+    lock: "/icons/lock.svg",
+    clock: "/icons/clock.svg",
+    hash: "/icons/hash.svg",
+    briefcase: "/icons/briefcase.svg",
+    activity: "/icons/activity.svg",
+    heart: "/icons/heart.svg",
+    "heart-handshake": "/icons/heart-handshake.svg",
+    shield: "/icons/shield.svg",
+    phone: "/icons/phone.svg",
+    "map-pin": "/icons/map-pin.svg",
+    loader: "/icons/loader.svg",
+    logo: "/icons/logo.svg",
+  };
+
+  return Object.keys(iconMap).sort();
 }

@@ -5,6 +5,7 @@ import {
   type AppointmentStatusHistory,
 } from "../types/index.ts";
 import { Icon } from "../components/ui/Icon.tsx";
+import { Button } from "../components/ui/Button.tsx";
 import Modal from "../components/ui/Modal.tsx";
 import {
   getStatusColor,
@@ -36,14 +37,14 @@ export default function AppointmentDetailsModal({
     ...(appointment.statusHistory?.some((h) => h.status === appointment.status)
       ? []
       : [
-        {
-          status: appointment.status,
-          changedAt: appointment.updatedAt || appointment.createdAt,
-          notes: "Estado actual",
-        },
-      ]),
+          {
+            status: appointment.status,
+            changedAt: appointment.updatedAt || appointment.createdAt,
+            notes: "Estado actual",
+          },
+        ]),
   ].sort(
-    (a, b) => new Date(a.changedAt).getTime() - new Date(b.changedAt).getTime(),
+    (a, b) => new Date(a.changedAt).getTime() - new Date(b.changedAt).getTime()
   );
 
   const formatDateTime = (dateString: string) => {
@@ -96,11 +97,9 @@ export default function AppointmentDetailsModal({
               </div>
               <div class="flex items-center">
                 <span
-                  class={`inline-flex px-3 py-1.5 text-sm font-medium rounded-full ${
-                    getStatusColor(
-                      appointment.status,
-                    )
-                  }`}
+                  class={`inline-flex px-3 py-1.5 text-sm font-medium rounded-full ${getStatusColor(
+                    appointment.status
+                  )}`}
                 >
                   {getStatusText(appointment.status)}
                 </span>
@@ -178,7 +177,7 @@ export default function AppointmentDetailsModal({
                           year: "numeric",
                           month: "long",
                           day: "numeric",
-                        },
+                        }
                       )}
                     </p>
                   </div>
@@ -256,11 +255,9 @@ export default function AppointmentDetailsModal({
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between mb-2">
                       <span
-                        class={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${
-                          getStatusColor(
-                            historyItem.status,
-                          )
-                        }`}
+                        class={`inline-flex px-2.5 py-1 text-xs font-medium rounded-full ${getStatusColor(
+                          historyItem.status
+                        )}`}
                       >
                         {getStatusText(historyItem.status)}
                       </span>
@@ -270,11 +267,10 @@ export default function AppointmentDetailsModal({
                     </div>
 
                     <p class="text-sm text-gray-700 dark:text-gray-300 mb-1">
-                      <strong>{getStatusText(historyItem.status)}</strong> -
-                      {" "}
+                      <strong>{getStatusText(historyItem.status)}</strong> -{" "}
                       {appointment.psychologistName ||
-                        appointment.psychologistEmail} con{" "}
-                      {appointment.patientName} en Sala {appointment.roomId}
+                        appointment.psychologistEmail}{" "}
+                      con {appointment.patientName} en Sala {appointment.roomId}
                     </p>
 
                     {historyItem.notes && (
@@ -295,29 +291,26 @@ export default function AppointmentDetailsModal({
           {/* Acciones rápidas */}
           <div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
             <div class="flex items-center space-x-3">
-              <a
-                href={`/appointments/edit/${appointment.id}`}
-                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
-              >
-                <Icon name="edit" size={16} className="mr-2 text-current" />
-                Editar Cita
+              <a href={`/appointments/edit/${appointment.id}`}>
+                <Button variant="primary" leftIcon="edit" size="sm">
+                  Editar Cita
+                </Button>
               </a>
-              <a
-                href={`/appointments/${appointment.id}`}
-                class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
-              >
-                <Icon name="eye" size={16} className="mr-2 text-current" />
-                Ver Completa
+              <a href={`/appointments/${appointment.id}`}>
+                <Button variant="secondary" leftIcon="eye" size="sm">
+                  Ver Completa
+                </Button>
               </a>
             </div>
 
-            <button
+            <Button
               type="button"
               onClick={() => setIsOpen(false)}
-              class="inline-flex items-center px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors"
+              variant="outline"
+              size="sm"
             >
               Cerrar
-            </button>
+            </Button>
           </div>
         </div>
       </Modal>

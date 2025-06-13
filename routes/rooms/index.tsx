@@ -2,6 +2,7 @@ import { type FreshContext, type PageProps } from "$fresh/server.ts";
 import { type AppState, type Room } from "../../types/index.ts";
 import { getRoomRepository } from "../../lib/database/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
+import { Button } from "../../components/ui/Button.tsx";
 import RoomToggleButton from "../../islands/RoomToggleButton.tsx";
 
 interface RoomsPageData {
@@ -195,12 +196,10 @@ export default function RoomsPage({
               </p>
             </div>
             <div class="mt-4 sm:mt-0 flex gap-3">
-              <a
-                href="/rooms/new"
-                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors"
-              >
-                <Icon name="plus" size={20} className="mr-2" />
-                Nueva Sala
+              <a href="/rooms/new">
+                <Button variant="primary" leftIcon="plus">
+                  Nueva Sala
+                </Button>
               </a>
             </div>
           </div>
@@ -288,19 +287,19 @@ export default function RoomsPage({
 
               {/* Botones */}
               <div class="flex items-end gap-2">
-                <button
+                <Button
                   type="submit"
-                  class="flex-1 inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors text-sm"
+                  variant="primary"
+                  leftIcon="eye"
+                  size="sm"
+                  class="flex-1"
                 >
-                  <Icon name="eye" size={16} className="mr-2" />
                   Filtrar
-                </button>
-                <a
-                  href="/rooms"
-                  class="inline-flex items-center justify-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm"
-                  title="Limpiar filtros"
-                >
-                  <Icon name="x" size={16} />
+                </Button>
+                <a href="/rooms" title="Limpiar filtros">
+                  <Button variant="outline" iconOnly leftIcon="x" size="sm">
+                    Limpiar filtros
+                  </Button>
                 </a>
               </div>
             </form>
