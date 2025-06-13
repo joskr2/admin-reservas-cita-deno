@@ -29,7 +29,7 @@ export default function Header({
   const isHomePage = currentPath === "/";
   const isDashboardPage = currentPath === "/dashboard";
   const isAppointmentsPage = currentPath === "/appointments";
-  const isNewAppointmentPage = currentPath === "/appointments/new";
+  //const isNewAppointmentPage = currentPath === "/appointments/new";
   const isPatientsPage = currentPath.startsWith("/patients");
   const isProfilesPage = currentPath.startsWith("/psychologists");
   const isRoomsPage = currentPath.startsWith("/rooms");
@@ -78,13 +78,13 @@ export default function Header({
       active: isRoomsPage,
       showWhen: "authenticated" as const,
     },
-    {
-      href: "/appointments/new",
-      label: "Nueva Cita",
-      icon: "calendar-plus",
-      active: isNewAppointmentPage,
-      showWhen: "authenticated" as const,
-    },
+    // {
+    //   href: "/appointments/new",
+    //   label: "Nueva Cita",
+    //   icon: "calendar-plus",
+    //   active: isNewAppointmentPage,
+    //   showWhen: "authenticated" as const,
+    // },
   ];
 
   // Filtrar items según autenticación y rol

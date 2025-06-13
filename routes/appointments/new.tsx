@@ -2,6 +2,7 @@ import { type FreshContext, type PageProps } from "$fresh/server.ts";
 import {
   type Appointment,
   type AppState,
+  type Patient,
   type Room,
   type RoomId,
   type UserProfile,
@@ -16,7 +17,9 @@ import {
   getAllUsers,
   getAvailableRooms,
 } from "../../lib/kv.ts";
+import { getPatientRepository } from "../../lib/database/index.ts";
 import AppointmentFormValidator from "../../islands/AppointmentFormValidator.tsx";
+import PatientSelect from "../../islands/PatientSelect.tsx";
 
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
   if (req.method === "GET") {
@@ -38,9 +41,14 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       // Obtener todas las salas
       const rooms = await getAllRooms();
 
+      // Obtener todos los pacientes
+      const patientRepository = getPatientRepository();
+      const patients = await patientRepository.getAll();
+
       return ctx.render({
         psychologists,
         rooms,
+        patients,
         currentUserRole: ctx.state.user?.role,
         currentUserEmail: ctx.state.user?.email,
       });
@@ -223,16 +231,18 @@ export default function NewAppointmentPage({
   {
     psychologists: UserProfile[];
     rooms: Room[];
+    patients: Patient[];
     currentUserRole?: string;
     currentUserEmail?: string;
     error?: string;
   },
   AppState
 >) {
-  const { psychologists, rooms, currentUserRole, currentUserEmail, error } =
+  const { psychologists, rooms, patients, currentUserRole, currentUserEmail, error } =
     data || {
       psychologists: [],
       rooms: [],
+      patients: [],
     };
 
   return (
@@ -301,14 +311,11 @@ export default function NewAppointmentPage({
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                     >
                       <Icon name="user" className="h-4 w-4 inline mr-2" />
-                      Nombre del Paciente
+                      Paciente
                     </label>
-                    <Input
-                      id="patientName"
-                      name="patientName"
-                      type="text"
-                      required
-                      placeholder="Ingrese el nombre completo del paciente"
+                    <PatientSelect
+                      patients={patients}
+                      required={true}
                     />
                   </div>
 

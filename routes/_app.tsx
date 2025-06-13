@@ -1,5 +1,6 @@
 import type { PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
+import { themeScript } from "../utils/theme.ts";
 
 export default function App({ Component }: PageProps) {
   return (
@@ -10,6 +11,7 @@ export default function App({ Component }: PageProps) {
         <title>Horizonte - Clínica de Psicología</title>
         <link rel="stylesheet" href="/css/styles.css" />
         <link rel="icon" href="/favicon.ico" />
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </Head>
       <body class="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
         <Component />

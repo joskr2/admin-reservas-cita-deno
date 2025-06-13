@@ -13,6 +13,7 @@ import * as $api_appointments_index from "./routes/api/appointments/index.ts";
 import * as $api_auth_check from "./routes/api/auth/check.ts";
 import * as $api_auth_clear_cookies from "./routes/api/auth/clear-cookies.ts";
 import * as $api_auth_logout from "./routes/api/auth/logout.ts";
+import * as $api_rooms_id_delete from "./routes/api/rooms/[id]/delete.ts";
 import * as $appointments_id_ from "./routes/appointments/[id].tsx";
 import * as $appointments_edit_id_ from "./routes/appointments/edit/[id].tsx";
 import * as $appointments_index from "./routes/appointments/index.tsx";
@@ -28,7 +29,9 @@ import * as $psychologists_delete_id_ from "./routes/psychologists/delete/[id].t
 import * as $psychologists_edit_id_ from "./routes/psychologists/edit/[id].tsx";
 import * as $psychologists_index from "./routes/psychologists/index.tsx";
 import * as $psychologists_new from "./routes/psychologists/new.tsx";
+import * as $rooms_edit_id_ from "./routes/rooms/edit/[id].tsx";
 import * as $rooms_index from "./routes/rooms/index.tsx";
+import * as $rooms_new from "./routes/rooms/new.tsx";
 import * as $AppointmentCalendar from "./islands/AppointmentCalendar.tsx";
 import * as $AppointmentDetailsDropdown from "./islands/AppointmentDetailsDropdown.tsx";
 import * as $AppointmentDetailsModal from "./islands/AppointmentDetailsModal.tsx";
@@ -41,6 +44,7 @@ import * as $DashboardStats from "./islands/DashboardStats.tsx";
 import * as $DeleteAppointmentButton from "./islands/DeleteAppointmentButton.tsx";
 import * as $Header from "./islands/Header.tsx";
 import * as $PatientSearchSelect from "./islands/PatientSearchSelect.tsx";
+import * as $PatientSelect from "./islands/PatientSelect.tsx";
 import * as $PsychologistFilters from "./islands/PsychologistFilters.tsx";
 import * as $ThemeToggle from "./islands/ThemeToggle.tsx";
 import { type Manifest } from "$fresh/server.ts";
@@ -58,6 +62,7 @@ const manifest = {
     "./routes/api/auth/check.ts": $api_auth_check,
     "./routes/api/auth/clear-cookies.ts": $api_auth_clear_cookies,
     "./routes/api/auth/logout.ts": $api_auth_logout,
+    "./routes/api/rooms/[id]/delete.ts": $api_rooms_id_delete,
     "./routes/appointments/[id].tsx": $appointments_id_,
     "./routes/appointments/edit/[id].tsx": $appointments_edit_id_,
     "./routes/appointments/index.tsx": $appointments_index,
@@ -73,7 +78,9 @@ const manifest = {
     "./routes/psychologists/edit/[id].tsx": $psychologists_edit_id_,
     "./routes/psychologists/index.tsx": $psychologists_index,
     "./routes/psychologists/new.tsx": $psychologists_new,
+    "./routes/rooms/edit/[id].tsx": $rooms_edit_id_,
     "./routes/rooms/index.tsx": $rooms_index,
+    "./routes/rooms/new.tsx": $rooms_new,
   },
   islands: {
     "./islands/AppointmentCalendar.tsx": $AppointmentCalendar,
@@ -88,6 +95,7 @@ const manifest = {
     "./islands/DeleteAppointmentButton.tsx": $DeleteAppointmentButton,
     "./islands/Header.tsx": $Header,
     "./islands/PatientSearchSelect.tsx": $PatientSearchSelect,
+    "./islands/PatientSelect.tsx": $PatientSelect,
     "./islands/PsychologistFilters.tsx": $PsychologistFilters,
     "./islands/ThemeToggle.tsx": $ThemeToggle,
   },

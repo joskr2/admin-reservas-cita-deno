@@ -55,6 +55,15 @@ export default function RoomsPage({
                 Administra las salas de terapia y su disponibilidad
               </p>
             </div>
+            <div class="mt-4 sm:mt-0 flex gap-3">
+              <a
+                href="/rooms/new"
+                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors"
+              >
+                <Icon name="plus" size={20} className="mr-2" />
+                Nueva Sala
+              </a>
+            </div>
           </div>
 
           {/* Estadísticas */}
@@ -235,6 +244,14 @@ export default function RoomsPage({
                       >
                         <Icon name="edit" size={16} />
                       </a>
+                      <button
+                        type="button"
+                        onclick={`if(confirm('¿Estás seguro de eliminar la sala ${room.id}?')) { fetch('/api/rooms/${room.id}/delete', {method: 'DELETE'}).then(() => location.reload()); }`}
+                        class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                        title="Eliminar"
+                      >
+                        <Icon name="trash" size={16} />
+                      </button>
                     </div>
                     <form method="POST" action={`/api/rooms/${room.id}/toggle-availability`} class="inline">
                       <button
