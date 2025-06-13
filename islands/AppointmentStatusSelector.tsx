@@ -19,6 +19,24 @@ export default function AppointmentStatusSelector({
   const [showMobileModal, setShowMobileModal] = useState(false);
   const availableStatuses = getNextStatuses(currentStatus);
 
+  // Función para obtener solo el color del texto (sin fondo)
+  const getStatusTextColor = (status: AppointmentStatus): string => {
+    switch (status) {
+      case "pending":
+        return "text-yellow-700 dark:text-yellow-400";
+      case "scheduled":
+        return "text-blue-700 dark:text-blue-400";
+      case "in_progress":
+        return "text-purple-700 dark:text-purple-400";
+      case "completed":
+        return "text-green-700 dark:text-green-400";
+      case "cancelled":
+        return "text-red-700 dark:text-red-400";
+      default:
+        return "text-gray-700 dark:text-gray-400";
+    }
+  };
+
   const handleStatusChange = async (newStatus: AppointmentStatus) => {
     if (confirm(`¿Cambiar estado a "${getStatusText(newStatus)}"?`)) {
       setIsUpdating(true);
@@ -34,7 +52,7 @@ export default function AppointmentStatusSelector({
             body: JSON.stringify({
               status: newStatus,
             }),
-          },
+          }
         );
 
         if (response.ok) {
@@ -76,12 +94,17 @@ export default function AppointmentStatusSelector({
             appearance-none cursor-pointer
             px-3 py-2 pr-10
             text-sm font-medium
-            border border-transparent rounded-lg
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+            border border-gray-300 dark:border-gray-600 rounded-lg
+            bg-transparent
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
             transition-all duration-200
             w-full
-            ${statusColorClass}
-            ${isUpdating ? "opacity-50 cursor-not-allowed" : "hover:shadow-md"}
+            ${getStatusTextColor(currentStatus)}
+            ${
+              isUpdating
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:border-gray-400 dark:hover:border-gray-500"
+            }
           `}
         >
           <option value={currentStatus} class="bg-white text-gray-900 py-2">
@@ -120,8 +143,7 @@ export default function AppointmentStatusSelector({
         {/* Indicador de carga desktop */}
         {isUpdating && (
           <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 rounded-md">
-            <div class="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent">
-            </div>
+            <div class="animate-spin rounded-full h-4 w-4 border-2 border-blue-500 border-t-transparent"></div>
           </div>
         )}
       </div>
@@ -139,34 +161,31 @@ export default function AppointmentStatusSelector({
             transition-all duration-200
             ${statusColorClass}
             ${
-            isUpdating
-              ? "opacity-50 cursor-not-allowed"
-              : "hover:shadow-md active:scale-95"
-          }
+              isUpdating
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:shadow-md active:scale-95"
+            }
           `}
         >
           <div class="flex items-center justify-between">
             <span>{getStatusText(currentStatus)}</span>
-            {isUpdating
-              ? (
-                <div class="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent">
-                </div>
-              )
-              : (
-                <svg
-                  class="h-4 w-4 text-current opacity-70"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              )}
+            {isUpdating ? (
+              <div class="animate-spin rounded-full h-4 w-4 border-2 border-current border-t-transparent"></div>
+            ) : (
+              <svg
+                class="h-4 w-4 text-current opacity-70"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            )}
           </div>
         </button>
       </div>
@@ -178,8 +197,7 @@ export default function AppointmentStatusSelector({
           <div
             class="fixed inset-0 bg-black bg-opacity-50"
             onClick={() => setShowMobileModal(false)}
-          >
-          </div>
+          ></div>
 
           {/* Modal content */}
           <div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 rounded-t-xl shadow-xl">
@@ -231,11 +249,9 @@ export default function AppointmentStatusSelector({
                       key={status}
                       type="button"
                       onClick={() => handleStatusChange(status)}
-                      class={`w-full p-3 rounded-lg border border-gray-200 dark:border-gray-600 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
-                        getStatusColor(
-                          status,
-                        )
-                      }`}
+                      class={`w-full p-3 rounded-lg border border-gray-200 dark:border-gray-600 text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${getStatusColor(
+                        status
+                      )}`}
                     >
                       <span class="font-medium">{getStatusText(status)}</span>
                     </button>

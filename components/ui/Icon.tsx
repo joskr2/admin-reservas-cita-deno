@@ -72,7 +72,7 @@ export function Icon({
   }
 
   // Clases por defecto que funcionan bien con currentColor
-  const defaultClasses = disableAutoFilter ? "" : "text-current"; // Usar text-current para heredar el color del padre
+  const defaultClasses = disableAutoFilter ? "" : "text-current dark:invert"; // Usar text-current para heredar el color del padre e invertir en modo oscuro
 
   return (
     <img
