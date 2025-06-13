@@ -22,6 +22,7 @@ import * as $appointments_new from "./routes/appointments/new.tsx";
 import * as $dashboard_index from "./routes/dashboard/index.tsx";
 import * as $index from "./routes/index.tsx";
 import * as $login from "./routes/login.tsx";
+import * as $patients_id_ from "./routes/patients/[id].tsx";
 import * as $patients_delete_id_ from "./routes/patients/delete/[id].tsx";
 import * as $patients_edit_id_ from "./routes/patients/edit/[id].tsx";
 import * as $patients_index from "./routes/patients/index.tsx";
@@ -76,6 +77,7 @@ const manifest = {
     "./routes/dashboard/index.tsx": $dashboard_index,
     "./routes/index.tsx": $index,
     "./routes/login.tsx": $login,
+    "./routes/patients/[id].tsx": $patients_id_,
     "./routes/patients/delete/[id].tsx": $patients_delete_id_,
     "./routes/patients/edit/[id].tsx": $patients_edit_id_,
     "./routes/patients/index.tsx": $patients_index,

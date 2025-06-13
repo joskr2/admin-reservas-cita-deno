@@ -31,7 +31,7 @@ export default function DeleteRoomButton({
 
       if (response.ok) {
         // Redirigir a la página de salas con mensaje de éxito
-        globalThis.location.href = "/rooms?success=room_deleted";
+        globalThis.location.href = "/rooms?success=sala_eliminada";
       } else {
         const errorData = await response.json().catch(() => ({}));
         alert(

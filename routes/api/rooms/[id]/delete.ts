@@ -52,7 +52,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         // Redirigir con éxito para formularios
         return new Response("", {
           status: 302,
-          headers: { Location: "/rooms?success=room_deleted" },
+          headers: { Location: "/rooms?success=sala_eliminada" },
         });
       }
       return new Response(
