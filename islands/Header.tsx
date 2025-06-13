@@ -1,4 +1,4 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useState, useRef } from "preact/hooks";
 import ThemeToggle from "./ThemeToggle.tsx";
 import { Icon } from "../components/ui/Icon.tsx";
 import type { HeaderProps } from "../types/index.ts";
@@ -11,6 +11,7 @@ export default function Header({
 }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,6 +25,41 @@ export default function Header({
 
     return undefined;
   }, []);
+
+  // Cerrar menú al hacer clic fuera del header
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        isMenuOpen &&
+        headerRef.current &&
+        !headerRef.current.contains(event.target as Node)
+      ) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    // Cerrar menú con tecla Escape
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && isMenuOpen) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscape);
+      // Agregar clase al body para prevenir scroll
+      document.body.classList.add("menu-open");
+    } else {
+      document.body.classList.remove("menu-open");
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+      document.body.classList.remove("menu-open");
+    };
+  }, [isMenuOpen]);
 
   const isAuthenticated = !!user;
   const isHomePage = currentPath === "/";
@@ -77,13 +113,6 @@ export default function Header({
       active: isRoomsPage,
       showWhen: "authenticated" as const,
     },
-    // {
-    //   href: "/appointments/new",
-    //   label: "Nueva Cita",
-    //   icon: "calendar-plus",
-    //   active: isNewAppointmentPage,
-    //   showWhen: "authenticated" as const,
-    // },
   ];
 
   // Filtrar items según autenticación y rol
@@ -105,188 +134,171 @@ export default function Header({
   ].join(" ");
 
   return (
-    <header class={headerClasses}>
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16 sm:h-20">
-          {/* Logo y navegación principal */}
-          <div class="flex items-center gap-4 sm:gap-6">
-            {showBackButton ? (
-              <button
-                title="Volver"
-                type="button"
-                onClick={() => globalThis.history.back()}
-                class="p-2 hover:bg-blue-50 dark:hover:bg-blue-950/50 rounded-lg transition-colors"
-              >
-                <Icon
-                  name="arrow-left"
-                  size={20}
-                  className="text-gray-600 dark:text-gray-300"
-                />
-              </button>
-            ) : (
-              <a href="/" class="flex items-center gap-2 sm:gap-3">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg transform rotate-3 hover:rotate-0 transition-transform duration-300">
-                  <Icon
-                    name="heart-handshake"
-                    size={28}
-                    className="text-white filter brightness-0 invert"
-                  />
-                </div>
-                <div class="hidden sm:block">
-                  <h1 class="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Horizonte
-                  </h1>
-                  <p class="text-xs text-gray-600 dark:text-gray-400">
-                    Sistema de Citas
-                  </p>
-                </div>
-              </a>
-            )}
+    <>
+      {/* Overlay con blur para móvil */}
+      {isMenuOpen && (
+        <div
+          class="fixed inset-0 z-40 md:hidden mobile-menu-overlay animate-fade-in bg-black/30"
+          onClick={() => setIsMenuOpen(false)}
+        />
+      )}
 
-            {/* Título de página en mobile */}
-            {(title || showBackButton) && (
-              <div class="sm:hidden">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                  {title}
-                </h2>
-              </div>
-            )}
-          </div>
-
-          {/* Navegación desktop */}
-          {isAuthenticated && (
-            <nav class="hidden md:flex items-center gap-2">
-              {visibleItems.slice(1).map((item) => {
-                const linkClasses = [
-                  "flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-200",
-                  item.active
-                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50"
-                    : "text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50",
-                ].join(" ");
-
-                return (
-                  <a key={item.href} href={item.href} class={linkClasses}>
-                    <Icon name={item.icon} size={16} className="text-current" />
-                    {item.label}
-                  </a>
-                );
-              })}
-            </nav>
-          )}
-
-          {/* Usuario y menú mobile */}
-          <div class="flex items-center gap-2">
-            {/* Theme Toggle */}
-            <ThemeToggle />
-
-            {/* Usuario */}
-            {isAuthenticated ? (
-              <div class="hidden sm:flex items-center gap-3">
-                <div class="text-right">
-                  <span class="text-gray-700 dark:text-gray-300 text-sm">
-                    Bienvenido/a {user?.name || user?.email}
-                  </span>
-                </div>
-                <a
-                  href="/api/auth/logout"
-                  class="inline-flex items-center h-10 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-blue-500/25"
-                >
-                  <Icon name="logout" size={16} className="mr-2 text-current" />
-                  Salir
-                </a>
-              </div>
-            ) : (
-              <a href="/login">
+      <header ref={headerRef} class={headerClasses}>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div class="flex items-center justify-between h-16 sm:h-20">
+            {/* Logo y título */}
+            <div class="flex items-center gap-4">
+              {showBackButton && (
                 <button
                   type="button"
-                  class="hidden sm:inline-flex items-center h-10 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-blue-500/25"
+                  onClick={() => globalThis.history.back()}
+                  class="p-2 hover:bg-blue-50 dark:hover:bg-blue-950/50 rounded-lg transition-colors"
+                  title="Volver"
                 >
-                  <Icon name="login" size={20} className="mr-3 text-current" />
-                  Inicio de sesión
+                  <Icon name="arrow-left" size={20} />
                 </button>
+              )}
+
+              <a href="/" class="flex items-center gap-3">
+                <Icon name="logo" size={32} />
+                <div class="flex flex-col">
+                  <span class="text-xl font-bold text-blue-600 dark:text-blue-400">
+                    Horizonte
+                  </span>
+                  <span class="text-xs text-gray-500 dark:text-gray-400 -mt-1">
+                    Clínica
+                  </span>
+                </div>
               </a>
-            )}
 
-            {/* Menú hamburguesa para mobile */}
-            <button
-              type="button"
-              title={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
-              class="md:hidden p-2 hover:bg-blue-50 dark:hover:bg-blue-950/50 rounded-lg"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              <Icon
-                name={isMenuOpen ? "x" : "menu"}
-                size={20}
-                className="text-gray-600 dark:text-gray-300"
-              />
-            </button>
-          </div>
-        </div>
+              {title && (
+                <div class="hidden sm:block">
+                  <span class="text-lg font-medium text-gray-700 dark:text-gray-300">
+                    {title}
+                  </span>
+                </div>
+              )}
+            </div>
 
-        {/* Menú móvil */}
-        {isMenuOpen && (
-          <div class="md:hidden py-4 border-t border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md">
+            {/* Navegación desktop */}
             {isAuthenticated && (
-              <nav class="flex flex-col gap-2 mb-4">
+              <nav class="hidden md:flex items-center gap-1">
                 {visibleItems.slice(1).map((item) => {
                   const linkClasses = [
-                    "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full text-left font-medium",
+                    "flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium",
                     item.active
                       ? "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400"
-                      : "text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50",
+                      : "text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30",
                   ].join(" ");
 
                   return (
-                    <a
-                      key={item.href}
-                      href={item.href}
-                      class={linkClasses}
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <Icon
-                        name={item.icon}
-                        size={18}
-                        className="text-current flex-shrink-0"
-                      />
-                      {item.label}
+                    <a key={item.href} href={item.href} class={linkClasses}>
+                      <Icon name={item.icon} size={18} />
+                      <span>{item.label}</span>
                     </a>
                   );
                 })}
               </nav>
             )}
 
-            {/* Usuario en mobile */}
-            {isAuthenticated ? (
-              <div class="space-y-3">
-                <div class="px-4">
-                  <p class="text-gray-700 dark:text-gray-300 text-sm">
-                    Bienvenido/a {user?.name || user?.email}
-                  </p>
-                </div>
-                <a
-                  href="/api/auth/logout"
-                  class="flex items-center justify-center gap-2 w-full px-8 py-2 text-blue-600 dark:text-blue-400 bg-transparent border border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 font-semibold rounded-xl transition-all duration-300"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <Icon name="logout" size={16} className="text-current" />
-                  Salir
-                </a>
+            {/* Controles de la derecha */}
+            <div class="flex items-center gap-2">
+              <ThemeToggle />
+
+              {/* Botón de menú móvil */}
+              <button
+                type="button"
+                title={isMenuOpen ? "Cerrar menú" : "Abrir menú"}
+                class="md:hidden menu-button p-2 hover:bg-blue-50 dark:hover:bg-blue-950/50 rounded-lg transition-colors"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                <Icon name={isMenuOpen ? "x" : "menu"} size={24} />
+              </button>
+
+              {/* Botones de autenticación desktop */}
+              <div class="hidden md:flex items-center gap-2">
+                {isAuthenticated ? (
+                  <form action="/api/auth/logout" method="post">
+                    <button
+                      type="submit"
+                      class="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors font-medium"
+                    >
+                      <Icon name="logout" size={18} />
+                      <span>Salir</span>
+                    </button>
+                  </form>
+                ) : (
+                  <a
+                    href="/login"
+                    class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium"
+                  >
+                    <Icon name="login" size={18} />
+                    <span>Inicio de sesión</span>
+                  </a>
+                )}
               </div>
-            ) : (
-              <a href="/login">
-                <button
-                  type="button"
-                  class="flex items-center justify-center gap-2 w-full px-8 py-2 text-blue-600 dark:text-blue-400 bg-transparent border border-blue-600 dark:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 font-semibold rounded-xl transition-all duration-300"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  <Icon name="login" size={16} className="text-current" />
-                  Inicio de sesión
-                </button>
-              </a>
-            )}
+            </div>
           </div>
-        )}
-      </div>
-    </header>
+
+          {/* Menú móvil */}
+          {isMenuOpen && (
+            <div class="md:hidden mobile-menu-container animate-slide-down py-4 border-t border-gray-200 dark:border-gray-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md">
+              {isAuthenticated && (
+                <nav class="flex flex-col gap-2 mb-4">
+                  {visibleItems.slice(1).map((item) => {
+                    const linkClasses = [
+                      "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full text-left font-medium",
+                      item.active
+                        ? "bg-blue-100 dark:bg-blue-950/50 text-blue-700 dark:text-blue-400"
+                        : "text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30",
+                    ].join(" ");
+
+                    return (
+                      <a
+                        key={item.href}
+                        href={item.href}
+                        class={linkClasses}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <Icon
+                          name={item.icon}
+                          size={18}
+                          className="flex-shrink-0"
+                        />
+                        <span>{item.label}</span>
+                      </a>
+                    );
+                  })}
+                </nav>
+              )}
+
+              {/* Botones de autenticación móvil */}
+              <div class="flex flex-col gap-2 px-4">
+                {isAuthenticated ? (
+                  <form action="/api/auth/logout" method="post">
+                    <button
+                      type="submit"
+                      class="flex items-center gap-2 w-full px-4 py-3 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors font-medium text-left"
+                    >
+                      <Icon name="logout" size={18} />
+                      <span>Salir</span>
+                    </button>
+                  </form>
+                ) : (
+                  <a
+                    href="/login"
+                    class="flex items-center gap-2 w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium text-center justify-center"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Icon name="login" size={18} />
+                    <span>Inicio de sesión</span>
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </header>
+    </>
   );
 }
