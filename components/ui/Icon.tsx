@@ -5,6 +5,7 @@ interface IconComponentProps extends Omit<IconProps, "name"> {
   size?: number | undefined;
   className?: string | undefined;
   alt?: string | undefined;
+  disableAutoFilter?: boolean | undefined;
 }
 
 export function Icon({
@@ -12,6 +13,7 @@ export function Icon({
   size = 24,
   className = "",
   alt,
+  disableAutoFilter = false,
 }: IconComponentProps) {
   // Mapeo de iconos con sus variantes para modo oscuro
   const iconMap: Record<string, { light: string; dark?: string }> = {
@@ -68,13 +70,17 @@ export function Icon({
   const iconSrc = iconConfig.light;
   const iconAlt = alt || name;
 
+  const autoFilterClasses = disableAutoFilter
+    ? ""
+    : "dark:filter dark:invert dark:brightness-0 dark:contrast-100";
+
   return (
     <img
       src={iconSrc}
       alt={iconAlt}
       width={size}
       height={size}
-      className={`inline-block ${className} dark:filter dark:invert dark:brightness-0 dark:contrast-100`}
+      className={`inline-block ${className} ${autoFilterClasses}`}
     />
   );
 }

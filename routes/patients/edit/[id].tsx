@@ -462,7 +462,11 @@ export default function EditPatientPage({ data }: PageProps<EditPatientData>) {
                     Cancelar
                   </a>
                   <Button type="submit" variant="primary" class="px-6 py-2">
-                    <Icon name="check" className="w-4 h-4 mr-2" />
+                    <Icon
+                      name="check"
+                      className="w-4 h-4 mr-2 filter brightness-0 invert"
+                      disableAutoFilter
+                    />
                     Guardar Cambios
                   </Button>
                 </div>
@@ -561,7 +565,11 @@ export default function EditPatientPage({ data }: PageProps<EditPatientData>) {
                     )}`}
                     class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
                   >
-                    <Icon name="calendar-plus" className="w-4 h-4 mr-2" />
+                    <Icon
+                      name="calendar-plus"
+                      className="w-4 h-4 mr-2 filter brightness-0 invert"
+                      disableAutoFilter
+                    />
                     Nueva Cita
                   </a>
 

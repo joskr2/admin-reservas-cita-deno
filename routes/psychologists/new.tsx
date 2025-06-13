@@ -246,14 +246,13 @@ export default function NewPsychologistPage({
                 </h3>
                 <ul class="text-sm text-blue-800 space-y-1">
                   <li>
-                    <strong>Psicólogo:</strong>{" "}
-                    Puede gestionar sus propias citas y ver el directorio de
-                    otros psicólogos
+                    <strong>Psicólogo:</strong> Puede gestionar sus propias
+                    citas y ver el directorio de otros psicólogos
                   </li>
                   <li>
-                    <strong>Super Administrador:</strong>{" "}
-                    Acceso completo al sistema, puede gestionar todos los
-                    psicólogos y configuraciones
+                    <strong>Super Administrador:</strong> Acceso completo al
+                    sistema, puede gestionar todos los psicólogos y
+                    configuraciones
                   </li>
                 </ul>
               </div>
@@ -267,7 +266,11 @@ export default function NewPsychologistPage({
                   Cancelar
                 </a>
                 <Button type="submit" variant="primary" class="px-6 py-2">
-                  <Icon name="user-plus" className="w-4 h-4 mr-2" />
+                  <Icon
+                    name="user-plus"
+                    className="w-4 h-4 mr-2 filter brightness-0 invert"
+                    disableAutoFilter
+                  />
                   Crear Psicólogo
                 </Button>
               </div>

@@ -4,7 +4,7 @@ import { getAllAppointments, getUsersByRole } from "../../lib/kv.ts";
 import AppointmentDetailsModal from "../../islands/AppointmentDetailsModal.tsx";
 import AppointmentStatusSelector from "../../islands/AppointmentStatusSelector.tsx";
 import AppointmentFilters from "../../islands/AppointmentFilters.tsx";
-import { Button } from "../../components/ui/Button.tsx";
+
 import { Icon } from "../../components/ui/Icon.tsx";
 import type {
   Appointment,
@@ -191,14 +191,17 @@ export default function AppointmentsPage({
                   Administra y supervisa todas las citas de la clínica
                 </p>
               </div>
-              <Button
-                variant="primary"
-                class="flex items-center gap-2 px-6 py-3 shadow-lg hover:shadow-xl transition-all duration-200"
-                onClick={() => (globalThis.location.href = "/appointments/new")}
+              <a
+                href="/appointments/new"
+                class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                <Icon name="calendar-plus" className="h-5 w-5" />
+                <Icon
+                  name="calendar-plus"
+                  className="h-5 w-5 filter brightness-0 invert"
+                  disableAutoFilter
+                />
                 Nueva Cita
-              </Button>
+              </a>
             </div>
           </div>
 
@@ -307,14 +310,17 @@ export default function AppointmentsPage({
                   ? "Aún no hay citas registradas en el sistema."
                   : "No hay citas que coincidan con los filtros aplicados."}
               </p>
-              <Button
-                variant="primary"
-                onClick={() => (globalThis.location.href = "/appointments/new")}
-                class="inline-flex items-center gap-2"
+              <a
+                href="/appointments/new"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
               >
-                <Icon name="calendar-plus" className="h-5 w-5" />
+                <Icon
+                  name="calendar-plus"
+                  className="h-5 w-5 filter brightness-0 invert"
+                  disableAutoFilter
+                />
                 Crear Primera Cita
-              </Button>
+              </a>
             </div>
           ) : (
             <>

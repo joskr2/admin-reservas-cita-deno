@@ -287,7 +287,11 @@ export default function EditPsychologistPage({
                       Cancelar
                     </a>
                     <Button type="submit" variant="primary" class="px-6 py-2">
-                      <Icon name="check" className="w-4 h-4 mr-2" />
+                      <Icon
+                        name="check"
+                        className="w-4 h-4 mr-2 filter brightness-0 invert"
+                        disableAutoFilter
+                      />
                       Guardar Cambios
                     </Button>
                   </div>

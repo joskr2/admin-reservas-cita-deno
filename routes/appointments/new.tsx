@@ -238,12 +238,18 @@ export default function NewAppointmentPage({
   },
   AppState
 >) {
-  const { psychologists, rooms, patients, currentUserRole, currentUserEmail, error } =
-    data || {
-      psychologists: [],
-      rooms: [],
-      patients: [],
-    };
+  const {
+    psychologists,
+    rooms,
+    patients,
+    currentUserRole,
+    currentUserEmail,
+    error,
+  } = data || {
+    psychologists: [],
+    rooms: [],
+    patients: [],
+  };
 
   return (
     <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -313,10 +319,7 @@ export default function NewAppointmentPage({
                       <Icon name="user" className="h-4 w-4 inline mr-2" />
                       Paciente
                     </label>
-                    <PatientSelect
-                      patients={patients}
-                      required={true}
-                    />
+                    <PatientSelect patients={patients} required={true} />
                   </div>
 
                   <div>
@@ -456,7 +459,11 @@ export default function NewAppointmentPage({
                     variant="primary"
                     className="inline-flex items-center"
                   >
-                    <Icon name="calendar-plus" className="h-4 w-4 mr-2" />
+                    <Icon
+                      name="calendar-plus"
+                      className="h-4 w-4 mr-2 filter brightness-0 invert"
+                      disableAutoFilter
+                    />
                     Crear Cita
                   </Button>
                 </div>
