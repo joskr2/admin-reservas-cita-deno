@@ -28,6 +28,7 @@ import * as $psychologists_delete_id_ from "./routes/psychologists/delete/[id].t
 import * as $psychologists_edit_id_ from "./routes/psychologists/edit/[id].tsx";
 import * as $psychologists_index from "./routes/psychologists/index.tsx";
 import * as $psychologists_new from "./routes/psychologists/new.tsx";
+import * as $rooms_index from "./routes/rooms/index.tsx";
 import * as $AppointmentCalendar from "./islands/AppointmentCalendar.tsx";
 import * as $AppointmentDetailsDropdown from "./islands/AppointmentDetailsDropdown.tsx";
 import * as $AppointmentDetailsModal from "./islands/AppointmentDetailsModal.tsx";
@@ -72,6 +73,7 @@ const manifest = {
     "./routes/psychologists/edit/[id].tsx": $psychologists_edit_id_,
     "./routes/psychologists/index.tsx": $psychologists_index,
     "./routes/psychologists/new.tsx": $psychologists_new,
+    "./routes/rooms/index.tsx": $rooms_index,
   },
   islands: {
     "./islands/AppointmentCalendar.tsx": $AppointmentCalendar,

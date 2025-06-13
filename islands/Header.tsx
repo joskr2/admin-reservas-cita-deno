@@ -30,7 +30,9 @@ export default function Header({
   const isDashboardPage = currentPath === "/dashboard";
   const isAppointmentsPage = currentPath === "/appointments";
   const isNewAppointmentPage = currentPath === "/appointments/new";
+  const isPatientsPage = currentPath.startsWith("/patients");
   const isProfilesPage = currentPath.startsWith("/psychologists");
+  const isRoomsPage = currentPath.startsWith("/rooms");
 
   // Items de navegación
   const navigationItems = [
@@ -56,10 +58,10 @@ export default function Header({
       showWhen: "authenticated" as const,
     },
     {
-      href: "/appointments/new",
-      label: "Nueva Cita",
-      icon: "calendar-plus",
-      active: isNewAppointmentPage,
+      href: "/patients",
+      label: "Pacientes",
+      icon: "user",
+      active: isPatientsPage,
       showWhen: "authenticated" as const,
     },
     {
@@ -67,6 +69,20 @@ export default function Header({
       label: "Psicólogos",
       icon: "users",
       active: isProfilesPage,
+      showWhen: "authenticated" as const,
+    },
+    {
+      href: "/rooms",
+      label: "Salas",
+      icon: "briefcase",
+      active: isRoomsPage,
+      showWhen: "authenticated" as const,
+    },
+    {
+      href: "/appointments/new",
+      label: "Nueva Cita",
+      icon: "calendar-plus",
+      active: isNewAppointmentPage,
       showWhen: "authenticated" as const,
     },
   ];

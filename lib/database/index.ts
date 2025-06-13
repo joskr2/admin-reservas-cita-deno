@@ -6,6 +6,7 @@
 
 import { DatabaseConnection } from "./connection.ts";
 import { UserRepository } from "./repositories/user.ts";
+import { PatientRepository } from "./repositories/patient.ts";
 import { AppointmentRepository } from "./repositories/appointment.ts";
 import { RoomRepository } from "./repositories/room.ts";
 import { SessionRepository } from "./repositories/session.ts";
@@ -14,6 +15,7 @@ import { DashboardService } from "./services/dashboard.ts";
 import type {
   IDatabaseConnection,
   IUserRepository,
+  IPatientRepository,
   IAppointmentRepository,
   IRoomRepository,
   ISessionRepository,
@@ -25,6 +27,7 @@ export class DatabaseFactory {
   private static instance: DatabaseFactory;
   private connection: IDatabaseConnection;
   private userRepository?: IUserRepository;
+  private patientRepository?: IPatientRepository;
   private appointmentRepository?: IAppointmentRepository;
   private roomRepository?: IRoomRepository;
   private sessionRepository?: ISessionRepository;
@@ -46,6 +49,13 @@ export class DatabaseFactory {
       this.userRepository = new UserRepository(this.connection);
     }
     return this.userRepository;
+  }
+
+  public getPatientRepository(): IPatientRepository {
+    if (!this.patientRepository) {
+      this.patientRepository = new PatientRepository(this.connection);
+    }
+    return this.patientRepository;
   }
 
   public getAppointmentRepository(): IAppointmentRepository {
@@ -73,6 +83,7 @@ export class DatabaseFactory {
     if (!this.dashboardService) {
       this.dashboardService = new DashboardService(
         this.getUserRepository(),
+        this.getPatientRepository(),
         this.getAppointmentRepository(),
         this.getRoomRepository()
       );
@@ -88,6 +99,7 @@ export class DatabaseFactory {
   public reset(): void {
     this.connection.close();
     this.userRepository = undefined;
+    this.patientRepository = undefined;
     this.appointmentRepository = undefined;
     this.roomRepository = undefined;
     this.sessionRepository = undefined;
@@ -102,6 +114,7 @@ export const dbFactory = DatabaseFactory.getInstance();
 export type {
   IDatabaseConnection,
   IUserRepository,
+  IPatientRepository,
   IAppointmentRepository,
   IRoomRepository,
   ISessionRepository,
@@ -110,6 +123,7 @@ export type {
 
 // Funciones de conveniencia que mantienen la API existente
 export const getUserRepository = () => dbFactory.getUserRepository();
+export const getPatientRepository = () => dbFactory.getPatientRepository();
 export const getAppointmentRepository = () => dbFactory.getAppointmentRepository();
 export const getRoomRepository = () => dbFactory.getRoomRepository();
 export const getSessionRepository = () => dbFactory.getSessionRepository();

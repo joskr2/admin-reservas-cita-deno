@@ -44,6 +44,15 @@ export default function Navigation({
       },
     ];
 
+    // Agregar gestión de pacientes (para todos los usuarios autenticados)
+    baseItems.push({
+      href: "/patients",
+      label: "Pacientes",
+      icon: "user",
+      active: currentPath.startsWith("/patients"),
+      description: "Gestión de pacientes",
+    });
+
     // Agregar elementos específicos según el rol
     if (user.role === "superadmin") {
       baseItems.push({
@@ -53,6 +62,13 @@ export default function Navigation({
         active: currentPath.startsWith("/psychologists"),
         description: "Gestión de psicólogos del sistema",
       });
+      baseItems.push({
+        href: "/rooms",
+        label: "Salas",
+        icon: "briefcase",
+        active: currentPath.startsWith("/rooms"),
+        description: "Gestión de salas de terapia",
+      });
     } else if (user.role === "psychologist") {
       baseItems.push({
         href: "/psychologists",
@@ -60,6 +76,13 @@ export default function Navigation({
         icon: "users",
         active: currentPath.startsWith("/psychologists"),
         description: "Directorio de psicólogos",
+      });
+      baseItems.push({
+        href: "/rooms",
+        label: "Salas",
+        icon: "briefcase",
+        active: currentPath.startsWith("/rooms"),
+        description: "Ver salas disponibles",
       });
     }
 

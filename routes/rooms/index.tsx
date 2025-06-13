@@ -1,0 +1,276 @@
+import { type FreshContext, type PageProps } from "$fresh/server.ts";
+import { type AppState, type Room } from "../../types/index.ts";
+import { getRoomRepository } from "../../lib/database/index.ts";
+import { Icon } from "../../components/ui/Icon.tsx";
+
+export async function handler(_req: Request, ctx: FreshContext<AppState>) {
+  try {
+    const roomRepository = getRoomRepository();
+    const rooms = await roomRepository.getAll();
+
+    return ctx.render({ rooms });
+  } catch (error) {
+    console.error("Error loading rooms:", error);
+    return ctx.render({ rooms: [] });
+  }
+}
+
+export default function RoomsPage({
+  data,
+}: PageProps<{ rooms: Room[] }, AppState>) {
+  const { rooms } = data;
+
+  const getRoomTypeLabel = (type?: string) => {
+    const typeLabels: Record<string, string> = {
+      individual: "Individual",
+      family: "Familiar",
+      group: "Grupal",
+      evaluation: "Evaluación",
+      relaxation: "Relajación",
+    };
+    return type ? typeLabels[type] || type : "No especificado";
+  };
+
+  const getRoomTypeColor = (type?: string) => {
+    const typeColors: Record<string, string> = {
+      individual: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+      family: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+      group: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+      evaluation: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+      relaxation: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
+    };
+    return type ? typeColors[type] || "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200" : "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+  };
+
+  return (
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="px-4 py-6 sm:px-0">
+          <div class="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                Gestión de Salas
+              </h1>
+              <p class="mt-2 text-gray-600 dark:text-gray-400">
+                Administra las salas de terapia y su disponibilidad
+              </p>
+            </div>
+          </div>
+
+          {/* Estadísticas */}
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div class="flex items-center">
+                <Icon
+                  name="briefcase"
+                  size={24}
+                  className="text-blue-500 mr-3"
+                />
+                <div>
+                  <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Total Salas
+                  </p>
+                  <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                    {rooms.length}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div class="flex items-center">
+                <Icon
+                  name="check"
+                  size={24}
+                  className="text-green-500 mr-3"
+                />
+                <div>
+                  <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Disponibles
+                  </p>
+                  <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                    {rooms.filter(r => r.isAvailable).length}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div class="flex items-center">
+                <Icon
+                  name="x"
+                  size={24}
+                  className="text-red-500 mr-3"
+                />
+                <div>
+                  <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    No Disponibles
+                  </p>
+                  <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                    {rooms.filter(r => !r.isAvailable).length}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+              <div class="flex items-center">
+                <Icon
+                  name="activity"
+                  size={24}
+                  className="text-purple-500 mr-3"
+                />
+                <div>
+                  <p class="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    Tasa de Ocupación
+                  </p>
+                  <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                    {rooms.length > 0 ? Math.round((rooms.filter(r => !r.isAvailable).length / rooms.length) * 100) : 0}%
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Lista de salas */}
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {rooms.map((room) => (
+              <div key={room.id} class="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <div class="p-6">
+                  <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                      <div class={`w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-lg ${
+                        room.isAvailable ? "bg-green-500" : "bg-red-500"
+                      }`}>
+                        {room.id}
+                      </div>
+                      <div class="ml-3">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                          Sala {room.id}
+                        </h3>
+                        <span class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                          room.isAvailable
+                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"
+                            : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                        }`}>
+                          {room.isAvailable ? "Disponible" : "Ocupada"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="space-y-3">
+                    <div>
+                      <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Nombre
+                      </h4>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">
+                        {room.name}
+                      </p>
+                    </div>
+
+                    {room.roomType && (
+                      <div>
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Tipo
+                        </h4>
+                        <span class={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoomTypeColor(room.roomType)}`}>
+                          {getRoomTypeLabel(room.roomType)}
+                        </span>
+                      </div>
+                    )}
+
+                    {room.capacity && (
+                      <div>
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Capacidad
+                        </h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 flex items-center">
+                          <Icon name="users" size={14} className="mr-1" />
+                          {room.capacity} personas
+                        </p>
+                      </div>
+                    )}
+
+                    {room.description && (
+                      <div>
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Descripción
+                        </h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                          {room.description}
+                        </p>
+                      </div>
+                    )}
+
+                    {room.equipment && room.equipment.length > 0 && (
+                      <div>
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Equipamiento
+                        </h4>
+                        <div class="flex flex-wrap gap-1">
+                          {room.equipment.map((item, index) => (
+                            <span
+                              key={index}
+                              class="inline-flex px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded"
+                            >
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div class="mt-6 flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center gap-2">
+                      <a
+                        href={`/rooms/${room.id}`}
+                        class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                        title="Ver detalles"
+                      >
+                        <Icon name="eye" size={16} />
+                      </a>
+                      <a
+                        href={`/rooms/edit/${room.id}`}
+                        class="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
+                        title="Editar"
+                      >
+                        <Icon name="edit" size={16} />
+                      </a>
+                    </div>
+                    <form method="POST" action={`/api/rooms/${room.id}/toggle-availability`} class="inline">
+                      <button
+                        type="submit"
+                        class={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                          room.isAvailable
+                            ? "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40"
+                            : "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40"
+                        }`}
+                      >
+                        {room.isAvailable ? "Marcar como Ocupada" : "Marcar como Disponible"}
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {rooms.length === 0 && (
+            <div class="text-center py-12">
+              <Icon
+                name="briefcase"
+                size={48}
+                className="mx-auto text-gray-400 mb-4"
+              />
+              <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                No hay salas configuradas
+              </h3>
+              <p class="text-gray-600 dark:text-gray-400 mb-6">
+                Las salas se inicializan automáticamente al cargar la aplicación.
+              </p>
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}

@@ -8,7 +8,7 @@ export interface BaseEntity {
 }
 
 // === TIPOS DE USUARIO ===
-export type UserRole = "superadmin" | "psychologist";
+export type UserRole = "superadmin" | "admin" | "psychologist";
 
 export interface User {
   id: string; // ID único generado (UUID)
@@ -36,14 +36,70 @@ export interface SessionUser {
   name?: string | undefined; // Nombre completo del usuario
 }
 
+// === TIPOS DE PACIENTES ===
+export interface Patient extends BaseEntity {
+  name: string;
+  email?: string | undefined;
+  phone?: string | undefined;
+  dateOfBirth?: string | undefined; // YYYY-MM-DD
+  gender?: "male" | "female" | "other" | "prefer_not_say" | undefined;
+  address?: string | undefined;
+  emergencyContact?: {
+    name: string;
+    phone: string;
+    relationship: string;
+  } | undefined;
+  medicalHistory?: string | undefined;
+  notes?: string | undefined;
+  isActive: boolean;
+}
+
+export interface PatientProfile {
+  id: string;
+  name: string;
+  email?: string | undefined;
+  phone?: string | undefined;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface CreatePatientForm {
+  name: string;
+  email?: string | undefined;
+  phone?: string | undefined;
+  dateOfBirth?: string | undefined;
+  gender?: "male" | "female" | "other" | "prefer_not_say" | undefined;
+  address?: string | undefined;
+  emergencyContact?: {
+    name: string;
+    phone: string;
+    relationship: string;
+  } | undefined;
+  medicalHistory?: string | undefined;
+  notes?: string | undefined;
+}
+
 // === TIPOS DE SALAS ===
-export type RoomId = "A" | "B" | "C" | "D" | "E";
+export type RoomId = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J" | "K" | "L";
 
 export interface Room {
   id: RoomId;
   name: string;
   isAvailable: boolean;
   equipment?: string[] | undefined;
+  capacity?: number | undefined;
+  roomType?: "individual" | "family" | "group" | "evaluation" | "relaxation" | undefined;
+  description?: string | undefined;
+}
+
+export interface CreateRoomForm {
+  id: RoomId;
+  name: string;
+  isAvailable: boolean;
+  equipment?: string[] | undefined;
+  capacity?: number | undefined;
+  roomType?: "individual" | "family" | "group" | "evaluation" | "relaxation" | undefined;
+  description?: string | undefined;
 }
 
 // === TIPOS DE CITAS ===
@@ -131,15 +187,25 @@ export interface DashboardData {
   totalUsers: number;
   totalPsychologists: number;
   totalAppointments: number;
+  totalPatients: number;
+  totalRooms: number;
+  availableRooms: number;
 }
 
 // === TIPOS DE CLAVES KV ===
 export type KVUserKey = ["users", string]; // Mantener por email para compatibilidad
 export type KVUserByIdKey = ["users_by_id", string]; // Nueva clave por ID
 export type KVUserByRoleKey = ["users_by_role", UserRole, string];
+export type KVPatientKey = ["patients", string]; // Por ID
+export type KVPatientByNameKey = ["patients_by_name", string, string]; // Por nombre para búsquedas
 export type KVAppointmentKey = ["appointments", string];
 export type KVAppointmentByPsychologistKey = [
   "appointments_by_psychologist",
+  string,
+  string
+];
+export type KVAppointmentByPatientKey = [
+  "appointments_by_patient",
   string,
   string
 ];

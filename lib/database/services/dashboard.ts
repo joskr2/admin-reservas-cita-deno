@@ -1,12 +1,13 @@
 /// <reference lib="deno.ns" />
 /// <reference lib="deno.unstable" />
 
-import type { IDashboardService, IUserRepository, IAppointmentRepository, IRoomRepository } from "../interfaces.ts";
+import type { IDashboardService, IUserRepository, IPatientRepository, IAppointmentRepository, IRoomRepository } from "../interfaces.ts";
 
 // Service siguiendo el principio de responsabilidad única
 export class DashboardService implements IDashboardService {
   constructor(
     private userRepository: IUserRepository,
+    private patientRepository: IPatientRepository,
     private appointmentRepository: IAppointmentRepository,
     private roomRepository: IRoomRepository
   ) {}
@@ -15,13 +16,15 @@ export class DashboardService implements IDashboardService {
     totalUsers: number;
     totalPsychologists: number;
     totalAppointments: number;
+    totalPatients: number;
     totalRooms: number;
     availableRooms: number;
   }> {
     try {
       // Ejecutar consultas en paralelo para mejor rendimiento
-      const [users, appointments, rooms] = await Promise.all([
+      const [users, patients, appointments, rooms] = await Promise.all([
         this.userRepository.getAllUsersAsProfiles(),
+        this.patientRepository.getAllPatientsAsProfiles(),
         this.appointmentRepository.getAll(),
         this.roomRepository.getAll(),
       ]);
@@ -30,6 +33,7 @@ export class DashboardService implements IDashboardService {
         totalUsers: users.length,
         totalPsychologists: users.filter((u) => u.role === "psychologist").length,
         totalAppointments: appointments.length,
+        totalPatients: patients.length,
         totalRooms: rooms.length,
         availableRooms: rooms.filter((r) => r.isAvailable).length,
       };
@@ -41,6 +45,7 @@ export class DashboardService implements IDashboardService {
         totalUsers: 0,
         totalPsychologists: 0,
         totalAppointments: 0,
+        totalPatients: 0,
         totalRooms: 0,
         availableRooms: 0,
       };

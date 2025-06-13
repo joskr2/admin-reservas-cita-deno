@@ -2,32 +2,26 @@ import { type FreshContext, type PageProps } from "$fresh/server.ts";
 import { type AppState, type DashboardData } from "../../types/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
 import DashboardStats from "../../islands/DashboardStats.tsx";
-import { getAllAppointments, getAllUsers } from "../../lib/kv.ts";
+import { getDashboardService } from "../../lib/database/index.ts";
 
 export async function handler(_req: Request, ctx: FreshContext<AppState>) {
-  const kv = await Deno.openKv();
-
   try {
-    const [users, appointments] = await Promise.all([
-      getAllUsers(),
-      getAllAppointments(),
-    ]);
-
-    const totalUsers = users.length;
-    const totalPsychologists = users.filter(
-      (user) => user.role === "psychologist",
-    ).length;
-    const totalAppointments = appointments.length;
-
-    const dashboardData: DashboardData = {
-      totalUsers,
-      totalPsychologists,
-      totalAppointments,
-    };
+    const dashboardService = getDashboardService();
+    const dashboardData = await dashboardService.getStats();
 
     return ctx.render({ dashboardData });
-  } finally {
-    await kv.close();
+  } catch (error) {
+    console.error("Error loading dashboard data:", error);
+    // Retornar datos vacíos en caso de error
+    const dashboardData: DashboardData = {
+      totalUsers: 0,
+      totalPsychologists: 0,
+      totalAppointments: 0,
+      totalPatients: 0,
+      totalRooms: 0,
+      availableRooms: 0,
+    };
+    return ctx.render({ dashboardData });
   }
 }
 
@@ -57,7 +51,7 @@ export default function Dashboard({
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">
               Acciones Rápidas
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <a
                 href="/appointments/new"
                 class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700"
@@ -79,17 +73,17 @@ export default function Dashboard({
               </a>
 
               <a
-                href="/psychologists/new"
+                href="/patients/new"
                 class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700"
               >
                 <div class="flex items-center">
                   <Icon name="user-plus" className="h-8 w-8 text-green-500" />
                   <div class="ml-4">
                     <h3 class="text-lg font-medium text-gray-900 dark:text-white">
-                      Nuevo Psicólogo
+                      Nuevo Paciente
                     </h3>
                     <p class="text-gray-600 dark:text-gray-400">
-                      Crear perfil de Psicólogo
+                      Registrar nuevo paciente
                     </p>
                   </div>
                 </div>
@@ -107,6 +101,23 @@ export default function Dashboard({
                     </h3>
                     <p class="text-gray-600 dark:text-gray-400">
                       Gestionar todas las citas
+                    </p>
+                  </div>
+                </div>
+              </a>
+
+              <a
+                href="/rooms"
+                class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700"
+              >
+                <div class="flex items-center">
+                  <Icon name="briefcase" className="h-8 w-8 text-orange-500" />
+                  <div class="ml-4">
+                    <h3 class="text-lg font-medium text-gray-900 dark:text-white">
+                      Ver Salas
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                      Estado de las salas
                     </p>
                   </div>
                 </div>

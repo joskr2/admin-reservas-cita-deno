@@ -3,6 +3,8 @@
 
 import type {
   Appointment,
+  Patient,
+  PatientProfile,
   Room,
   RoomId,
   User,
@@ -31,6 +33,13 @@ export interface IUserRepository extends IRepository<User, string> {
   getAllUsersAsProfiles(): Promise<UserProfile[]>;
 }
 
+export interface IPatientRepository extends IRepository<Patient, string> {
+  getPatientByName(name: string): Promise<Patient[]>;
+  getAllPatientsAsProfiles(): Promise<PatientProfile[]>;
+  searchPatients(query: string): Promise<PatientProfile[]>;
+  getActivePatients(): Promise<PatientProfile[]>;
+}
+
 export interface IAppointmentRepository extends IRepository<Appointment, string> {
   getAppointmentsByPsychologist(email: string): Promise<Appointment[]>;
   getAppointmentsByDate(date: string): Promise<Appointment[]>;
@@ -55,6 +64,7 @@ export interface IDashboardService {
     totalUsers: number;
     totalPsychologists: number;
     totalAppointments: number;
+    totalPatients: number;
     totalRooms: number;
     availableRooms: number;
   }>;
