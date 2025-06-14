@@ -52,7 +52,7 @@ export const handler: Handlers<Data, AppState> = {
       licenseNumber: user.licenseNumber,
       phone: user.phone,
       education: user.education,
-      experience: user.experience,
+      experienceYears: user.experienceYears,
       bio: user.bio,
     };
 

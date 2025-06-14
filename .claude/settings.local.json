@@ -9,7 +9,9 @@
       "Bash(rm:*)",
       "Bash(mv:*)",
       "Bash(deno run:*)",
-      "Bash(deno check:*)"
+      "Bash(deno check:*)",
+      "Bash(deno eval:*)",
+      "Bash(deno cache:*)"
     ]
   },
   "enableAllProjectMcpServers": false

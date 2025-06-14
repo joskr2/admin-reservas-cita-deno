@@ -19,17 +19,64 @@ export class UserRepository extends BaseRepository<User, string>
     return entity.email;
   }
 
-  protected override validate(entity: User): boolean {
-    return super.validate(entity) &&
-      typeof entity.email === "string" &&
-      entity.email.length > 0 &&
-      typeof entity.role === "string" &&
-      entity.role.length > 0;
+  protected override validate(user: User): boolean {
+    // Basic validation from parent
+    if (!super.validate(user)) {
+      return false;
+    }
+
+    // Email is required and must be valid format
+    if (!user.email || typeof user.email !== "string") {
+      return false;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(user.email)) {
+      return false;
+    }
+
+    // Role is required
+    if (!user.role || typeof user.role !== "string" || user.role.length === 0) {
+      return false;
+    }
+
+    // Name is required
+    if (!user.name || typeof user.name !== "string" || user.name.trim().length === 0) {
+      return false;
+    }
+
+    // DNI validation if provided
+    if (user.dni !== undefined && user.dni !== null) {
+      if (typeof user.dni !== "string" || !/^[A-Za-z0-9]{7,30}$/.test(user.dni)) {
+        return false;
+      }
+    }
+
+    // Experience years validation if provided
+    if (user.experienceYears !== undefined && user.experienceYears !== null) {
+      if (typeof user.experienceYears !== "number" || user.experienceYears < 0 || user.experienceYears > 50) {
+        return false;
+      }
+    }
+
+    // Custom specialty validation
+    if (user.specialty === "Otra" && (!user.customSpecialty || user.customSpecialty.trim().length === 0)) {
+      return false;
+    }
+
+    return true;
   }
 
   public override async create(user: User): Promise<boolean> {
     if (!this.validate(user)) {
       console.warn("Invalid user data provided to create:", user);
+      return false;
+    }
+
+    // Check for existing email (case insensitive)
+    const existingUser = await this.getUserByEmail(user.email);
+    if (existingUser) {
+      console.warn("User with email already exists:", user.email);
       return false;
     }
 
@@ -44,11 +91,11 @@ export class UserRepository extends BaseRepository<User, string>
       // Usar transacciones atómicas para mantener consistencia
       const result = await kv
         .atomic()
-        .set(["users", user.email] as KVUserKey, user)
+        .set(["users", user.email.toLowerCase()] as KVUserKey, user)
         .set(["users_by_id", user.id] as KVUserByIdKey, user)
         .set(
-          ["users_by_role", user.role, user.email] as KVUserByRoleKey,
-          user.email,
+          ["users_by_role", user.role, user.email.toLowerCase()] as KVUserByRoleKey,
+          user.email.toLowerCase(),
         )
         .commit();
 
@@ -65,7 +112,8 @@ export class UserRepository extends BaseRepository<User, string>
       return null;
     }
 
-    return await this.getById(email);
+    // Use lowercase for case-insensitive lookup
+    return await this.getById(email.toLowerCase());
   }
 
   public async getUserById(id: string): Promise<User | null> {
@@ -210,4 +258,5 @@ export class UserRepository extends BaseRepository<User, string>
       (a.name || a.email).localeCompare(b.name || b.email)
     );
   }
+
 }
