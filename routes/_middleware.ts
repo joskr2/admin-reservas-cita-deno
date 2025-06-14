@@ -3,6 +3,7 @@
 import type { FreshContext } from "$fresh/server.ts";
 import { getCookies } from "$std/http/cookie.ts";
 import type { AppState, SessionUser } from "../types/index.ts";
+import { loggingMiddleware } from "../lib/middleware/logging.ts";
 
 // Lista de rutas que requieren autenticación
 const PROTECTED_ROUTES = ["/dashboard", "/psychologists", "/appointments"];
@@ -24,6 +25,19 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
   ) {
     return await ctx.next();
   }
+
+  // Aplicar logging middleware que incluye autenticación
+  return await loggingMiddleware(req, {
+    ...ctx,
+    async next() {
+      return await authenticationMiddleware(req, ctx);
+    }
+  });
+}
+
+async function authenticationMiddleware(req: Request, ctx: FreshContext<AppState>) {
+  const url = new URL(req.url);
+  const { pathname } = url;
 
   // --- Lógica de Validación de Sesión ---
   const cookies = getCookies(req.headers);

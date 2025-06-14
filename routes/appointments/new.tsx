@@ -20,9 +20,20 @@ import {
 import { getPatientRepository } from "../../lib/database/index.ts";
 import AppointmentFormValidator from "../../islands/AppointmentFormValidator.tsx";
 import PatientSelect from "../../islands/PatientSelect.tsx";
+import { logger, extractUserContext } from "../../lib/logger.ts";
 
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
+  const requestId = ctx.state.requestId || 'unknown';
+  const userContext = extractUserContext(ctx.state.user);
+  
+  await logger.info('APPOINTMENTS_NEW', `Handler called with method: ${req.method}`, {
+    method: req.method,
+    url: req.url,
+    user: ctx.state.user,
+  }, { requestId, ...userContext });
+
   if (req.method === "GET") {
+    await logger.debug('APPOINTMENTS_NEW', 'Processing GET request for new appointment form', {}, { requestId, ...userContext });
     const kv = await Deno.openKv();
 
     try {
@@ -58,6 +69,8 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
   }
 
   if (req.method === "POST") {
+    await logger.info('APPOINTMENTS_NEW', 'Processing POST request for appointment creation', {}, { requestId, ...userContext });
+    
     const formData = await req.formData();
     const patientName = formData.get("patientName")?.toString();
     const psychologistEmail = formData.get("psychologistEmail")?.toString();
@@ -66,11 +79,29 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     const roomId = formData.get("roomId")?.toString() as RoomId;
     const notes = formData.get("notes")?.toString();
 
+    await logger.debug('APPOINTMENTS_NEW', 'Form data extracted', {
+      patientName,
+      psychologistEmail,
+      appointmentDate,
+      appointmentTime,
+      roomId,
+      notes,
+      hasPatientName: !!patientName,
+      hasPsychologistEmail: !!psychologistEmail,
+      hasDate: !!appointmentDate,
+      hasTime: !!appointmentTime,
+      hasRoomId: !!roomId,
+    }, { requestId, ...userContext });
+
     // Validación de permisos: psicólogos solo pueden crear citas para sí mismos
     if (
       ctx.state.user?.role === "psychologist" &&
       psychologistEmail !== ctx.state.user.email
     ) {
+      await logger.warn('APPOINTMENTS_NEW', 'Permission denied: psychologist trying to assign appointment to another psychologist', {
+        currentUserEmail: ctx.state.user.email,
+        requestedPsychologistEmail: psychologistEmail,
+      }, { requestId, ...userContext });
       const kv = await Deno.openKv();
       try {
         const users = await getAllUsers();
@@ -108,6 +139,15 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       !appointmentTime ||
       !roomId
     ) {
+      await logger.warn('APPOINTMENTS_NEW', 'Validation failed: missing required fields', {
+        missingFields: {
+          patientName: !patientName,
+          psychologistEmail: !psychologistEmail,
+          appointmentDate: !appointmentDate,
+          appointmentTime: !appointmentTime,
+          roomId: !roomId,
+        }
+      }, { requestId, ...userContext });
       const kv = await Deno.openKv();
       try {
         const users = await getAllUsers();
@@ -142,13 +182,32 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     }
 
     // Verificar disponibilidad de la sala
+    await logger.debug('APPOINTMENTS_NEW', 'Checking room availability', {
+      appointmentDate,
+      appointmentTime,
+      requestedRoomId: roomId,
+    }, { requestId, ...userContext });
+    
     const availableRooms = await getAvailableRooms(
       appointmentDate,
       appointmentTime,
     );
     const isRoomAvailable = availableRooms.some((room) => room.id === roomId);
 
+    await logger.debug('APPOINTMENTS_NEW', 'Room availability check result', {
+      requestedRoomId: roomId,
+      isRoomAvailable,
+      totalAvailableRooms: availableRooms.length,
+      availableRoomIds: availableRooms.map(r => r.id),
+    }, { requestId, ...userContext });
+
     if (!isRoomAvailable) {
+      await logger.warn('APPOINTMENTS_NEW', 'Room not available for selected date and time', {
+        requestedRoomId: roomId,
+        appointmentDate,
+        appointmentTime,
+        availableRoomIds: availableRooms.map(r => r.id),
+      }, { requestId, ...userContext });
       const kv = await Deno.openKv();
       try {
         const users = await getAllUsers();
@@ -203,14 +262,36 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         createdAt: new Date().toISOString(),
       };
 
+      await logger.info('APPOINTMENTS_NEW', 'Attempting to create appointment', {
+        appointmentId: appointmentData.id,
+        patientName,
+        psychologistEmail,
+        psychologistName: appointmentData.psychologistName,
+        appointmentDate,
+        appointmentTime,
+        roomId,
+      }, { requestId, ...userContext });
+
       const success = await createAppointment(appointmentData);
 
+      await logger.info('APPOINTMENTS_NEW', 'Appointment creation result', {
+        appointmentId: appointmentData.id,
+        success,
+      }, { requestId, ...userContext });
+
       if (success) {
+        await logger.info('APPOINTMENTS_NEW', 'Appointment created successfully, redirecting to appointments list', {
+          appointmentId: appointmentData.id,
+        }, { requestId, ...userContext });
         return new Response(null, {
-          status: 307,
+          status: 303,
           headers: { Location: "/appointments" },
         });
       } else {
+        await logger.error('APPOINTMENTS_NEW', 'Failed to create appointment', {
+          appointmentId: appointmentData.id,
+          appointmentData,
+        }, { requestId, ...userContext });
         const users = await getAllUsers();
         let psychologists = users
           .filter((user) => user.role === "psychologist")
@@ -241,6 +322,13 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       await kv.close();
     }
   }
+
+  // Caso inesperado - loggear para debug
+  await logger.error('APPOINTMENTS_NEW', 'Unexpected method or route reached end of handler', {
+    method: req.method,
+    url: req.url,
+    headers: Object.fromEntries(req.headers.entries()),
+  }, { requestId, ...userContext });
 
   return new Response("Method not allowed", { status: 405 });
 }
@@ -306,24 +394,38 @@ export default function NewAppointmentPage({
               action="/appointments/new"
               method="POST"
               onSubmit={(e) => {
-                // Debug: verificar que el form se envía a la URL correcta
-                console.log('Form submitting to:', e.target.action);
-                console.log('Form method:', e.target.method);
+                // Log detallado del submit del form
+                console.log('🚀 FORM SUBMISSION INITIATED');
+                console.log('📋 Form action:', e.target.action);
+                console.log('📋 Form method:', e.target.method);
+                console.log('📋 Form URL:', window.location.href);
+                
+                const formData = new FormData(e.target);
+                const formEntries = {};
+                for (const [key, value] of formData.entries()) {
+                  formEntries[key] = value;
+                }
+                console.log('📋 Form data:', formEntries);
                 
                 // Validación para psicólogos
                 const currentUserRole = `${currentUserRole}`;
                 const currentUserEmail = `${currentUserEmail}`;
                 
+                console.log('👤 User context:', { currentUserRole, currentUserEmail });
+                
                 if (currentUserRole === "psychologist") {
-                  const formData = new FormData(e.target);
                   const selectedPsychologist = formData.get("psychologistEmail");
+                  console.log('🔒 Psychologist validation:', { selectedPsychologist, currentUserEmail });
                   
                   if (selectedPsychologist && selectedPsychologist !== currentUserEmail) {
+                    console.error('❌ Permission denied: psychologist trying to assign to another');
                     e.preventDefault();
                     alert("No tienes permisos para asignar citas a otros psicólogos");
                     return false;
                   }
                 }
+                
+                console.log('✅ Form validation passed, submitting...');
               }}
             >
               <div class="px-6 py-4 space-y-6">

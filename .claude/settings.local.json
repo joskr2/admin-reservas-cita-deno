@@ -12,7 +12,8 @@
       "Bash(deno check:*)",
       "Bash(deno eval:*)",
       "Bash(deno cache:*)",
-      "Bash(lsof:*)"
+      "Bash(lsof:*)",
+      "Bash(mkdir:*)"
     ]
   },
   "enableAllProjectMcpServers": false

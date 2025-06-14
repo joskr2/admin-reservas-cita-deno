@@ -8,6 +8,7 @@ import type {
 } from "../../../types/index.ts";
 import type { IAppointmentRepository } from "../interfaces.ts";
 import { BaseRepository } from "./base.ts";
+import { logger } from "../../logger.ts";
 
 export class AppointmentRepository extends BaseRepository<Appointment, string>
   implements IAppointmentRepository {
@@ -28,13 +29,29 @@ export class AppointmentRepository extends BaseRepository<Appointment, string>
   }
 
   public override async create(appointment: Appointment): Promise<boolean> {
+    await logger.debug('DATABASE', 'Attempting to create appointment', {
+      appointmentId: appointment.id,
+      patientName: appointment.patientName,
+      psychologistEmail: appointment.psychologistEmail,
+      appointmentDate: appointment.appointmentDate,
+      appointmentTime: appointment.appointmentTime,
+    });
+
     if (!this.validate(appointment)) {
-      console.warn("Invalid appointment data provided to create:", appointment);
+      await logger.error('DATABASE', 'Invalid appointment data provided to create', { appointment });
       return false;
     }
 
     try {
       const kv = await this.getKv();
+
+      await logger.debug('DATABASE', 'Starting atomic transaction for appointment creation', {
+        appointmentId: appointment.id,
+        keys: [
+          ["appointments", appointment.id],
+          ["appointments_by_psychologist", appointment.psychologistEmail, appointment.id]
+        ]
+      });
 
       // Usar transacciones atómicas para mantener consistencia
       const result = await kv
@@ -47,9 +64,19 @@ export class AppointmentRepository extends BaseRepository<Appointment, string>
         ] as KVAppointmentByPsychologistKey, appointment)
         .commit();
 
+      await logger.info('DATABASE', 'Appointment creation transaction result', {
+        appointmentId: appointment.id,
+        success: result.ok,
+        versionstamp: result.versionstamp,
+      });
+
       return result.ok;
     } catch (error) {
-      console.error("Error creating appointment:", error);
+      await logger.error('DATABASE', 'Error creating appointment', {
+        appointmentId: appointment.id,
+        error: error.message,
+        stack: error.stack,
+      });
       return false;
     }
   }
