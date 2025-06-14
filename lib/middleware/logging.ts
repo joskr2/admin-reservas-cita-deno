@@ -2,15 +2,8 @@
 /// <reference lib="deno.unstable" />
 
 import type { FreshContext } from "$fresh/server.ts";
-import { logger, generateRequestId, extractUserContext } from "../logger.ts";
+import { logger, generateRequestId, extractUserContext, getErrorDetails } from "../logger.ts";
 import type { AppState } from "../../types/index.ts";
-
-// Extender el AppState para incluir el requestId
-declare module "../../types/index.ts" {
-  interface AppState {
-    requestId?: string;
-  }
-}
 
 export async function loggingMiddleware(req: Request, ctx: FreshContext<AppState>) {
   const requestId = generateRequestId();
@@ -41,7 +34,8 @@ export async function loggingMiddleware(req: Request, ctx: FreshContext<AppState
         userContext
       );
     } catch (error) {
-      await logger.warn('MIDDLEWARE', 'Failed to log form data', { error: error.message }, { requestId, ...userContext });
+      const errorDetails = getErrorDetails(error);
+      await logger.warn('MIDDLEWARE', 'Failed to log form data', { error: errorDetails.message }, { requestId, ...userContext });
     }
   }
   
@@ -53,9 +47,10 @@ export async function loggingMiddleware(req: Request, ctx: FreshContext<AppState
     const duration = Date.now() - startTime;
     
     // Log del error
+    const errorDetails = getErrorDetails(error);
     await logger.error('REQUEST_ERROR', `Unhandled error processing request`, {
-      error: error.message,
-      stack: error.stack,
+      error: errorDetails.message,
+      stack: errorDetails.stack,
       duration,
     }, { requestId, ...userContext });
     

@@ -169,6 +169,7 @@ export interface Appointment {
 // === TIPOS DE ESTADO DE LA APLICACIÓN ===
 export interface AppState {
   user: SessionUser | null;
+  requestId?: string | undefined;
 }
 
 // === TIPOS DE RESPUESTA API ===

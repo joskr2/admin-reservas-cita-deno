@@ -13,9 +13,9 @@ export interface LogEntry {
   category: string;
   message: string;
   data?: unknown;
-  requestId?: string;
-  userId?: string;
-  userRole?: string;
+  requestId?: string | undefined;
+  userId?: string | undefined;
+  userRole?: string | undefined;
 }
 
 export class Logger {
@@ -94,9 +94,9 @@ export class Logger {
   }
 
   private async log(level: LogLevel, category: string, message: string, data?: unknown, context?: {
-    requestId?: string;
-    userId?: string;
-    userRole?: string;
+    requestId?: string | undefined;
+    userId?: string | undefined;
+    userRole?: string | undefined;
   }): Promise<void> {
     if (level < this.logLevel) return;
 
@@ -117,41 +117,41 @@ export class Logger {
 
   // Métodos públicos para logging
   public async debug(category: string, message: string, data?: unknown, context?: {
-    requestId?: string;
-    userId?: string;
-    userRole?: string;
+    requestId?: string | undefined;
+    userId?: string | undefined;
+    userRole?: string | undefined;
   }): Promise<void> {
     await this.log(LogLevel.DEBUG, category, message, data, context);
   }
 
   public async info(category: string, message: string, data?: unknown, context?: {
-    requestId?: string;
-    userId?: string;
-    userRole?: string;
+    requestId?: string | undefined;
+    userId?: string | undefined;
+    userRole?: string | undefined;
   }): Promise<void> {
     await this.log(LogLevel.INFO, category, message, data, context);
   }
 
   public async warn(category: string, message: string, data?: unknown, context?: {
-    requestId?: string;
-    userId?: string;
-    userRole?: string;
+    requestId?: string | undefined;
+    userId?: string | undefined;
+    userRole?: string | undefined;
   }): Promise<void> {
     await this.log(LogLevel.WARN, category, message, data, context);
   }
 
   public async error(category: string, message: string, data?: unknown, context?: {
-    requestId?: string;
-    userId?: string;
-    userRole?: string;
+    requestId?: string | undefined;
+    userId?: string | undefined;
+    userRole?: string | undefined;
   }): Promise<void> {
     await this.log(LogLevel.ERROR, category, message, data, context);
   }
 
   // Métodos específicos para diferentes tipos de logging
   public async logRequest(req: Request, requestId: string, context?: {
-    userId?: string;
-    userRole?: string;
+    userId?: string | undefined;
+    userRole?: string | undefined;
   }): Promise<void> {
     const url = new URL(req.url);
     await this.info('REQUEST', `${req.method} ${url.pathname}${url.search}`, {
@@ -163,8 +163,8 @@ export class Logger {
   }
 
   public async logResponse(response: Response, requestId: string, duration: number, context?: {
-    userId?: string;
-    userRole?: string;
+    userId?: string | undefined;
+    userRole?: string | undefined;
   }): Promise<void> {
     await this.info('RESPONSE', `${response.status} ${response.statusText} (${duration}ms)`, {
       status: response.status,
@@ -175,8 +175,8 @@ export class Logger {
   }
 
   public async logFormSubmission(formData: FormData, action: string, method: string, requestId: string, context?: {
-    userId?: string;
-    userRole?: string;
+    userId?: string | undefined;
+    userRole?: string | undefined;
   }): Promise<void> {
     const data: Record<string, string> = {};
     for (const [key, value] of formData.entries()) {
@@ -196,8 +196,8 @@ export class Logger {
   }
 
   public async logDatabaseOperation(operation: string, table: string, data?: unknown, result?: unknown, requestId?: string, context?: {
-    userId?: string;
-    userRole?: string;
+    userId?: string | undefined;
+    userRole?: string | undefined;
   }): Promise<void> {
     await this.debug('DATABASE', `${operation} on ${table}`, {
       operation,
@@ -218,8 +218,8 @@ export class Logger {
   }
 
   public async logValidationError(category: string, errors: string[], data?: unknown, requestId?: string, context?: {
-    userId?: string;
-    userRole?: string;
+    userId?: string | undefined;
+    userRole?: string | undefined;
   }): Promise<void> {
     await this.warn('VALIDATION', `Validation failed in ${category}`, {
       category,
@@ -229,8 +229,8 @@ export class Logger {
   }
 
   public async logBusinessLogic(category: string, action: string, message: string, data?: unknown, requestId?: string, context?: {
-    userId?: string;
-    userRole?: string;
+    userId?: string | undefined;
+    userRole?: string | undefined;
   }): Promise<void> {
     await this.info('BUSINESS', `${category}: ${action} - ${message}`, {
       category,
@@ -265,15 +265,55 @@ export function generateRequestId(): string {
   return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
+// Utility function for safe error handling
+export function getErrorDetails(error: unknown): { message: string; stack?: string | undefined } {
+  if (error instanceof Error) {
+    const result: { message: string; stack?: string | undefined } = {
+      message: error.message,
+    };
+    if (error.stack) {
+      result.stack = error.stack;
+    }
+    return result;
+  }
+  
+  return {
+    message: String(error),
+  };
+}
+
+// Utility function for safe KV result handling
+export function getKvResultDetails(result: Deno.KvCommitResult | Deno.KvCommitError): { 
+  ok: boolean; 
+  versionstamp?: string | undefined;
+} {
+  const output: { ok: boolean; versionstamp?: string | undefined } = {
+    ok: result.ok,
+  };
+  
+  if (result.ok) {
+    output.versionstamp = result.versionstamp;
+  }
+  
+  return output;
+}
+
 // Función para extraer información del usuario del contexto
-export function extractUserContext(user?: { id?: string; email?: string; role?: string }): {
-  userId?: string;
-  userRole?: string;
+export function extractUserContext(user?: { id?: string; email?: string; role?: string } | null): {
+  userId?: string | undefined;
+  userRole?: string | undefined;
 } {
   if (!user) return {};
   
-  return {
-    userId: user.id || user.email,
-    userRole: user.role,
-  };
+  const result: { userId?: string | undefined; userRole?: string | undefined } = {};
+  
+  if (user.id || user.email) {
+    result.userId = user.id || user.email;
+  }
+  
+  if (user.role) {
+    result.userRole = user.role;
+  }
+  
+  return result;
 }

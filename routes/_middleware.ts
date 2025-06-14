@@ -4,6 +4,7 @@ import type { FreshContext } from "$fresh/server.ts";
 import { getCookies } from "$std/http/cookie.ts";
 import type { AppState, SessionUser } from "../types/index.ts";
 import { loggingMiddleware } from "../lib/middleware/logging.ts";
+import { logger, extractUserContext, getErrorDetails } from "../lib/logger.ts";
 
 // Lista de rutas que requieren autenticación
 const PROTECTED_ROUTES = ["/dashboard", "/psychologists", "/appointments"];
@@ -29,15 +30,21 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
   // Aplicar logging middleware que incluye autenticación
   return await loggingMiddleware(req, {
     ...ctx,
-    async next() {
+    next: async () => {
       return await authenticationMiddleware(req, ctx);
     }
-  });
+  } as FreshContext<AppState>);
 }
 
-async function authenticationMiddleware(req: Request, ctx: FreshContext<AppState>) {
+async function authenticationMiddleware(req: Request, ctx: FreshContext<AppState>): Promise<Response> {
   const url = new URL(req.url);
   const { pathname } = url;
+  const requestId = ctx.state.requestId || 'unknown';
+
+  await logger.debug('AUTH_MIDDLEWARE', 'Processing authentication', {
+    pathname,
+    hasRequestId: !!ctx.state.requestId,
+  }, { requestId });
 
   // --- Lógica de Validación de Sesión ---
   const cookies = getCookies(req.headers);
@@ -46,6 +53,10 @@ async function authenticationMiddleware(req: Request, ctx: FreshContext<AppState
   ctx.state.user = null; // Por defecto no hay usuario
 
   if (sessionId) {
+    await logger.debug('AUTH_MIDDLEWARE', 'Found session ID, validating', { 
+      sessionId: sessionId.substring(0, 8) + '...' 
+    }, { requestId });
+
     const kv = await Deno.openKv();
     try {
       const sessionEntry = await kv.get(["sessions", sessionId]);
@@ -69,14 +80,33 @@ async function authenticationMiddleware(req: Request, ctx: FreshContext<AppState
             role: userData.role as SessionUser["role"],
             name: userData.name,
           };
+
+          await logger.info('AUTH_MIDDLEWARE', 'Session validated successfully', {
+            userId: userData.id,
+            userEmail: userData.email,
+            userRole: userData.role,
+          }, { requestId, userId: userData.id, userRole: userData.role });
+        } else {
+          await logger.warn('AUTH_MIDDLEWARE', 'Session found but user not found', {
+            userEmail: sessionData.userEmail,
+          }, { requestId });
         }
+      } else {
+        await logger.warn('AUTH_MIDDLEWARE', 'Invalid session ID', {
+          sessionId: sessionId.substring(0, 8) + '...',
+        }, { requestId });
       }
     } catch (error) {
-      console.error("Error validating session:", error);
-      // En caso de error, continuar sin usuario autenticado
+      const errorDetails = getErrorDetails(error);
+      await logger.error('AUTH_MIDDLEWARE', 'Error validating session', {
+        error: errorDetails.message,
+        stack: errorDetails.stack,
+      }, { requestId });
     } finally {
       await kv.close();
     }
+  } else {
+    await logger.debug('AUTH_MIDDLEWARE', 'No session ID found', {}, { requestId });
   }
 
   const isAuthenticated = ctx.state.user !== null;
@@ -87,10 +117,25 @@ async function authenticationMiddleware(req: Request, ctx: FreshContext<AppState
     pathname.startsWith(route)
   );
 
+  const userContext = extractUserContext(ctx.state.user);
+
+  await logger.debug('AUTH_MIDDLEWARE', 'Route access evaluation', {
+    pathname,
+    isAuthenticated,
+    isProtectedRoute,
+    isSuperadminRoute,
+    userRole: ctx.state.user?.role,
+  }, { requestId, ...userContext });
+
   // --- Lógica de Redirección ---
 
   // 1. Si el usuario no está autenticado y trata de acceder a una ruta protegida
   if (!isAuthenticated && isProtectedRoute) {
+    await logger.info('AUTH_MIDDLEWARE', 'Redirecting unauthenticated user to login', {
+      requestedPath: pathname,
+      redirectTo: '/login',
+    }, { requestId });
+
     // Redirigir a la página de login, preservando el destino original
     const redirectUrl = new URL("/login", url.origin);
     redirectUrl.searchParams.set("from", pathname);
@@ -103,6 +148,12 @@ async function authenticationMiddleware(req: Request, ctx: FreshContext<AppState
     isSuperadminRoute &&
     ctx.state.user?.role !== "superadmin"
   ) {
+    await logger.warn('AUTH_MIDDLEWARE', 'Access denied: insufficient privileges', {
+      userRole: ctx.state.user?.role,
+      requestedPath: pathname,
+      requiredRole: 'superadmin',
+    }, { requestId, ...userContext });
+
     // Redirigir al dashboard con mensaje de error
     const redirectUrl = new URL("/dashboard", url.origin);
     redirectUrl.searchParams.set("error", "access_denied");
@@ -111,10 +162,19 @@ async function authenticationMiddleware(req: Request, ctx: FreshContext<AppState
 
   // 3. Si el usuario está autenticado y trata de acceder a la página de login
   if (isAuthenticated && pathname === "/login") {
+    await logger.info('AUTH_MIDDLEWARE', 'Redirecting authenticated user from login to dashboard', {
+      userRole: ctx.state.user?.role,
+    }, { requestId, ...userContext });
+
     // Redirigir a su dashboard
     return Response.redirect(new URL("/dashboard", url.origin), 303); // Ver Otro
   }
 
   // Si ninguna de las condiciones anteriores se cumple, proceder con la solicitud
+  await logger.debug('AUTH_MIDDLEWARE', 'Access granted, proceeding to route handler', {
+    pathname,
+    userRole: ctx.state.user?.role,
+  }, { requestId, ...userContext });
+
   return await ctx.next();
 }

@@ -393,40 +393,6 @@ export default function NewAppointmentPage({
             <form
               action="/appointments/new"
               method="POST"
-              onSubmit={(e) => {
-                // Log detallado del submit del form
-                console.log('🚀 FORM SUBMISSION INITIATED');
-                console.log('📋 Form action:', e.target.action);
-                console.log('📋 Form method:', e.target.method);
-                console.log('📋 Form URL:', window.location.href);
-                
-                const formData = new FormData(e.target);
-                const formEntries = {};
-                for (const [key, value] of formData.entries()) {
-                  formEntries[key] = value;
-                }
-                console.log('📋 Form data:', formEntries);
-                
-                // Validación para psicólogos
-                const currentUserRole = `${currentUserRole}`;
-                const currentUserEmail = `${currentUserEmail}`;
-                
-                console.log('👤 User context:', { currentUserRole, currentUserEmail });
-                
-                if (currentUserRole === "psychologist") {
-                  const selectedPsychologist = formData.get("psychologistEmail");
-                  console.log('🔒 Psychologist validation:', { selectedPsychologist, currentUserEmail });
-                  
-                  if (selectedPsychologist && selectedPsychologist !== currentUserEmail) {
-                    console.error('❌ Permission denied: psychologist trying to assign to another');
-                    e.preventDefault();
-                    alert("No tienes permisos para asignar citas a otros psicólogos");
-                    return false;
-                  }
-                }
-                
-                console.log('✅ Form validation passed, submitting...');
-              }}
             >
               <div class="px-6 py-4 space-y-6">
                 {error && (

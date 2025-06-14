@@ -17,6 +17,7 @@ import {
   getUserRepository,
 } from "../../lib/database/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
+import { logger, extractUserContext } from "../../lib/logger.ts";
 
 interface DashboardPageData {
   dashboardData: DashboardData;
@@ -32,17 +33,35 @@ interface DashboardPageData {
 }
 
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
+  const requestId = ctx.state.requestId || 'unknown';
+  const userContext = extractUserContext(ctx.state.user);
+  
   const url = new URL(req.url);
   const search = url.searchParams.get("search") || "";
   const type = url.searchParams.get("type") || "";
   const period = url.searchParams.get("period") || "week";
 
+  await logger.info('DASHBOARD', 'Dashboard page requested', {
+    search,
+    type,
+    period,
+    url: req.url,
+  }, { requestId, ...userContext });
+
   const currentUser = ctx.state.user;
   if (!currentUser) {
+    await logger.warn('DASHBOARD', 'Unauthenticated user redirected to login', {
+      url: req.url,
+    }, { requestId });
     return Response.redirect(new URL("/login", url.origin), 302);
   }
 
   try {
+    await logger.debug('DASHBOARD', 'Loading dashboard data', {
+      userRole: currentUser.role,
+      userEmail: currentUser.email,
+    }, { requestId, ...userContext });
+    
     const dashboardService = getDashboardService();
     const appointmentRepository = getAppointmentRepository();
     const patientRepository = getPatientRepository();
@@ -50,6 +69,15 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     const roomRepository = getRoomRepository();
 
     const dashboardData = await dashboardService.getStats();
+    
+    await logger.debug('DASHBOARD', 'Dashboard stats retrieved', {
+      totalUsers: dashboardData.totalUsers,
+      totalPsychologists: dashboardData.totalPsychologists,
+      totalAppointments: dashboardData.totalAppointments,
+      totalPatients: dashboardData.totalPatients,
+      totalRooms: dashboardData.totalRooms,
+      availableRooms: dashboardData.availableRooms,
+    }, { requestId, ...userContext });
 
     // Obtener datos recientes según el rol del usuario
     let recentAppointments: Appointment[];
@@ -58,12 +86,25 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     let recentRooms: Room[];
 
     if (currentUser.role === "superadmin") {
+      await logger.debug('DASHBOARD', 'Loading data for superadmin user', {}, { requestId, ...userContext });
+      
       // Superadmin ve todo
       recentAppointments = await appointmentRepository.getAll();
       recentPatients = await patientRepository.getAllPatientsAsProfiles();
       recentUsers = await userRepository.getAllUsersAsProfiles();
       recentRooms = await roomRepository.getAll();
+      
+      await logger.debug('DASHBOARD', 'Superadmin data loaded', {
+        appointmentsCount: recentAppointments.length,
+        patientsCount: recentPatients.length,
+        usersCount: recentUsers.length,
+        roomsCount: recentRooms.length,
+      }, { requestId, ...userContext });
     } else {
+      await logger.debug('DASHBOARD', 'Loading data for psychologist user', {
+        psychologistEmail: currentUser.email,
+      }, { requestId, ...userContext });
+      
       // Psicólogos solo ven sus propias citas y datos relacionados
       recentAppointments =
         await appointmentRepository.getAppointmentsByPsychologist(
@@ -84,6 +125,14 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
       // Los psicólogos pueden ver las salas (información general)
       recentRooms = await roomRepository.getAll();
+      
+      await logger.debug('DASHBOARD', 'Psychologist data loaded', {
+        appointmentsCount: recentAppointments.length,
+        patientsCount: recentPatients.length,
+        totalPatients: allPatients.length,
+        patientsWithAppointments: patientNamesWithAppointments.size,
+        roomsCount: recentRooms.length,
+      }, { requestId, ...userContext });
     }
 
     // Filtrar por período
@@ -102,6 +151,13 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       default:
         dateFilter = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     }
+    
+    await logger.debug('DASHBOARD', 'Applying filters', {
+      period,
+      dateFilter: dateFilter.toISOString(),
+      search,
+      type,
+    }, { requestId, ...userContext });
 
     // Aplicar filtros
     if (search) {
@@ -157,6 +213,13 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     }
 
     // Filtrar por fecha y limitar resultados
+    const originalCounts = {
+      appointments: recentAppointments.length,
+      patients: recentPatients.length,
+      users: recentUsers.length,
+      rooms: recentRooms.length,
+    };
+    
     recentAppointments = recentAppointments
       .filter((apt) => new Date(apt.createdAt) >= dateFilter)
       .sort(
@@ -188,6 +251,17 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       )
       .slice(0, 10);
+      
+    await logger.info('DASHBOARD', 'Dashboard data processing completed', {
+      originalCounts,
+      filteredCounts: {
+        appointments: recentAppointments.length,
+        patients: recentPatients.length,
+        users: recentUsers.length,
+        rooms: recentRooms.length,
+      },
+      filters: { search, type, period },
+    }, { requestId, ...userContext });
 
     return ctx.render({
       dashboardData,
@@ -198,7 +272,13 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       filters: { search, type, period },
     });
   } catch (error) {
-    console.error("Error loading dashboard data:", error);
+    await logger.error('DASHBOARD', 'Error loading dashboard data', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      userRole: currentUser?.role,
+      filters: { search, type, period },
+    }, { requestId, ...userContext });
+    
     // Retornar datos vacíos en caso de error
     const dashboardData: DashboardData = {
       totalUsers: 0,

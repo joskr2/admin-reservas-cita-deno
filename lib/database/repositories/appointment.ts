@@ -8,7 +8,7 @@ import type {
 } from "../../../types/index.ts";
 import type { IAppointmentRepository } from "../interfaces.ts";
 import { BaseRepository } from "./base.ts";
-import { logger } from "../../logger.ts";
+import { logger, getErrorDetails, getKvResultDetails } from "../../logger.ts";
 
 export class AppointmentRepository extends BaseRepository<Appointment, string>
   implements IAppointmentRepository {
@@ -64,18 +64,20 @@ export class AppointmentRepository extends BaseRepository<Appointment, string>
         ] as KVAppointmentByPsychologistKey, appointment)
         .commit();
 
+      const resultDetails = getKvResultDetails(result);
       await logger.info('DATABASE', 'Appointment creation transaction result', {
         appointmentId: appointment.id,
-        success: result.ok,
-        versionstamp: result.versionstamp,
+        success: resultDetails.ok,
+        versionstamp: resultDetails.versionstamp,
       });
 
       return result.ok;
     } catch (error) {
+      const errorDetails = getErrorDetails(error);
       await logger.error('DATABASE', 'Error creating appointment', {
         appointmentId: appointment.id,
-        error: error.message,
-        stack: error.stack,
+        error: errorDetails.message,
+        stack: errorDetails.stack,
       });
       return false;
     }
