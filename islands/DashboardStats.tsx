@@ -43,7 +43,7 @@ export default function DashboardStats({
           colorClass="bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-300"
         />
       </div>
-      <div class="col-span-1 sm:col-span-2 lg:col-span-1 xl:col-span-1">
+      <div class="col-span-1 sm:col-span-1 lg:col-span-1 xl:col-span-1">
         <StatsCard
           title="Total Salas"
           value={totalRooms}
@@ -51,7 +51,7 @@ export default function DashboardStats({
           colorClass="bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-300"
         />
       </div>
-      <div class="col-span-1 sm:col-span-2 lg:col-span-1 xl:col-span-1">
+      <div class="col-span-1 sm:col-span-1 lg:col-span-1 xl:col-span-1">
         <StatsCard
           title="Salas Disponibles"
           value={availableRooms}

@@ -84,9 +84,14 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
         const rooms = await getAllRooms();
 
+        // Obtener todos los pacientes
+        const patientRepository = getPatientRepository();
+        const patients = await patientRepository.getAll();
+
         return ctx.render({
           psychologists,
           rooms,
+          patients,
           currentUserRole: ctx.state.user?.role,
           currentUserEmail: ctx.state.user?.email,
           error: "No tienes permisos para asignar citas a otros psicólogos",
@@ -119,9 +124,14 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
         const rooms = await getAllRooms();
 
+        // Obtener todos los pacientes
+        const patientRepository = getPatientRepository();
+        const patients = await patientRepository.getAll();
+
         return ctx.render({
           psychologists,
           rooms,
+          patients,
           currentUserRole: ctx.state.user?.role,
           currentUserEmail: ctx.state.user?.email,
           error: "Todos los campos son requeridos",
@@ -154,9 +164,14 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
         const rooms = await getAllRooms();
 
+        // Obtener todos los pacientes
+        const patientRepository = getPatientRepository();
+        const patients = await patientRepository.getAll();
+
         return ctx.render({
           psychologists,
           rooms,
+          patients,
           currentUserRole: ctx.state.user?.role,
           currentUserEmail: ctx.state.user?.email,
           error: "La sala seleccionada no está disponible en esa fecha y hora",
@@ -209,9 +224,14 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
         const rooms = await getAllRooms();
 
+        // Obtener todos los pacientes
+        const patientRepository = getPatientRepository();
+        const patients = await patientRepository.getAll();
+
         return ctx.render({
           psychologists,
           rooms,
+          patients,
           currentUserRole: ctx.state.user?.role,
           currentUserEmail: ctx.state.user?.email,
           error: "Error al crear la cita",
@@ -282,11 +302,29 @@ export default function NewAppointmentPage({
               </h2>
             </div>
 
-            <AppointmentFormValidator
-              currentUserRole={currentUserRole || ""}
-              currentUserEmail={currentUserEmail || ""}
-              action=""
+            <form
+              action="/appointments/new"
               method="POST"
+              onSubmit={(e) => {
+                // Debug: verificar que el form se envía a la URL correcta
+                console.log('Form submitting to:', e.target.action);
+                console.log('Form method:', e.target.method);
+                
+                // Validación para psicólogos
+                const currentUserRole = `${currentUserRole}`;
+                const currentUserEmail = `${currentUserEmail}`;
+                
+                if (currentUserRole === "psychologist") {
+                  const formData = new FormData(e.target);
+                  const selectedPsychologist = formData.get("psychologistEmail");
+                  
+                  if (selectedPsychologist && selectedPsychologist !== currentUserEmail) {
+                    e.preventDefault();
+                    alert("No tienes permisos para asignar citas a otros psicólogos");
+                    return false;
+                  }
+                }
+              }}
             >
               <div class="px-6 py-4 space-y-6">
                 {error && (
@@ -464,7 +502,7 @@ export default function NewAppointmentPage({
                   </Button>
                 </div>
               </div>
-            </AppointmentFormValidator>
+            </form>
           </div>
         </div>
       </main>

@@ -40,6 +40,7 @@ export function Icon({
     // Iconos de interfaz
     "arrow-left": "/icons/arrow-left.svg",
     menu: "/icons/menu.svg",
+    search: "/icons/search.svg",
     sun: "/icons/sun.svg",
     moon: "/icons/moon.svg",
     login: "/icons/login.svg",
@@ -62,6 +63,7 @@ export function Icon({
     loader: "/icons/loader.svg",
     "file-text": "/icons/file-text.svg",
     "graduation-cap": "/icons/graduation-cap.svg",
+    cake: "/icons/cake.svg",
 
     // Logo
     logo: "/icons/logo.svg",
@@ -153,6 +155,7 @@ export function getAvailableIcons(): string[] {
     eye: "/icons/eye.svg",
     "arrow-left": "/icons/arrow-left.svg",
     menu: "/icons/menu.svg",
+    search: "/icons/search.svg",
     sun: "/icons/sun.svg",
     moon: "/icons/moon.svg",
     login: "/icons/login.svg",
@@ -169,6 +172,9 @@ export function getAvailableIcons(): string[] {
     phone: "/icons/phone.svg",
     "map-pin": "/icons/map-pin.svg",
     loader: "/icons/loader.svg",
+    "file-text": "/icons/file-text.svg",
+    "graduation-cap": "/icons/graduation-cap.svg",
+    cake: "/icons/cake.svg",
     logo: "/icons/logo.svg",
   };
 
