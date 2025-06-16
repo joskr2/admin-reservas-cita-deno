@@ -472,7 +472,7 @@ export default function NewPsychologistPage({
                       value={formData?.specialty || ""}
                       customValue={formData?.customSpecialty || ""}
                       required={true}
-                      className="w-full"
+                      class="w-full"
                     />
                   </div>
 

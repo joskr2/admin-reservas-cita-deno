@@ -375,7 +375,7 @@ export default function EditPsychologistPage({
                           name="specialty"
                           value={psychologist.specialty || ""}
                           customValue={psychologist.customSpecialty || ""}
-                          className="w-full"
+                          class="w-full"
                         />
                       </div>
 

@@ -43,7 +43,7 @@ export default function Toast({
 
   return (
     <div
-      class={`fixed top-4 right-4 z-50 p-4 rounded-lg border shadow-lg transition-all duration-300 max-w-md ${typeStyles[type]}`}
+      class={`fixed top-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-md z-50 p-4 rounded-lg border shadow-lg transition-all duration-300 ${typeStyles[type]}`}
       role="alert"
     >
       <div class="flex items-start">

@@ -315,7 +315,7 @@ export default function AvailabilityDashboard({
             Horarios del Día
           </h3>
 
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {daySchedule.timeSlots.map((slot) => (
               <div
                 key={slot.hour}
@@ -423,8 +423,9 @@ export default function AvailabilityDashboard({
             Horarios de la Semana
           </h3>
 
-          <div class="overflow-x-auto max-h-80 overflow-y-auto">
-            <div class="grid grid-cols-7 gap-2 min-w-full">
+          {/* Desktop Week View */}
+          <div class="hidden md:block overflow-x-auto max-h-80 overflow-y-auto">
+            <div class="grid grid-cols-7 gap-2 min-w-[700px]">
               {/* Header */}
               <div class="text-sm font-medium text-gray-600 dark:text-gray-400 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 Hora
@@ -459,7 +460,7 @@ export default function AvailabilityDashboard({
                             <button
                               type="button"
                               onClick={() => handleQuickBook(day.date, hour)}
-                              class="block w-full h-10 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 rounded border border-green-300 dark:border-green-700 transition-colors cursor-pointer text-xs font-medium text-green-700 dark:text-green-300"
+                              class="block w-full h-12 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 rounded border border-green-300 dark:border-green-700 transition-colors cursor-pointer text-xs font-medium text-green-700 dark:text-green-300"
                               title={`Crear cita para ${day.dayName} ${
                                 formatTime(hour)
                               }`}
@@ -472,7 +473,7 @@ export default function AvailabilityDashboard({
                           )
                           : (
                             <div
-                              class="w-full h-10 bg-red-100 dark:bg-red-900/30 rounded border border-red-300 dark:border-red-700 flex items-center justify-center"
+                              class="w-full h-12 bg-red-100 dark:bg-red-900/30 rounded border border-red-300 dark:border-red-700 flex items-center justify-center"
                               title={slot?.appointment
                                 ? `Sala tomada por ${slot.appointment.psychologistName || slot.appointment.psychologistEmail} - Paciente: ${slot.appointment.patientName} - ${formatTime(slot.appointment.startTime || slot.appointment.appointmentTime)}-${formatTime(slot.appointment.endTime || slot.appointment.appointmentTime)}`
                                 : "Sala ocupada"}
@@ -489,6 +490,53 @@ export default function AvailabilityDashboard({
                 </>
               ))}
             </div>
+          </div>
+
+          {/* Mobile Week View - Stacked Days */}
+          <div class="md:hidden space-y-4 max-h-80 overflow-y-auto">
+            {weekSchedule.map((day) => (
+              <div key={day.date} class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                <div class="text-center mb-3 p-2 bg-gray-100 dark:bg-gray-600 rounded">
+                  <div class="text-sm font-medium text-gray-900 dark:text-white">
+                    {day.dayName}
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400">
+                    {new Date(day.date).getDate()}/{new Date(day.date).getMonth() + 1}
+                  </div>
+                </div>
+                <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {workingHours.map((hour) => {
+                    const slot = day.timeSlots.find((s) => s.hour === hour);
+                    return (
+                      <div key={`${day.date}-${hour}`} class="text-center">
+                        <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">
+                          {formatTime(hour)}
+                        </div>
+                        {slot?.isAvailable ? (
+                          <button
+                            type="button"
+                            onClick={() => handleQuickBook(day.date, hour)}
+                            class="w-full h-12 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 rounded border border-green-300 dark:border-green-700 transition-colors cursor-pointer text-xs font-medium text-green-700 dark:text-green-300 flex items-center justify-center"
+                            title={`Crear cita para ${day.dayName} ${formatTime(hour)}`}
+                          >
+                            <Icon name="plus" className="h-4 w-4" />
+                          </button>
+                        ) : (
+                          <div
+                            class="w-full h-12 bg-red-100 dark:bg-red-900/30 rounded border border-red-300 dark:border-red-700 flex items-center justify-center"
+                            title={slot?.appointment
+                              ? `Ocupado - ${slot.appointment.patientName}`
+                              : "Sala ocupada"}
+                          >
+                            <Icon name="x" className="h-3 w-3 text-red-600 dark:text-red-400" />
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -612,7 +660,7 @@ export default function AvailabilityDashboard({
     <div class="space-y-6">
       {/* Controls */}
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center justify-center sm:justify-start space-x-2 sm:space-x-4">
           <button
             title="Navegar al período anterior"
             type="button"
@@ -622,7 +670,7 @@ export default function AvailabilityDashboard({
             <Icon name="chevron-left" size={20} />
           </button>
 
-          <h2 class="text-xl font-semibold text-gray-900 dark:text-white min-w-[250px] text-center">
+          <h2 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white min-w-0 sm:min-w-[250px] text-center flex-1 sm:flex-none">
             {getDateRangeText()}
           </h2>
 
@@ -636,7 +684,7 @@ export default function AvailabilityDashboard({
           </button>
         </div>
 
-        <div class="flex items-center space-x-2">
+        <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2">
           <button
             type="button"
             onClick={goToToday}
@@ -645,7 +693,7 @@ export default function AvailabilityDashboard({
             Hoy
           </button>
 
-          <div class="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
+          <div class="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden w-full sm:w-auto">
             {["day", "week", "month"].map((mode) => (
               <button
                 type="button"

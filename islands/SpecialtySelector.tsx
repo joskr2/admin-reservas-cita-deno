@@ -7,7 +7,7 @@ interface SpecialtySelectorProps {
   value?: string;
   customValue?: string;
   required?: boolean;
-  className?: string;
+  class?: string;
 }
 
 export default function SpecialtySelector({
@@ -15,7 +15,7 @@ export default function SpecialtySelector({
   value = "",
   customValue = "",
   required = false,
-  className = "",
+  class: className = "",
 }: SpecialtySelectorProps) {
   const [selectedSpecialty, setSelectedSpecialty] = useState(value);
   const [customSpecialty, setCustomSpecialty] = useState(customValue);
@@ -38,12 +38,12 @@ export default function SpecialtySelector({
   ];
 
   return (
-    <div className="space-y-3">
+    <div class="space-y-3">
       <Select
         name={name}
         value={selectedSpecialty}
         required={required}
-        className={className}
+        class={className}
         onChange={(e) => {
           const newValue = (e.target as HTMLSelectElement).value;
           setSelectedSpecialty(newValue);
@@ -61,8 +61,8 @@ export default function SpecialtySelector({
       </Select>
 
       {selectedSpecialty === "Otra" && (
-        <div className="space-y-2">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Especificar especialidad:
           </label>
           <Input
@@ -71,7 +71,7 @@ export default function SpecialtySelector({
             value={customSpecialty}
             placeholder="Ej: Psicología Deportiva, Neuropsicología Infantil, etc."
             required={selectedSpecialty === "Otra"}
-            className="w-full"
+            class="w-full"
             onInput={(e) => {
               setCustomSpecialty((e.target as HTMLInputElement).value);
             }}
