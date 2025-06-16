@@ -5,12 +5,14 @@ Sistema de gestión de citas para clínica psicológica desarrollado con Fresh
 
 ## Características
 
-- 🏥 Gestión de citas médicas
+- 🏥 Gestión de citas psicológicas
 - 👥 Administración de psicólogos y pacientes
-- 🏢 Control de salas de atención
+- 🏢 Control de salas especializadas (12 tipos diferentes)
 - 🔐 Sistema de autenticación por roles
-- 📊 Dashboard con estadísticas
-- 🎨 Interfaz moderna con TailwindCSS
+- 📊 Dashboard con estadísticas y calendario
+- 🎨 Interfaz moderna y responsiva con TailwindCSS
+- 📱 Optimizada para dispositivos móviles
+- 🔒 Criptografía compatible con Deno Deploy
 
 ## Tecnologías
 
@@ -123,6 +125,9 @@ Este script:
 // Salas
 ["rooms", roomId] -> Room
 
+// Pacientes
+["patients", id] -> Patient
+
 // Sesiones
 ["sessions", sessionId] -> { userEmail: string }
 ```
@@ -143,10 +148,10 @@ DENO_ENV=development
 
 El script `deno task seed` crea:
 
-- Usuario superadmin: `admin@horizonte.com` / `admin123`
-- Psicólogos de prueba
-- Salas de atención (A, B, C, D, E)
-- Citas de ejemplo
+- Usuario superadmin: `admin@horizonte.com` / `password123`
+- 2 psicólogos de prueba
+- 12 salas especializadas (terapia individual, familiar, grupal, evaluación, etc.)
+- Pacientes y citas de ejemplo
 
 ## Desarrollo
 
@@ -174,6 +179,43 @@ deno task build
 
 # Ejecutar en producción
 deno task preview
+```
+
+## Últimas Actualizaciones
+
+### 🔧 Mejoras de Seguridad
+- **Criptografía**: Reemplazado bcrypt por Web Crypto API para compatibilidad con Deno Deploy
+- **Hash de contraseñas**: PBKDF2 con 100,000 iteraciones usando SHA-256
+- **Compatibilidad**: Totalmente funcional en Deno Deploy
+
+### 📱 Optimizaciones Mobile
+- **Diseño responsivo**: Interfaces optimizadas para móviles y tablets
+- **Touch targets**: Botones y controles con tamaño mínimo de 44px
+- **Calendario**: Vista semanal adaptativa con scroll horizontal controlado
+- **Formularios**: Layout responsive que se adapta desde mobile a desktop
+
+### 🎨 Sistema de Iconos
+- **36 iconos**: Sistema completo con soporte dark/light mode
+- **SVG vectoriales**: Escalado perfecto en todas las resoluciones
+- **Navegación**: Flechas de calendario y controles completamente funcionales
+
+### 🗄️ Base de Datos
+- **Limpieza automática**: Scripts para limpiar datos de testing
+- **Inspección**: Herramientas para análisis del estado de la base de datos
+- **12 salas especializadas**: Configuradas para diferentes tipos de terapia
+- **Datos realistas**: Pacientes y citas con información detallada
+
+### 🔄 Scripts Disponibles
+```bash
+# Gestión de base de datos
+deno task inspect-db     # Ver estado actual de la DB
+deno task cleanup-data   # Limpiar datos de testing
+deno task fix-kv         # Reparar datos corruptos
+
+# Desarrollo y producción
+deno task start          # Servidor con hot reload
+deno task build          # Construcción para producción
+deno task preview        # Vista previa de producción
 ```
 
 ## Contribución
