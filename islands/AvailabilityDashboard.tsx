@@ -129,8 +129,8 @@ export default function AvailabilityDashboard({
     const diff = monday.getDate() - day + (day === 0 ? -6 : 1); // Ajustar al lunes
     monday.setDate(diff);
 
-    // Generar lunes a sábado (6 días)
-    for (let i = 0; i < 6; i++) {
+    // Generar lunes a domingo (7 días)
+    for (let i = 0; i < 7; i++) {
       const date = new Date(monday);
       date.setDate(monday.getDate() + i);
       weekSchedule.push(generateDaySchedule(date));
@@ -151,8 +151,8 @@ export default function AvailabilityDashboard({
       const currentDate = new Date(year, month, day);
       const dayOfWeek = currentDate.getDay();
       
-      // Solo incluir días laborales (lunes=1 a sábado=6)
-      if (dayOfWeek >= 1 && dayOfWeek <= 6) {
+      // Solo incluir días laborales (lunes=1 a domingo=0, sábado=6)
+      if (dayOfWeek >= 0 && dayOfWeek <= 6) {
         monthSchedule.push(generateDaySchedule(currentDate));
       }
     }
@@ -606,7 +606,7 @@ export default function AvailabilityDashboard({
             {dayNames.slice(1).concat(dayNames.slice(0, 1)).map((dayName) => (
               <div
                 key={dayName}
-                class="text-center text-sm font-medium text-gray-600 dark:text-gray-400 p-2"
+                class="text-center text-sm font-medium text-gray-600 dark:text-gray-400 p-2 bg-gray-100 dark:bg-gray-600 rounded-lg border border-gray-200 dark:border-gray-500"
               >
                 {dayName}
               </div>
@@ -624,10 +624,10 @@ export default function AvailabilityDashboard({
               return (
                 <div
                   key={day.date}
-                  class={`p-3 rounded-lg border text-center transition-colors ${
+                  class={`p-3 rounded-lg border-2 text-center transition-colors hover:shadow-md cursor-pointer ${
                     availableCount > 0
-                      ? "bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700"
-                      : "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700"
+                      ? "bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-600 hover:border-green-400 dark:hover:border-green-500"
+                      : "bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-600 hover:border-red-400 dark:hover:border-red-500"
                   }`}
                 >
                   <div class="font-medium text-gray-900 dark:text-white">
