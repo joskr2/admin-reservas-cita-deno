@@ -23,6 +23,7 @@ import * as $api_rooms_id_update from "./routes/api/rooms/[id]/update.ts";
 import * as $api_rooms_create from "./routes/api/rooms/create.ts";
 import * as $api_rooms_index from "./routes/api/rooms/index.ts";
 import * as $appointments_id_ from "./routes/appointments/[id].tsx";
+import * as $appointments_calendar from "./routes/appointments/calendar.tsx";
 import * as $appointments_edit_id_ from "./routes/appointments/edit/[id].tsx";
 import * as $appointments_index from "./routes/appointments/index.tsx";
 import * as $appointments_new from "./routes/appointments/new.tsx";
@@ -55,6 +56,7 @@ import * as $DeleteAppointmentButton from "./islands/DeleteAppointmentButton.tsx
 import * as $DeleteRoomButton from "./islands/DeleteRoomButton.tsx";
 import * as $GenericFilters from "./islands/GenericFilters.tsx";
 import * as $Header from "./islands/Header.tsx";
+import * as $InteractiveCalendar from "./islands/InteractiveCalendar.tsx";
 import * as $PatientSearchSelect from "./islands/PatientSearchSelect.tsx";
 import * as $PatientSelect from "./islands/PatientSelect.tsx";
 import * as $PsychologistFilters from "./islands/PsychologistFilters.tsx";
@@ -89,6 +91,7 @@ const manifest = {
     "./routes/api/rooms/create.ts": $api_rooms_create,
     "./routes/api/rooms/index.ts": $api_rooms_index,
     "./routes/appointments/[id].tsx": $appointments_id_,
+    "./routes/appointments/calendar.tsx": $appointments_calendar,
     "./routes/appointments/edit/[id].tsx": $appointments_edit_id_,
     "./routes/appointments/index.tsx": $appointments_index,
     "./routes/appointments/new.tsx": $appointments_new,
@@ -123,6 +126,7 @@ const manifest = {
     "./islands/DeleteRoomButton.tsx": $DeleteRoomButton,
     "./islands/GenericFilters.tsx": $GenericFilters,
     "./islands/Header.tsx": $Header,
+    "./islands/InteractiveCalendar.tsx": $InteractiveCalendar,
     "./islands/PatientSearchSelect.tsx": $PatientSearchSelect,
     "./islands/PatientSelect.tsx": $PatientSelect,
     "./islands/PsychologistFilters.tsx": $PsychologistFilters,

@@ -207,12 +207,22 @@ export default function AppointmentsPage({
                   Administra y supervisa todas las citas de la clínica
                 </p>
               </div>
-              <a
-                href="/appointments/new"
-                class="inline-flex items-center justify-center font-medium rounded-lg px-6 py-3 text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 ease-in-out shadow-lg hover:shadow-xl"
-              >
-                Nueva Cita
-              </a>
+              <div class="flex items-center gap-3">
+                <a
+                  href="/appointments/calendar"
+                  class="inline-flex items-center justify-center font-medium rounded-lg px-4 py-3 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 ease-in-out shadow-sm hover:shadow-md"
+                >
+                  <Icon name="calendar" className="h-5 w-5 mr-2" />
+                  Vista Calendario
+                </a>
+                <a
+                  href="/appointments/new"
+                  class="inline-flex items-center justify-center font-medium rounded-lg px-6 py-3 text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 ease-in-out shadow-lg hover:shadow-xl"
+                >
+                  <Icon name="plus" className="h-5 w-5 mr-2" />
+                  Nueva Cita
+                </a>
+              </div>
             </div>
           </div>
 
