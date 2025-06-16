@@ -39,6 +39,8 @@ export function Icon({
 
     // Iconos de interfaz
     "arrow-left": "/icons/arrow-left.svg",
+    "chevron-left": "/icons/chevron-left.svg",
+    "chevron-right": "/icons/chevron-right.svg",
     menu: "/icons/menu.svg",
     search: "/icons/search.svg",
     sun: "/icons/sun.svg",
@@ -154,6 +156,8 @@ export function getAvailableIcons(): string[] {
     "file-warning": "/icons/file-warning.svg",
     eye: "/icons/eye.svg",
     "arrow-left": "/icons/arrow-left.svg",
+    "chevron-left": "/icons/chevron-left.svg",
+    "chevron-right": "/icons/chevron-right.svg",
     menu: "/icons/menu.svg",
     search: "/icons/search.svg",
     sun: "/icons/sun.svg",
