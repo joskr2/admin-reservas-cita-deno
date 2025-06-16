@@ -22,7 +22,6 @@ import {
   getSessionRepository,
 } from "../lib/database/index.ts";
 
-import type { User, UserRole } from "../types/index.ts";
 
 interface CleanupOptions {
   keepUsers?: string[]; // Lista de emails de usuarios a mantener
@@ -208,13 +207,13 @@ async function createProductionUsers(): Promise<void> {
   // Por ejemplo, un usuario demo o usuarios iniciales específicos
 }
 
-async function generateCleanupReport(
+function generateCleanupReport(
   appointmentsDeleted: number,
   patientsDeleted: number,
   usersResult: { kept: number; deleted: number },
   sessionsDeleted: number,
   roomsCount: number
-): Promise<void> {
+): void {
   console.log("\n📋 Reporte de limpieza:");
   console.log("=" .repeat(50));
   console.log(`📅 Citas eliminadas: ${appointmentsDeleted}`);
@@ -323,7 +322,7 @@ async function main(): Promise<void> {
 }
 
 // Función para usar desde otros scripts
-export async function cleanupTestData(options: CleanupOptions = {}): Promise<void> {
+export async function cleanupTestData(_options: CleanupOptions = {}): Promise<void> {
   await main();
 }
 

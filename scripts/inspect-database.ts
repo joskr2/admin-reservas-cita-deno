@@ -22,7 +22,7 @@ import {
   getUserRepository,
 } from "../lib/database/index.ts";
 
-import type { User, Appointment, Patient, Room, UserRole } from "../types/index.ts";
+import type { UserRole } from "../types/index.ts";
 
 interface DatabaseSummary {
   users: {
@@ -181,7 +181,7 @@ async function inspectAppointments(): Promise<void> {
   const psychologistStats: Record<string, number> = {};
   
   // Estadísticas por fecha
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0]!;
   const futureAppointments = appointments.filter(apt => apt.appointmentDate > today);
   const pastAppointments = appointments.filter(apt => apt.appointmentDate <= today);
   
@@ -293,8 +293,8 @@ async function generateDatabaseReport(): Promise<void> {
   const activePatients = patients.filter(p => p.isActive).length;
   const availableRooms = rooms.filter(r => r.isAvailable).length;
   
-  const today = new Date().toISOString().split('T')[0];
-  const futureAppointments = appointments.filter(apt => apt.appointmentDate >= today).length;
+  const todayStr = new Date().toISOString().split('T')[0]!;
+  const futureAppointments = appointments.filter(apt => apt.appointmentDate >= todayStr).length;
   const completedAppointments = appointments.filter(apt => apt.status === 'completed').length;
   
   console.log("📊 Resumen ejecutivo:");
