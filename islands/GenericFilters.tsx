@@ -1,6 +1,7 @@
 import { useState } from "preact/hooks";
 import { Button } from "../components/ui/Button.tsx";
 import { Icon } from "../components/ui/Icon.tsx";
+import { useDebouncedCallback } from "../lib/hooks/useDebounce.ts";
 
 // Tipos para las opciones de filtros
 interface FilterOption {
@@ -59,14 +60,23 @@ export default function GenericFilters({
     return url.pathname + url.search;
   };
 
+  // Función debounced para navegación
+  const debouncedNavigate = useDebouncedCallback((url: string) => {
+    globalThis.location.href = url;
+  }, 500);
+
   const handleSearchInput = (fieldKey: string, value: string) => {
     setSearchValues((prev) => ({ ...prev, [fieldKey]: value }));
+
+    // Solo navegar si hay valor o si se está limpiando
     const url = buildUrl({
       ...filters,
       [fieldKey]: value || undefined,
       page: 1,
     });
-    globalThis.location.href = url;
+
+    // Usar debounce para navegación
+    debouncedNavigate(url);
   };
 
   const handleSelectChange = (fieldKey: string, value: string) => {
@@ -85,6 +95,7 @@ export default function GenericFilters({
       [fieldKey]: undefined,
       page: 1,
     });
+    // Navegación inmediata para limpiar filtros
     globalThis.location.href = url;
   };
 

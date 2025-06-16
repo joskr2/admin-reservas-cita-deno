@@ -21,6 +21,7 @@ import { getPatientRepository } from "../../lib/database/index.ts";
 import AppointmentFormValidator from "../../islands/AppointmentFormValidator.tsx";
 import PatientSelect from "../../islands/PatientSelect.tsx";
 import { logger, extractUserContext } from "../../lib/logger.ts";
+import { checkAppointmentConflicts, generateAlternativeSuggestions, type ConflictDetail, type AlternativeSuggestion } from "../../lib/utils/conflictValidation.ts";
 
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
   const requestId = ctx.state.requestId || 'unknown';
@@ -33,6 +34,17 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
   }, { requestId, ...userContext });
 
   if (req.method === "GET") {
+    const url = new URL(req.url);
+    const autoFill = url.searchParams.get("autoFill") === "true";
+    const prefilledData = autoFill ? {
+      patientName: url.searchParams.get("patientName") || "",
+      psychologistEmail: url.searchParams.get("psychologistEmail") || "",
+      appointmentDate: url.searchParams.get("appointmentDate") || "",
+      startTime: url.searchParams.get("startTime") || "",
+      endTime: url.searchParams.get("endTime") || "",
+      roomId: url.searchParams.get("roomId") || "",
+      notes: url.searchParams.get("notes") || "",
+    } : undefined;
     await logger.debug('APPOINTMENTS_NEW', 'Processing GET request for new appointment form', {}, { requestId, ...userContext });
     const kv = await Deno.openKv();
 
@@ -62,6 +74,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         patients,
         currentUserRole: ctx.state.user?.role,
         currentUserEmail: ctx.state.user?.email,
+        formData: prefilledData,
       });
     } finally {
       await kv.close();
@@ -186,35 +199,38 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       }
     }
 
-    // Verificar disponibilidad de la sala (usando startTime para compatibilidad)
-    await logger.debug('APPOINTMENTS_NEW', 'Checking room availability', {
+    // Verificar conflictos antes de crear la cita
+    const conflictCheck = await checkAppointmentConflicts(
       appointmentDate,
       startTime,
       endTime,
-      requestedRoomId: roomId,
-    }, { requestId, ...userContext });
-    
-    const availableRooms = await getAvailableRooms(
-      appointmentDate,
-      startTime, // Usar startTime temporalmente hasta actualizar getAvailableRooms
+      psychologistEmail,
+      roomId,
+      patientName
     );
-    const isRoomAvailable = availableRooms.some((room) => room.id === roomId);
 
-    await logger.debug('APPOINTMENTS_NEW', 'Room availability check result', {
-      requestedRoomId: roomId,
-      isRoomAvailable,
-      totalAvailableRooms: availableRooms.length,
-      availableRoomIds: availableRooms.map(r => r.id),
+    await logger.debug('APPOINTMENTS_NEW', 'Conflict check result', {
+      hasConflicts: conflictCheck.hasConflicts,
+      conflictTypes: conflictCheck.conflicts.map(c => c.type),
+      conflictDetails: conflictCheck.conflicts,
     }, { requestId, ...userContext });
 
-    if (!isRoomAvailable) {
-      await logger.warn('APPOINTMENTS_NEW', 'Room not available for selected date and time', {
-        requestedRoomId: roomId,
+    if (conflictCheck.hasConflicts) {
+      // Generar sugerencias si hay conflictos
+      const suggestions = await generateAlternativeSuggestions(
         appointmentDate,
         startTime,
         endTime,
-        availableRoomIds: availableRooms.map(r => r.id),
+        psychologistEmail,
+        roomId
+      );
+
+      await logger.warn('APPOINTMENTS_NEW', 'Conflicts detected, providing suggestions', {
+        conflicts: conflictCheck.conflicts,
+        suggestionsCount: suggestions.length,
+        suggestions: suggestions.slice(0, 3), // Log solo las primeras 3 sugerencias
       }, { requestId, ...userContext });
+
       const kv = await Deno.openKv();
       try {
         const users = await getAllUsers();
@@ -229,8 +245,6 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         }
 
         const rooms = await getAllRooms();
-
-        // Obtener todos los pacientes
         const patientRepository = getPatientRepository();
         const patients = await patientRepository.getAll();
 
@@ -240,7 +254,17 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
           patients,
           currentUserRole: ctx.state.user?.role,
           currentUserEmail: ctx.state.user?.email,
-          error: "La sala seleccionada no está disponible en esa fecha y hora",
+          conflicts: conflictCheck.conflicts,
+          suggestions,
+          formData: {
+            patientName,
+            psychologistEmail,
+            appointmentDate,
+            startTime,
+            endTime,
+            roomId,
+            notes,
+          },
         });
       } finally {
         await kv.close();
@@ -353,6 +377,17 @@ export default function NewAppointmentPage({
     currentUserRole?: string;
     currentUserEmail?: string;
     error?: string;
+    conflicts?: ConflictDetail[];
+    suggestions?: AlternativeSuggestion[];
+    formData?: {
+      patientName?: string;
+      psychologistEmail?: string;
+      appointmentDate?: string;
+      startTime?: string;
+      endTime?: string;
+      roomId?: string;
+      notes?: string;
+    };
   },
   AppState
 >) {
@@ -363,6 +398,9 @@ export default function NewAppointmentPage({
     currentUserRole,
     currentUserEmail,
     error,
+    conflicts,
+    suggestions,
+    formData,
   } = data || {
     psychologists: [],
     rooms: [],
@@ -426,6 +464,92 @@ export default function NewAppointmentPage({
                   </div>
                 )}
 
+                {conflicts && conflicts.length > 0 && (
+                  <div class="rounded-md bg-yellow-50 dark:bg-yellow-900/50 p-4">
+                    <div class="flex">
+                      <div class="flex-shrink-0">
+                        <Icon
+                          name="alert-triangle"
+                          className="h-5 w-5 text-yellow-400"
+                        />
+                      </div>
+                      <div class="ml-3">
+                        <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                          Conflictos detectados
+                        </h3>
+                        <div class="mt-2 space-y-1">
+                          {conflicts.map((conflict, index) => (
+                            <div key={index} class="text-sm text-yellow-700 dark:text-yellow-300">
+                              • {conflict.message}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {suggestions && suggestions.length > 0 && (
+                  <div class="rounded-md bg-blue-50 dark:bg-blue-900/50 p-4">
+                    <div class="flex">
+                      <div class="flex-shrink-0">
+                        <Icon
+                          name="lightbulb"
+                          className="h-5 w-5 text-blue-400"
+                        />
+                      </div>
+                      <div class="ml-3">
+                        <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200">
+                          Horarios y salas alternativos disponibles
+                        </h3>
+                        <div class="mt-3 space-y-2">
+                          {suggestions.slice(0, 4).map((suggestion, index) => (
+                            <a
+                              key={index}
+                              href={`/appointments/new?${new URLSearchParams({
+                                patientName: formData?.patientName || "",
+                                psychologistEmail: formData?.psychologistEmail || "",
+                                appointmentDate: suggestion.date || formData?.appointmentDate || "",
+                                startTime: suggestion.startTime || "",
+                                endTime: suggestion.endTime || "",
+                                roomId: suggestion.roomId || "",
+                                notes: formData?.notes || "",
+                                autoFill: "true"
+                              }).toString()}`}
+                              class={`block p-3 rounded-md border hover:bg-blue-100 dark:hover:bg-blue-800/30 transition-colors ${
+                                suggestion.urgency === "high" 
+                                  ? "border-green-300 bg-green-50 dark:bg-green-900/20 dark:border-green-600" 
+                                  : suggestion.urgency === "medium"
+                                  ? "border-blue-300 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-600"
+                                  : "border-gray-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600"
+                              }`}
+                            >
+                              <div class="flex items-center justify-between">
+                                <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                  {suggestion.message}
+                                </div>
+                                <div class={`text-xs px-2 py-1 rounded-full ${
+                                  suggestion.urgency === "high" 
+                                    ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200"
+                                    : suggestion.urgency === "medium"
+                                    ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200"
+                                    : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+                                }`}>
+                                  {suggestion.urgency === "high" ? "Recomendado" : 
+                                   suggestion.urgency === "medium" ? "Buena opción" : "Disponible"}
+                                </div>
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                        <div class="mt-3 text-xs text-blue-600 dark:text-blue-400">
+                          💡 Haz clic en cualquier sugerencia para usar automáticamente esa opción
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label
@@ -435,7 +559,11 @@ export default function NewAppointmentPage({
                       <Icon name="user" className="h-4 w-4 inline mr-2" />
                       Paciente
                     </label>
-                    <PatientSelect patients={patients} required />
+                    <PatientSelect 
+                      patients={patients} 
+                      required 
+                      defaultValue={formData?.patientName}
+                    />
                   </div>
 
                   <div>
@@ -453,7 +581,7 @@ export default function NewAppointmentPage({
                       disabled={currentUserRole === "psychologist"}
                       value={currentUserRole === "psychologist"
                         ? currentUserEmail
-                        : ""}
+                        : formData?.psychologistEmail || ""}
                     >
                       {currentUserRole === "superadmin" && (
                         <option value="">Seleccione un psicólogo</option>
@@ -500,6 +628,7 @@ export default function NewAppointmentPage({
                       type="date"
                       required
                       min={new Date().toISOString().split("T")[0]}
+                      value={formData?.appointmentDate || ""}
                     />
                   </div>
 
@@ -516,6 +645,7 @@ export default function NewAppointmentPage({
                       name="startTime"
                       type="time"
                       required
+                      value={formData?.startTime || ""}
                     />
                   </div>
 
@@ -532,6 +662,7 @@ export default function NewAppointmentPage({
                       name="endTime"
                       type="time"
                       required
+                      value={formData?.endTime || ""}
                     />
                   </div>
 
@@ -543,7 +674,7 @@ export default function NewAppointmentPage({
                       <Icon name="briefcase" className="h-4 w-4 inline mr-2" />
                       Sala de Atención
                     </label>
-                    <Select id="roomId" name="roomId" required>
+                    <Select id="roomId" name="roomId" required value={formData?.roomId || ""}>
                       <option value="">Seleccione una sala</option>
                       {rooms.map((room) => (
                         <option
@@ -572,6 +703,7 @@ export default function NewAppointmentPage({
                     rows={3}
                     class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                     placeholder="Información adicional sobre la cita..."
+                    value={formData?.notes || ""}
                   />
                 </div>
 

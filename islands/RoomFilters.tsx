@@ -1,6 +1,7 @@
 import { useState } from "preact/hooks";
 import { Button } from "../components/ui/Button.tsx";
 import { Icon } from "../components/ui/Icon.tsx";
+import { useDebouncedCallback } from "../lib/hooks/useDebounce.ts";
 
 interface RoomFiltersProps {
   filters: {
@@ -25,6 +26,11 @@ export default function RoomFilters({ filters }: RoomFiltersProps) {
     });
     return url.pathname + url.search;
   };
+
+  // Función debounced para navegación
+  const debouncedNavigate = useDebouncedCallback((url: string) => {
+    globalThis.location.href = url;
+  }, 500);
 
   return (
     <div class="mb-8">
@@ -65,7 +71,8 @@ export default function RoomFilters({ filters }: RoomFiltersProps) {
                     search: value || undefined,
                     page: 1,
                   });
-                  globalThis.location.href = url;
+                  // Usar debounce para navegación
+                  debouncedNavigate(url);
                 }}
                 class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
               />

@@ -164,6 +164,7 @@ export interface Appointment {
   startTime: string; // HH:MM - Hora de inicio de la cita
   endTime: string; // HH:MM - Hora de fin de la cita
   roomId: RoomId; // Sala de atención asignada
+  roomName?: string | undefined; // Nombre de la sala para mostrar
   status: AppointmentStatus;
   statusHistory?: AppointmentStatusHistory[] | undefined; // Historial de cambios
   createdAt: string;
