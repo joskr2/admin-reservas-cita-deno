@@ -1,7 +1,7 @@
 /// <reference lib="deno.unstable" />
 import { Handlers } from "$fresh/server.ts";
 import { getKv } from "../../../lib/kv.ts";
-import { compare } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import { compare } from "../../../lib/crypto.ts";
 import { setCookie } from "$std/http/cookie.ts";
 import type { User } from "../../../types/index.ts";
 
@@ -19,7 +19,7 @@ export const handler: Handlers = {
           {
             status: 400,
             headers: { "Content-Type": "application/json" },
-          },
+          }
         );
       }
 
@@ -36,7 +36,7 @@ export const handler: Handlers = {
           {
             status: 401,
             headers: { "Content-Type": "application/json" },
-          },
+          }
         );
       }
 
@@ -54,7 +54,7 @@ export const handler: Handlers = {
           {
             status: 401,
             headers: { "Content-Type": "application/json" },
-          },
+          }
         );
       }
 
@@ -63,7 +63,7 @@ export const handler: Handlers = {
       await kv.set(
         ["sessions", sessionId],
         { userEmail: email },
-        { expireIn: 7 * 24 * 60 * 60 * 1000 },
+        { expireIn: 7 * 24 * 60 * 60 * 1000 }
       );
 
       // Crear respuesta con cookie y datos del usuario
@@ -79,7 +79,7 @@ export const handler: Handlers = {
         {
           status: 200,
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
 
       setCookie(response.headers, {
@@ -103,7 +103,7 @@ export const handler: Handlers = {
         {
           status: 500,
           headers: { "Content-Type": "application/json" },
-        },
+        }
       );
     }
   },
