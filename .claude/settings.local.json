@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__ide__getDiagnostics",
+      "Bash(deno task:*)",
+      "Bash(deno test:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(rm:*)",
+      "Bash(mv:*)",
+      "Bash(deno run:*)",
+      "Bash(deno check:*)",
+      "Bash(deno eval:*)",
+      "Bash(deno cache:*)",
+      "Bash(lsof:*)",
+      "Bash(mkdir:*)",
+      "Bash(deno lint:*)",
+      "Bash(curl:*)",
+      "Bash(deno fmt:*)",
+      "Bash(rg:*)",
+      "Bash(AUTO_CONFIRM_CLEANUP=true deno task cleanup-data)",
+      "Bash(ls:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": false
+}

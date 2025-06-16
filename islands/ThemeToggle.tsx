@@ -1,48 +1,28 @@
 import { useEffect } from "preact/hooks";
-import { signal } from "@preact/signals";
-import { LuMoon } from "@preact-icons/lu";
-import { LuSun } from "@preact-icons/lu";
+import { effect, signal } from "@preact/signals";
+import { Icon } from "../components/ui/Icon.tsx";
+import type { Theme } from "../types/index.ts";
+import { applyTheme, getInitialTheme } from "../utils/theme.ts";
 
-// Signal to hold the current theme state. Default to 'light'.
-const theme = signal<"light" | "dark">("light");
+// Signal para mantener el estado actual del tema
+const theme = signal<Theme>(getInitialTheme());
 
-// This function runs on the client to initialize the theme.
-const initializeTheme = () => {
-  // Ensure we are in a browser context
-  if (typeof window !== "undefined") {
-    const storedTheme = localStorage.getItem("theme") as
-      | "light"
-      | "dark"
-      | null;
-    const prefersDark = globalThis.matchMedia(
-      "(prefers-color-scheme: dark)"
-    ).matches;
-    // Set theme from localStorage or system preference
-    theme.value = storedTheme || (prefersDark ? "dark" : "light");
-  }
-};
+// Efecto global que se ejecuta cuando el tema cambia
+effect(() => {
+  applyTheme(theme.value);
+});
 
 export default function ThemeToggle() {
-  // Initialize the theme once when the component mounts on the client.
+  // Inicializar el tema una vez cuando el componente se monta en el cliente
   useEffect(() => {
-    initializeTheme();
-  }, []);
-
-  // This effect reacts to changes in the theme signal.
-  useEffect(() => {
-    // Update the class on the <html> element to apply Tailwind's dark mode styles.
-    if (theme.value === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-    // Persist the user's choice in localStorage.
     if (typeof window !== "undefined") {
-      localStorage.setItem("theme", theme.value);
+      // Sincronizar con el tema actual del DOM
+      const isDark = document.documentElement.classList.contains("dark");
+      theme.value = isDark ? "dark" : "light";
     }
   }, []);
 
-  // Function to toggle the theme signal's value.
+  // Función para alternar el valor del signal del tema
   const toggleTheme = () => {
     theme.value = theme.value === "light" ? "dark" : "light";
   };
@@ -51,15 +31,18 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={toggleTheme}
+      title={`Cambiar a modo ${theme.value === "light" ? "oscuro" : "claro"}`}
       class="inline-flex items-center justify-center p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 dark:focus:ring-offset-gray-800 focus:ring-indigo-500 transition duration-150 ease-in-out"
-      aria-label="Toggle theme"
+      aria-label={`Cambiar a modo ${
+        theme.value === "light" ? "oscuro" : "claro"
+      }`}
     >
-      {/* Conditionally render the Sun or Moon icon based on the current theme */}
-      {theme.value === "light" ? (
-        <LuMoon class="h-6 w-6" />
-      ) : (
-        <LuSun class="h-6 w-6" />
-      )}
+      {/* El componente se re-renderiza automáticamente cuando theme.value cambia */}
+      <Icon
+        name={theme.value === "light" ? "moon" : "sun"}
+        size={24}
+        className="text-gray-500 dark:text-gray-400"
+      />
     </button>
   );
 }

@@ -1,154 +1,280 @@
 /// <reference lib="deno.unstable" />
-import type { Handlers, PageProps } from "$fresh/server.ts";
-import { setCookie } from "$std/http/cookie.ts";
-import { verify } from "@felix/bcrypt";
-
-import { LuLock, LuLogIn, LuMail } from "@preact-icons/lu";
-import Header from "../components/layout/Header.tsx";
-import { Input } from "../components/ui/Input.tsx";
+import { type PageProps } from "$fresh/server.ts";
+import { Icon } from "../components/ui/Icon.tsx";
 import { Button } from "../components/ui/Button.tsx";
-import Footer from "../components/layout/Footer.tsx";
+import { Input } from "../components/ui/Input.tsx";
+import { getKv } from "../lib/kv.ts";
+import { Handlers } from "$fresh/server.ts";
+import { Head } from "$fresh/runtime.ts";
+import { Card } from "../components/ui/Card.tsx";
+import { setCookie } from "$std/http/cookie.ts";
+import { compare } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
+import type { AppState, User } from "../types/index.ts";
+import { extractUserContext, logger } from "../lib/logger.ts";
 
-
-
-// Interface for the data passed from the handler to the component
-interface Data {
-  error?: string;
+interface LoginData {
+  email?: string | undefined;
+  password?: string | undefined;
+  error?: string | undefined;
 }
 
-export const handler: Handlers<Data> = {
-  // --- FORM SUBMISSION LOGIC (SERVER-SIDE) ---
+export const handler: Handlers<LoginData, AppState> = {
+  async GET(req, ctx) {
+    const requestId = ctx.state.requestId || "unknown";
+    const userContext = extractUserContext(ctx.state.user);
+
+    await logger.debug("LOGIN", "GET request for login page", {
+      url: req.url,
+      userAgent: req.headers.get("user-agent"),
+    }, { requestId, ...userContext });
+
+    // Simplemente renderizar la página de login
+    // El middleware ya maneja las redirecciones si el usuario está autenticado
+    return ctx.render({});
+  },
+
   async POST(req, ctx) {
+    const requestId = ctx.state.requestId || "unknown";
+    const userContext = extractUserContext(ctx.state.user);
+
+    await logger.info("LOGIN", "Processing login attempt", {
+      url: req.url,
+      userAgent: req.headers.get("user-agent"),
+    }, { requestId, ...userContext });
+
     const form = await req.formData();
     const email = form.get("email")?.toString();
     const password = form.get("password")?.toString();
 
+    await logger.debug("LOGIN", "Login form data extracted", {
+      hasEmail: !!email,
+      hasPassword: !!password,
+      email: email || "missing",
+    }, { requestId });
+
     if (!email || !password) {
-      return ctx.render({ error: "Email y contraseña son requeridos." });
+      await logger.warn(
+        "LOGIN",
+        "Login validation failed: missing credentials",
+        {
+          hasEmail: !!email,
+          hasPassword: !!password,
+        },
+        { requestId },
+      );
+
+      return ctx.render({
+        email,
+        error: "Email y contraseña son requeridos",
+      });
     }
 
-    const kv = await Deno.openKv();
-    const userEntry = await kv.get(["users", email]);
-    kv.close();
+    try {
+      // Buscar usuario en la base de datos
+      const kv = await getKv();
 
-    if (!userEntry.value) {
-      return ctx.render({ error: "Credenciales incorrectas." });
+      await logger.debug("LOGIN", "Looking up user in database", {
+        email,
+      }, { requestId });
+
+      const userResult = await kv.get(["users", email]);
+
+      if (!userResult.value) {
+        await logger.warn("LOGIN", "Login failed: user not found", {
+          email,
+        }, { requestId });
+
+        return ctx.render({
+          email,
+          error: "Credenciales inválidas",
+        });
+      }
+
+      const user = userResult.value as User;
+
+      await logger.debug("LOGIN", "User found, verifying password", {
+        email,
+        userId: user.id,
+        userRole: user.role,
+      }, { requestId });
+
+      // Verificar contraseña
+      const isValidPassword = await compare(password, user.passwordHash);
+
+      if (!isValidPassword) {
+        await logger.warn("LOGIN", "Login failed: invalid password", {
+          email,
+          userId: user.id,
+        }, { requestId });
+
+        return ctx.render({
+          email,
+          error: "Credenciales inválidas",
+        });
+      }
+
+      // Crear sesión simple (en producción usar JWT)
+      const sessionId = crypto.randomUUID();
+
+      await logger.debug("LOGIN", "Creating user session", {
+        email,
+        userId: user.id,
+        sessionId: sessionId.substring(0, 8) + "...",
+      }, { requestId });
+
+      await kv.set(
+        ["sessions", sessionId],
+        { userEmail: email },
+        { expireIn: 7 * 24 * 60 * 60 * 1000 },
+      );
+
+      // Crear respuesta con cookie
+      const response = new Response("", {
+        status: 302,
+        headers: { Location: "/dashboard" },
+      });
+
+      setCookie(response.headers, {
+        name: "auth_session",
+        value: sessionId,
+        maxAge: 7 * 24 * 60 * 60, // 7 días
+        httpOnly: true,
+        secure: Deno.env.get("DENO_ENV") === "production",
+        sameSite: "Lax",
+        path: "/",
+      });
+
+      await logger.info("LOGIN", "Login successful, redirecting to dashboard", {
+        email,
+        userId: user.id,
+        userRole: user.role,
+        sessionId: sessionId.substring(0, 8) + "...",
+      }, { requestId, userId: user.id, userRole: user.role });
+
+      return response;
+    } catch (error) {
+      await logger.error("LOGIN", "Login error occurred", {
+        email,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      }, { requestId });
+
+      return ctx.render({
+        email,
+        error: "Error interno del servidor",
+      });
     }
-
-    const user = userEntry.value as {
-      passwordHash: string;
-      [key: string]: unknown;
-    };
-    const isPasswordValid = await verify(password, user.passwordHash);
-
-    if (!isPasswordValid) {
-      return ctx.render({ error: "Credenciales incorrectas." });
-    }
-
-    // --- Session Management ---
-    const sessionId = crypto.randomUUID();
-    const sessionExpiry = 3 * 24 * 60 * 60 * 1000; // 3 days
-
-    const kvSession = await Deno.openKv();
-    await kvSession.set(["sessions", sessionId], userEntry.key, {
-      expireIn: sessionExpiry,
-    });
-    kvSession.close();
-
-    const headers = new Headers();
-    setCookie(headers, {
-      name: "auth_session",
-      value: sessionId,
-      path: "/",
-      httpOnly: true,
-      secure: false, // Set to false for local HTTP testing if needed
-      sameSite: "Lax",
-      expires: new Date(Date.now() + sessionExpiry),
-    });
-
-    // Redirect to dashboard on successful login
-    headers.set("location", "/dashboard");
-    return new Response(null, {
-      status: 303, // See Other: standard for redirecting after a POST
-      headers,
-    });
   },
 };
 
-// --- PAGE RENDERING LOGIC (SERVER-SIDE) ---
-export default function LoginPage({ data }: PageProps<Data>) {
+export default function Login({ data }: PageProps<LoginData>) {
   return (
-    <div class="flex flex-col min-h-screen">
-      <Header />
-      <main class="flex-grow flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-4 py-12">
-        <div class="w-full max-w-md">
-          <div class="text-center mb-8">
-            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">
-              Iniciar Sesión
+    <>
+      <Head>
+        <title>Iniciar Sesión - Horizonte Clínica</title>
+        <meta
+          name="description"
+          content="Accede a tu cuenta de Horizonte Clínica"
+        />
+      </Head>
+
+      <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8">
+          {/* Logo y título */}
+          <div class="text-center">
+            <div class="mx-auto h-16 w-16 flex items-center justify-center bg-blue-600 rounded-full shadow-lg">
+              <Icon name="heart-handshake" className="h-8 w-8 text-white" />
+            </div>
+            <h2 class="mt-6 text-3xl font-bold text-gray-900 dark:text-white">
+              Horizonte Clínica
             </h2>
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              Ingresa a tu cuenta para continuar.
+              Inicia sesión en tu cuenta
             </p>
           </div>
 
-          {/* Simple Form - No client-side JS needed for submission */}
-          <form method="POST" class="space-y-6">
-            {data?.error && (
-              <div
-                class="bg-red-100 border border-red-400 text-red-700 dark:bg-red-900/20 dark:border-red-500 dark:text-red-300 px-4 py-3 rounded-md text-sm"
-                role="alert"
-              >
-                {data.error}
+          {/* Formulario de login */}
+          <Card class="p-8 shadow-xl">
+            <form method="POST" class="space-y-6">
+              {data?.error && (
+                <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded-lg text-sm">
+                  {data.error}
+                </div>
+              )}
+
+              <div class="space-y-4">
+                {/* Campo Email con icono */}
+                <div class="relative">
+                  <label
+                    htmlFor="email"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Correo electrónico
+                  </label>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Icon name="mail" className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      id="email"
+                      name="email"
+                      type="email"
+                      required
+                      hasLeftIcon
+                      placeholder="tu@email.com"
+                      value={data?.email || ""}
+                      class="block w-full"
+                    />
+                  </div>
+                </div>
+
+                {/* Campo Contraseña con icono */}
+                <div class="relative">
+                  <label
+                    htmlFor="password"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    Contraseña
+                  </label>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Icon name="lock" className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <Input
+                      id="password"
+                      name="password"
+                      type="password"
+                      required
+                      hasLeftIcon
+                      placeholder="••••••••"
+                      class="block w-full"
+                    />
+                  </div>
+                </div>
               </div>
-            )}
 
-            <div class="relative">
-              <LuMail class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <Input
-                type="email"
-                name="email" // Use name attribute for form data
-                placeholder="Correo electrónico"
-                required
-                class="pl-10"
-              />
-            </div>
+              {/* Botón de envío */}
+              <div>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  class="w-full flex justify-center py-3 px-4 text-sm font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <Icon name="login" className="h-4 w-4 mr-2" />
+                  Iniciar Sesión
+                </Button>
+              </div>
+            </form>
 
-            <div class="relative">
-              <LuLock class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <Input
-                type="password"
-                name="password" // Use name attribute for form data
-                placeholder="Contraseña"
-                required
-                class="pl-10"
-              />
-            </div>
-
-            <div>
-              <Button type="submit" class="w-full flex justify-center">
-                <LuLogIn class="mr-2 h-5 w-5" />
-                Ingresar
-              </Button>
-            </div>
-            <div class="text-xs text-center text-gray-500 dark:text-gray-400 space-y-1">
-              <p>Para probar (después de ejecutar `deno task seed`):</p>
-              <p>
-                Usuario:{" "}
-                <code class="font-mono bg-gray-200 dark:bg-gray-700 p-1 rounded">
-                  admin@horizonte.com
-                </code>
-              </p>
-              <p>
-                Contraseña:{" "}
-                <code class="font-mono bg-gray-200 dark:bg-gray-700 p-1 rounded">
-                  password123
-                </code>
+            {/* Información adicional */}
+            <div class="mt-6 text-center">
+              <p class="text-xs text-gray-500 dark:text-gray-400">
+                ¿Problemas para acceder? Contacta al administrador del sistema
               </p>
             </div>
-          </form>
+          </Card>
         </div>
-      </main>
-      <Footer />
-    </div>
+      </div>
+    </>
   );
 }

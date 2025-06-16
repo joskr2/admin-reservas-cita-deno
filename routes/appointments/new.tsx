@@ -1,257 +1,716 @@
-import type { Handlers, PageProps } from "$fresh/server.ts";
-import Header from "../../components/layout/Header.tsx";
-import Footer from "../../components/layout/Footer.tsx";
-import type { AppState } from "../_middleware.ts";
-
+import { type FreshContext, type PageProps } from "$fresh/server.ts";
 import {
-  LuCalendarPlus
-} from "@preact-icons/lu";
+  type Appointment,
+  type AppState,
+  type Patient,
+  type Room,
+  type RoomId,
+  type UserProfile,
+} from "../../types/index.ts";
+import { Icon } from "../../components/ui/Icon.tsx";
+import { Button } from "../../components/ui/Button.tsx";
 import { Input } from "../../components/ui/Input.tsx";
 import { Select } from "../../components/ui/Select.tsx";
-import { Button } from "../../components/ui/Button.tsx";
+import {
+  createAppointment,
+  getAllRooms,
+  getAllUsers,
+  getAvailableRooms,
+} from "../../lib/kv.ts";
+import { getPatientRepository } from "../../lib/database/index.ts";
+import AppointmentFormValidator from "../../islands/AppointmentFormValidator.tsx";
+import PatientSelect from "../../islands/PatientSelect.tsx";
+import Toast from "../../islands/Toast.tsx";
+import { extractUserContext, logger } from "../../lib/logger.ts";
+import {
+  checkAppointmentConflicts,
+} from "../../lib/utils/conflictValidation.ts";
 
-// Interface for a user who can be assigned an appointment
-interface AssignableUser {
-  email: string;
-  role: "superadmin" | "psychologist";
-}
+export async function handler(req: Request, ctx: FreshContext<AppState>) {
+  const requestId = ctx.state.requestId || "unknown";
+  const userContext = extractUserContext(ctx.state.user);
 
-// Data passed from GET handler to the component
-interface Data {
-  psychologists: AssignableUser[];
-  error?: string;
-}
+  await logger.info(
+    "APPOINTMENTS_NEW",
+    `Handler called with method: ${req.method}`,
+    {
+      method: req.method,
+      url: req.url,
+      user: ctx.state.user,
+    },
+    { requestId, ...userContext },
+  );
 
-// Helper function to fetch assignable users to avoid code duplication
-async function getAssignableUsers(kv: Deno.Kv): Promise<AssignableUser[]> {
-  const users: AssignableUser[] = [];
-  const iter = kv.list<AssignableUser>({ prefix: ["users_by_role"] });
-  for await (const entry of iter) {
-    // We only want psychologists and superadmins to be assignable
-    if (entry.key[1] === "psychologist" || entry.key[1] === "superadmin") {
-      users.push(entry.value);
+  if (req.method === "GET") {
+    const url = new URL(req.url);
+    const autoFill = url.searchParams.get("autoFill") === "true";
+    const prefilledData = autoFill
+      ? {
+        patientName: url.searchParams.get("patientName") || "",
+        psychologistEmail: url.searchParams.get("psychologistEmail") || "",
+        appointmentDate: url.searchParams.get("appointmentDate") || "",
+        startTime: url.searchParams.get("startTime") || "",
+        endTime: url.searchParams.get("endTime") || "",
+        roomId: url.searchParams.get("roomId") || "",
+        notes: url.searchParams.get("notes") || "",
+      }
+      : undefined;
+    await logger.debug(
+      "APPOINTMENTS_NEW",
+      "Processing GET request for new appointment form",
+      {},
+      { requestId, ...userContext },
+    );
+    const kv = await Deno.openKv();
+
+    try {
+      const users = await getAllUsers();
+      let psychologists = users
+        .filter((user) => user.role === "psychologist")
+        .sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email));
+
+      // Si es psicólogo, solo puede crear citas para sí mismo
+      if (ctx.state.user?.role === "psychologist") {
+        psychologists = psychologists.filter(
+          (psychologist) => psychologist.email === ctx.state.user?.email,
+        );
+      }
+
+      // Obtener todas las salas
+      const rooms = await getAllRooms();
+
+      // Obtener todos los pacientes
+      const patientRepository = getPatientRepository();
+      const patients = await patientRepository.getAll();
+
+      return ctx.render({
+        psychologists,
+        rooms,
+        patients,
+        currentUserRole: ctx.state.user?.role,
+        currentUserEmail: ctx.state.user?.email,
+        formData: prefilledData,
+      });
+    } finally {
+      await kv.close();
     }
   }
-  // Remove duplicates just in case and sort
-  const uniqueUsers = Array.from(
-    new Map(users.map((u) => [u.email, u])).values()
-  );
-  uniqueUsers.sort((a, b) => a.email.localeCompare(b.email));
-  return uniqueUsers;
-}
 
-export const handler: Handlers<Data, AppState> = {
-  // --- RENDER THE FORM ---
-  async GET(_req, ctx) {
-    const kv = await Deno.openKv();
-    const psychologists = await getAssignableUsers(kv);
-    kv.close();
+  if (req.method === "POST") {
+    await logger.info(
+      "APPOINTMENTS_NEW",
+      "Processing POST request for appointment creation",
+      {},
+      { requestId, ...userContext },
+    );
 
-    return ctx.render({ psychologists });
-  },
+    const formData = await req.formData();
+    const patientName = formData.get("patientName")?.toString();
+    const psychologistEmail = formData.get("psychologistEmail")?.toString();
+    const appointmentDate = formData.get("appointmentDate")?.toString();
+    const startTime = formData.get("startTime")?.toString();
+    const endTime = formData.get("endTime")?.toString();
+    const roomId = formData.get("roomId")?.toString() as RoomId;
+    const notes = formData.get("notes")?.toString();
 
-  // --- PROCESS FORM SUBMISSION ---
-  async POST(req, ctx) {
-    const form = await req.formData();
-    const patientName = form.get("patientName")?.toString();
-    let psychologistEmail = form.get("psychologistEmail")?.toString();
-    const appointmentDate = form.get("appointmentDate")?.toString();
-    const appointmentTime = form.get("appointmentTime")?.toString();
+    await logger.debug("APPOINTMENTS_NEW", "Form data extracted", {
+      patientName,
+      psychologistEmail,
+      appointmentDate,
+      startTime,
+      endTime,
+      roomId,
+      notes,
+      hasPatientName: !!patientName,
+      hasPsychologistEmail: !!psychologistEmail,
+      hasDate: !!appointmentDate,
+      hasStartTime: !!startTime,
+      hasEndTime: !!endTime,
+      hasRoomId: !!roomId,
+    }, { requestId, ...userContext });
 
-    // If the logged-in user is a psychologist, they can only book for themselves
-    if (ctx.state.user?.role === "psychologist") {
-      psychologistEmail = ctx.state.user.email;
+    // Validación de permisos: psicólogos solo pueden crear citas para sí mismos
+    if (
+      ctx.state.user?.role === "psychologist" &&
+      psychologistEmail !== ctx.state.user.email
+    ) {
+      await logger.warn(
+        "APPOINTMENTS_NEW",
+        "Permission denied: psychologist trying to assign appointment to another psychologist",
+        {
+          currentUserEmail: ctx.state.user.email,
+          requestedPsychologistEmail: psychologistEmail,
+        },
+        { requestId, ...userContext },
+      );
+      const kv = await Deno.openKv();
+      try {
+        const users = await getAllUsers();
+        let psychologists = users
+          .filter((user) => user.role === "psychologist")
+          .sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email));
+
+        psychologists = psychologists.filter(
+          (psychologist) => psychologist.email === ctx.state.user?.email,
+        );
+
+        const rooms = await getAllRooms();
+
+        // Obtener todos los pacientes
+        const patientRepository = getPatientRepository();
+        const patients = await patientRepository.getAll();
+
+        return ctx.render({
+          psychologists,
+          rooms,
+          patients,
+          currentUserRole: ctx.state.user?.role,
+          currentUserEmail: ctx.state.user?.email,
+          error: "No tienes permisos para asignar citas a otros psicólogos",
+        });
+      } finally {
+        await kv.close();
+      }
     }
 
-    // --- Validation ---
     if (
       !patientName ||
       !psychologistEmail ||
       !appointmentDate ||
-      !appointmentTime
+      !startTime ||
+      !endTime ||
+      !roomId
     ) {
+      await logger.warn(
+        "APPOINTMENTS_NEW",
+        "Validation failed: missing required fields",
+        {
+          missingFields: {
+            patientName: !patientName,
+            psychologistEmail: !psychologistEmail,
+            appointmentDate: !appointmentDate,
+            startTime: !startTime,
+            endTime: !endTime,
+            roomId: !roomId,
+          },
+        },
+        { requestId, ...userContext },
+      );
       const kv = await Deno.openKv();
-      const psychologists = await getAssignableUsers(kv);
-      kv.close();
-      return ctx.render({
-        psychologists,
-        error: "Todos los campos son requeridos.",
-      });
+      try {
+        const users = await getAllUsers();
+        let psychologists = users
+          .filter((user) => user.role === "psychologist")
+          .sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email));
+
+        // Si es psicólogo, solo puede crear citas para sí mismo
+        if (ctx.state.user?.role === "psychologist") {
+          psychologists = psychologists.filter(
+            (psychologist) => psychologist.email === ctx.state.user?.email,
+          );
+        }
+
+        const rooms = await getAllRooms();
+
+        // Obtener todos los pacientes
+        const patientRepository = getPatientRepository();
+        const patients = await patientRepository.getAll();
+
+        return ctx.render({
+          psychologists,
+          rooms,
+          patients,
+          currentUserRole: ctx.state.user?.role,
+          currentUserEmail: ctx.state.user?.email,
+          error: "Todos los campos son requeridos",
+        });
+      } finally {
+        await kv.close();
+      }
     }
 
-    // --- Create Appointment Record ---
-    const kv = await Deno.openKv();
-    const appointmentId = crypto.randomUUID();
-    const newAppointment = {
-      id: appointmentId,
-      psychologistEmail,
-      patientName,
+    // Verificar conflictos antes de crear la cita
+    const conflictCheck = await checkAppointmentConflicts(
       appointmentDate,
-      appointmentTime,
-      status: "scheduled" as const,
-      createdAt: new Date().toISOString(),
-    };
+      startTime,
+      endTime,
+      psychologistEmail,
+      roomId,
+      patientName,
+    );
 
-    // Use an atomic operation to ensure data consistency
-    const result = await kv
-      .atomic()
-      .set(["appointments", appointmentId], newAppointment)
-      .set(
-        ["appointments_by_psychologist", psychologistEmail, appointmentId],
-        newAppointment
-      )
-      .commit();
+    await logger.debug("APPOINTMENTS_NEW", "Conflict check result", {
+      hasConflicts: conflictCheck.hasConflicts,
+      conflictTypes: conflictCheck.conflicts.map((c) => c.type),
+      conflictDetails: conflictCheck.conflicts,
+    }, { requestId, ...userContext });
 
-    kv.close();
+    if (conflictCheck.hasConflicts) {
+      await logger.warn(
+        "APPOINTMENTS_NEW",
+        "Conflicts detected",
+        {
+          conflicts: conflictCheck.conflicts,
+        },
+        { requestId, ...userContext },
+      );
 
-    if (!result.ok) {
-      const psychologists = await getAssignableUsers(kv);
-      return ctx.render({
-        psychologists,
-        error: "Error al guardar la cita en la base de datos.",
-      });
+      // Crear mensaje simple para el toast
+      const firstConflict = conflictCheck.conflicts[0];
+      let conflictMessage = "Horario ocupado";
+      
+      if (firstConflict?.type === "room" && firstConflict.conflictingAppointment) {
+        const appointment = firstConflict.conflictingAppointment;
+        const roomName = appointment.roomName || `Sala ${appointment.roomId}`;
+        const psychologistName = appointment.psychologistName || appointment.psychologistEmail;
+        const startTime = appointment.startTime || appointment.appointmentTime;
+        const endTime = appointment.endTime || appointment.appointmentTime;
+        
+        conflictMessage = `${roomName} tomada por ${psychologistName}, desde las ${startTime}-${endTime}. Intenta otra fecha o sala.`;
+      }
+
+      const kv = await Deno.openKv();
+      try {
+        const users = await getAllUsers();
+        let psychologists = users
+          .filter((user) => user.role === "psychologist")
+          .sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email));
+
+        if (ctx.state.user?.role === "psychologist") {
+          psychologists = psychologists.filter(
+            (psychologist) => psychologist.email === ctx.state.user?.email,
+          );
+        }
+
+        const rooms = await getAllRooms();
+        const patientRepository = getPatientRepository();
+        const patients = await patientRepository.getAll();
+
+        return ctx.render({
+          psychologists,
+          rooms,
+          patients,
+          currentUserRole: ctx.state.user?.role,
+          currentUserEmail: ctx.state.user?.email,
+          conflictMessage,
+          formData: {
+            patientName,
+            psychologistEmail,
+            appointmentDate,
+            startTime,
+            endTime,
+            roomId,
+            notes,
+          },
+        });
+      } finally {
+        await kv.close();
+      }
     }
 
-    // Redirect to appointments list on success
-    return new Response(null, {
-      status: 303,
-      headers: { Location: "/appointments" },
-    });
-  },
-};
+    const kv = await Deno.openKv();
+
+    try {
+      // Obtener el nombre del psicólogo
+      const psychologist = await getAllUsers().then((users) =>
+        users.find((user) => user.email === psychologistEmail)
+      );
+
+      const appointmentData: Appointment = {
+        id: crypto.randomUUID(),
+        patientName,
+        psychologistEmail,
+        psychologistName: psychologist?.name || psychologist?.email ||
+          undefined,
+        appointmentDate,
+        appointmentTime: startTime, // Mantener compatibilidad temporal
+        startTime,
+        endTime,
+        roomId,
+        status: "pending" as const,
+        notes,
+        createdAt: new Date().toISOString(),
+      };
+
+      await logger.info(
+        "APPOINTMENTS_NEW",
+        "Attempting to create appointment",
+        {
+          appointmentId: appointmentData.id,
+          patientName,
+          psychologistEmail,
+          psychologistName: appointmentData.psychologistName,
+          appointmentDate,
+          startTime,
+          endTime,
+          roomId,
+        },
+        { requestId, ...userContext },
+      );
+
+      const success = await createAppointment(appointmentData);
+
+      await logger.info("APPOINTMENTS_NEW", "Appointment creation result", {
+        appointmentId: appointmentData.id,
+        success,
+      }, { requestId, ...userContext });
+
+      if (success) {
+        await logger.info(
+          "APPOINTMENTS_NEW",
+          "Appointment created successfully, redirecting to appointments list",
+          {
+            appointmentId: appointmentData.id,
+          },
+          { requestId, ...userContext },
+        );
+        return new Response(null, {
+          status: 303,
+          headers: { Location: "/appointments" },
+        });
+      } else {
+        await logger.error("APPOINTMENTS_NEW", "Failed to create appointment", {
+          appointmentId: appointmentData.id,
+          appointmentData,
+        }, { requestId, ...userContext });
+        const users = await getAllUsers();
+        let psychologists = users
+          .filter((user) => user.role === "psychologist")
+          .sort((a, b) => (a.name || a.email).localeCompare(b.name || b.email));
+
+        if (ctx.state.user?.role === "psychologist") {
+          psychologists = psychologists.filter(
+            (psychologist) => psychologist.email === ctx.state.user?.email,
+          );
+        }
+
+        const rooms = await getAllRooms();
+
+        // Obtener todos los pacientes
+        const patientRepository = getPatientRepository();
+        const patients = await patientRepository.getAll();
+
+        return ctx.render({
+          psychologists,
+          rooms,
+          patients,
+          currentUserRole: ctx.state.user?.role,
+          currentUserEmail: ctx.state.user?.email,
+          error: "Error al crear la cita",
+        });
+      }
+    } finally {
+      await kv.close();
+    }
+  }
+
+  // Caso inesperado - loggear para debug
+  await logger.error(
+    "APPOINTMENTS_NEW",
+    "Unexpected method or route reached end of handler",
+    {
+      method: req.method,
+      url: req.url,
+      headers: Object.fromEntries(req.headers.entries()),
+    },
+    { requestId, ...userContext },
+  );
+
+  return new Response("Method not allowed", { status: 405 });
+}
 
 export default function NewAppointmentPage({
   data,
-  state,
-}: PageProps<Data, AppState>) {
-  const { psychologists, error } = data;
-  const currentUser = state.user;
-  const isPsychologist = currentUser?.role === "psychologist";
+}: PageProps<
+  {
+    psychologists: UserProfile[];
+    rooms: Room[];
+    patients: Patient[];
+    currentUserRole?: string;
+    currentUserEmail?: string;
+    error?: string;
+    conflictMessage?: string;
+    formData?: {
+      patientName?: string;
+      psychologistEmail?: string;
+      appointmentDate?: string;
+      startTime?: string;
+      endTime?: string;
+      roomId?: string;
+      notes?: string;
+    };
+  },
+  AppState
+>) {
+  const {
+    psychologists,
+    rooms,
+    patients,
+    currentUserRole,
+    currentUserEmail,
+    error,
+    conflictMessage,
+    formData,
+  } = data || {
+    psychologists: [],
+    rooms: [],
+    patients: [],
+  };
 
   return (
-    <div class="flex flex-col min-h-screen">
-      <Header />
-      <main class="flex-grow bg-gray-50 dark:bg-gray-900">
-        <div class="mx-auto max-w-2xl py-12 px-4 sm:px-6 lg:px-8">
-          <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-8">
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              Agendar Nueva Cita
-            </h1>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              Completa los detalles para programar una nueva consulta.
-            </p>
-
-            <form method="POST" class="space-y-6">
-              {error && (
-                <div
-                  class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4"
-                  role="alert"
-                >
-                  <p class="font-bold">Error</p>
-                  <p>{error}</p>
-                </div>
-              )}
-
+    <div class="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div class="px-4 py-6 sm:px-0">
+          <div class="mb-8">
+            <div class="flex items-center justify-between">
               <div>
-                <label
-                  for="patientName"
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  Nombre del Paciente
-                </label>
-                <div class="mt-1">
-                  <Input
-                    type="text"
-                    name="patientName"
-                    id="patientName"
-                    required
+                <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                  Nueva Cita
+                </h1>
+                <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  Programa una nueva cita para un paciente
+                </p>
+              </div>
+              <a
+                href="/appointments"
+                class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                <Icon name="arrow-left" className="h-4 w-4 mr-2" />
+                Volver a Citas
+              </a>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h2 class="text-lg font-medium text-gray-900 dark:text-white">
+                Información de la Cita
+              </h2>
+            </div>
+
+            <form
+              action="/appointments/new"
+              method="POST"
+            >
+              <div class="px-6 py-4 space-y-6">
+                {error && (
+                  <div class="rounded-md bg-red-50 dark:bg-red-900/50 p-4">
+                    <div class="flex">
+                      <div class="flex-shrink-0">
+                        <Icon
+                          name="file-warning"
+                          className="h-5 w-5 text-red-400"
+                        />
+                      </div>
+                      <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+                          Error en el formulario
+                        </h3>
+                        <div class="mt-2 text-sm text-red-700 dark:text-red-300">
+                          {error}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label
+                      htmlFor="patientName"
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      <Icon name="user" className="h-4 w-4 inline mr-2" />
+                      Paciente
+                    </label>
+                    <PatientSelect
+                      patients={patients}
+                      required
+                      defaultValue={formData?.patientName}
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="psychologistEmail"
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      <Icon name="user-cog" className="h-4 w-4 inline mr-2" />
+                      Psicólogo Asignado
+                    </label>
+                    <Select
+                      id="psychologistEmail"
+                      name="psychologistEmail"
+                      required
+                      disabled={currentUserRole === "psychologist"}
+                      value={currentUserRole === "psychologist"
+                        ? currentUserEmail
+                        : formData?.psychologistEmail || ""}
+                    >
+                      {currentUserRole === "superadmin" && (
+                        <option value="">Seleccione un psicólogo</option>
+                      )}
+                      {psychologists.map((psychologist) => (
+                        <option
+                          key={psychologist.email}
+                          value={psychologist.email}
+                          selected={currentUserRole === "psychologist" &&
+                            psychologist.email === currentUserEmail}
+                        >
+                          {psychologist.name || psychologist.email}
+                        </option>
+                      ))}
+                    </Select>
+                    {/* Campo oculto para asegurar que el valor se envíe cuando el select está deshabilitado */}
+                    {currentUserRole === "psychologist" && (
+                      <input
+                        type="hidden"
+                        name="psychologistEmail"
+                        value={currentUserEmail}
+                      />
+                    )}
+                    {currentUserRole === "psychologist" && (
+                      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        Las citas se asignarán automáticamente a tu perfil
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                  <div>
+                    <label
+                      htmlFor="appointmentDate"
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      <Icon name="calendar" className="h-4 w-4 inline mr-2" />
+                      Fecha de la Cita
+                    </label>
+                    <Input
+                      id="appointmentDate"
+                      name="appointmentDate"
+                      type="date"
+                      required
+                      min={new Date().toISOString().split("T")[0]}
+                      value={formData?.appointmentDate || ""}
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="startTime"
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      <Icon name="clock" className="h-4 w-4 inline mr-2" />
+                      Hora de Inicio
+                    </label>
+                    <Input
+                      id="startTime"
+                      name="startTime"
+                      type="time"
+                      required
+                      value={formData?.startTime || ""}
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="endTime"
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      <Icon name="clock" className="h-4 w-4 inline mr-2" />
+                      Hora de Fin
+                    </label>
+                    <Input
+                      id="endTime"
+                      name="endTime"
+                      type="time"
+                      required
+                      value={formData?.endTime || ""}
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="roomId"
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      <Icon name="briefcase" className="h-4 w-4 inline mr-2" />
+                      Sala de Atención
+                    </label>
+                    <Select
+                      id="roomId"
+                      name="roomId"
+                      required
+                      value={formData?.roomId || ""}
+                    >
+                      <option value="">Seleccione una sala</option>
+                      {rooms.map((room) => (
+                        <option
+                          key={room.id}
+                          value={room.id}
+                          disabled={!room.isAvailable}
+                        >
+                          {room.name} {!room.isAvailable && "(No disponible)"}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="notes"
+                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                  >
+                    <Icon name="file-digit" className="h-4 w-4 inline mr-2" />
+                    Notas (Opcional)
+                  </label>
+                  <textarea
+                    id="notes"
+                    name="notes"
+                    rows={3}
+                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                    placeholder="Información adicional sobre la cita..."
+                    value={formData?.notes || ""}
                   />
                 </div>
-              </div>
 
-              <div>
-                <label
-                  for="psychologistEmail"
-                  class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  Psicólogo Asignado
-                </label>
-                <div class="mt-1">
-                  <Select
-                    name="psychologistEmail"
-                    id="psychologistEmail"
-                    disabled={isPsychologist}
+                <div class="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-200 dark:border-gray-700">
+                  <a
+                    href="/appointments"
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
-                    {psychologists.map((p) => (
-                      <option
-                        key={p.email}
-                        value={p.email}
-                        selected={currentUser?.email === p.email}
-                      >
-                        {p.email} ({p.role})
-                      </option>
-                    ))}
-                  </Select>
-                </div>
-                {isPsychologist && (
-                  <p class="mt-2 text-xs text-gray-500">
-                    Como psicólogo, solo puedes agendar citas para ti mismo.
-                  </p>
-                )}
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div>
-                  <label
-                    for="appointmentDate"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    Cancelar
+                  </a>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    className="inline-flex items-center"
                   >
-                    Fecha de la Cita
-                  </label>
-                  <div class="mt-1">
-                    <Input
-                      type="date"
-                      name="appointmentDate"
-                      id="appointmentDate"
-                      required
+                    <Icon
+                      name="calendar-plus"
+                      className="h-4 w-4 mr-2 filter brightness-0 invert"
+                      disableAutoFilter
                     />
-                  </div>
+                    Crear Cita
+                  </Button>
                 </div>
-                <div>
-                  <label
-                    for="appointmentTime"
-                    class="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                  >
-                    Hora de la Cita
-                  </label>
-                  <div class="mt-1">
-                    <Input
-                      type="time"
-                      name="appointmentTime"
-                      id="appointmentTime"
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div class="flex justify-end gap-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <a
-                  href="/appointments"
-                  class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600 dark:hover:bg-gray-600"
-                >
-                  Cancelar
-                </a>
-                <Button type="submit">
-                  <LuCalendarPlus class="-ml-1 mr-2 h-5 w-5" />
-                  Agendar Cita
-                </Button>
               </div>
             </form>
           </div>
         </div>
       </main>
-      <Footer />
+      
+      {/* Toast para mostrar mensajes de conflicto */}
+      {conflictMessage && (
+        <Toast 
+          message={conflictMessage}
+          type="warning"
+          duration={10000}
+        />
+      )}
     </div>
   );
 }
