@@ -85,7 +85,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
   const date = url.searchParams.get("date") ||
     new Date().toISOString().split("T")[0];
 
-  await logger.info("APPOINTMENTS_CALENDAR", "Calendar page requested", {
+  logger.info("APPOINTMENTS_CALENDAR", "Calendar page requested", {
     view,
     date,
     url: req.url,
@@ -93,7 +93,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
   const currentUser = ctx.state.user;
   if (!currentUser) {
-    await logger.warn(
+    logger.warn(
       "APPOINTMENTS_CALENDAR",
       "Unauthenticated user redirected to login",
       {
@@ -105,7 +105,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
   }
 
   try {
-    await logger.debug("APPOINTMENTS_CALENDAR", "Loading calendar data", {
+    logger.debug("APPOINTMENTS_CALENDAR", "Loading calendar data", {
       userRole: currentUser.role,
       userEmail: currentUser.email,
       view,
@@ -118,7 +118,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     let appointments: Appointment[];
     if (currentUser.role === "superadmin") {
       appointments = await appointmentRepository.getAll();
-      await logger.debug(
+      logger.debug(
         "APPOINTMENTS_CALENDAR",
         "Loaded all appointments for superadmin",
         {
@@ -130,7 +130,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       appointments = await appointmentRepository.getAppointmentsByPsychologist(
         currentUser.email,
       );
-      await logger.debug(
+      logger.debug(
         "APPOINTMENTS_CALENDAR",
         "Loaded psychologist appointments",
         {
@@ -146,7 +146,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       appointments,
     );
 
-    await logger.debug(
+    logger.debug(
       "APPOINTMENTS_CALENDAR",
       "Enriched appointments with names",
       {
@@ -156,7 +156,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       { requestId, ...userContext },
     );
 
-    await logger.info(
+    logger.info(
       "APPOINTMENTS_CALENDAR",
       "Calendar data loaded successfully",
       {
@@ -180,7 +180,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       date,
     });
   } catch (error) {
-    await logger.error("APPOINTMENTS_CALENDAR", "Error loading calendar data", {
+    logger.error("APPOINTMENTS_CALENDAR", "Error loading calendar data", {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       userRole: currentUser?.role,

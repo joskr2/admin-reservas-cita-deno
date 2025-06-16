@@ -1,15 +1,7 @@
 /// <reference lib="deno.ns" />
 
-export enum LogLevel {
-  DEBUG = 0,
-  INFO = 1,
-  WARN = 2,
-  ERROR = 3,
-}
-
 export interface LogEntry {
   timestamp: string;
-  level: LogLevel;
   category: string;
   message: string;
   data?: unknown;
@@ -20,30 +12,10 @@ export interface LogEntry {
 
 export class Logger {
   private static instance: Logger;
-  private logLevel: LogLevel = LogLevel.INFO;
   private enableConsole: boolean = true;
-  private enableFile: boolean = false;
-  private logFile: string = "./logs/app.log";
 
   private constructor() {
-    // Configurar nivel de log desde variable de entorno
-    try {
-      const envLogLevel = Deno.env.get("LOG_LEVEL");
-      if (envLogLevel) {
-        this.logLevel = LogLevel[envLogLevel as keyof typeof LogLevel] ??
-          LogLevel.INFO;
-      }
-
-      // Habilitar logging a archivo en producción
-      const envEnableFile = Deno.env.get("LOG_TO_FILE");
-      if (envEnableFile === "true") {
-        this.enableFile = true;
-      }
-    } catch {
-      // Si no se puede acceder a variables de entorno, usar valores por defecto
-      this.logLevel = LogLevel.INFO;
-      this.enableFile = false;
-    }
+    // Simple constructor without environment dependencies
   }
 
   public static getInstance(): Logger {
@@ -54,13 +26,12 @@ export class Logger {
   }
 
   private formatLogEntry(entry: LogEntry): string {
-    const levelName = LogLevel[entry.level];
     const timestamp = entry.timestamp;
     const requestInfo = entry.requestId ? ` [${entry.requestId}]` : "";
     const userInfo = entry.userId ? ` [${entry.userRole}:${entry.userId}]` : "";
 
     let message =
-      `[${timestamp}] ${levelName} [${entry.category}]${requestInfo}${userInfo}: ${entry.message}`;
+      `[${timestamp}] [${entry.category}]${requestInfo}${userInfo}: ${entry.message}`;
 
     if (entry.data) {
       message += `\n  Data: ${JSON.stringify(entry.data, null, 2)}`;
@@ -69,40 +40,14 @@ export class Logger {
     return message;
   }
 
-  private async writeToFile(entry: LogEntry): Promise<void> {
-    if (!this.enableFile) return;
-
-    try {
-      const logMessage = this.formatLogEntry(entry) + "\n";
-      await Deno.writeTextFile(this.logFile, logMessage, { append: true });
-    } catch (error) {
-      console.error("Failed to write to log file:", error);
-    }
-  }
-
   private writeToConsole(entry: LogEntry): void {
     if (!this.enableConsole) return;
 
     const message = this.formatLogEntry(entry);
-
-    switch (entry.level) {
-      case LogLevel.DEBUG:
-        console.debug(message);
-        break;
-      case LogLevel.INFO:
-        console.info(message);
-        break;
-      case LogLevel.WARN:
-        console.warn(message);
-        break;
-      case LogLevel.ERROR:
-        console.error(message);
-        break;
-    }
+    console.log(message);
   }
 
-  private async log(
-    level: LogLevel,
+  private log(
     category: string,
     message: string,
     data?: unknown,
@@ -111,12 +56,9 @@ export class Logger {
       userId?: string | undefined;
       userRole?: string | undefined;
     },
-  ): Promise<void> {
-    if (level < this.logLevel) return;
-
+  ): void {
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
-      level,
       category,
       message,
       data,
@@ -126,11 +68,10 @@ export class Logger {
     };
 
     this.writeToConsole(entry);
-    await this.writeToFile(entry);
   }
 
-  // Métodos públicos para logging
-  public async debug(
+  // Métodos públicos para logging (ahora síncronos)
+  public debug(
     category: string,
     message: string,
     data?: unknown,
@@ -139,11 +80,11 @@ export class Logger {
       userId?: string | undefined;
       userRole?: string | undefined;
     },
-  ): Promise<void> {
-    await this.log(LogLevel.DEBUG, category, message, data, context);
+  ): void {
+    this.log(category, `[DEBUG] ${message}`, data, context);
   }
 
-  public async info(
+  public info(
     category: string,
     message: string,
     data?: unknown,
@@ -152,11 +93,11 @@ export class Logger {
       userId?: string | undefined;
       userRole?: string | undefined;
     },
-  ): Promise<void> {
-    await this.log(LogLevel.INFO, category, message, data, context);
+  ): void {
+    this.log(category, `[INFO] ${message}`, data, context);
   }
 
-  public async warn(
+  public warn(
     category: string,
     message: string,
     data?: unknown,
@@ -165,11 +106,11 @@ export class Logger {
       userId?: string | undefined;
       userRole?: string | undefined;
     },
-  ): Promise<void> {
-    await this.log(LogLevel.WARN, category, message, data, context);
+  ): void {
+    this.log(category, `[WARN] ${message}`, data, context);
   }
 
-  public async error(
+  public error(
     category: string,
     message: string,
     data?: unknown,
@@ -178,25 +119,24 @@ export class Logger {
       userId?: string | undefined;
       userRole?: string | undefined;
     },
-  ): Promise<void> {
-    await this.log(LogLevel.ERROR, category, message, data, context);
+  ): void {
+    this.log(category, `[ERROR] ${message}`, data, context);
   }
 
   // Métodos específicos para diferentes tipos de logging
-  public async logRequest(req: Request, requestId: string, context?: {
+  public logRequest(req: Request, requestId: string, context?: {
     userId?: string | undefined;
     userRole?: string | undefined;
-  }): Promise<void> {
+  }): void {
     const url = new URL(req.url);
-    await this.info("REQUEST", `${req.method} ${url.pathname}${url.search}`, {
+    this.info("REQUEST", `${req.method} ${url.pathname}${url.search}`, {
       method: req.method,
       url: req.url,
-      headers: Object.fromEntries(req.headers.entries()),
       userAgent: req.headers.get("user-agent"),
     }, { requestId, ...context });
   }
 
-  public async logResponse(
+  public logResponse(
     response: Response,
     requestId: string,
     duration: number,
@@ -204,21 +144,20 @@ export class Logger {
       userId?: string | undefined;
       userRole?: string | undefined;
     },
-  ): Promise<void> {
-    await this.info(
+  ): void {
+    this.info(
       "RESPONSE",
       `${response.status} ${response.statusText} (${duration}ms)`,
       {
         status: response.status,
         statusText: response.statusText,
-        headers: Object.fromEntries(response.headers.entries()),
         duration,
       },
       { requestId, ...context },
     );
   }
 
-  public async logFormSubmission(
+  public logFormSubmission(
     formData: FormData,
     action: string,
     method: string,
@@ -227,7 +166,7 @@ export class Logger {
       userId?: string | undefined;
       userRole?: string | undefined;
     },
-  ): Promise<void> {
+  ): void {
     const data: Record<string, string> = {};
     for (const [key, value] of formData.entries()) {
       // No loggear passwords o datos sensibles
@@ -241,7 +180,7 @@ export class Logger {
       }
     }
 
-    await this.info(
+    this.info(
       "FORM_SUBMISSION",
       `${method} form submitted to ${action}`,
       {
@@ -253,7 +192,7 @@ export class Logger {
     );
   }
 
-  public async logDatabaseOperation(
+  public logDatabaseOperation(
     operation: string,
     table: string,
     data?: unknown,
@@ -263,8 +202,8 @@ export class Logger {
       userId?: string | undefined;
       userRole?: string | undefined;
     },
-  ): Promise<void> {
-    await this.debug("DATABASE", `${operation} on ${table}`, {
+  ): void {
+    this.debug("DATABASE", `${operation} on ${table}`, {
       operation,
       table,
       input: data,
@@ -272,18 +211,17 @@ export class Logger {
     }, { requestId, ...context });
   }
 
-  public async logAuthentication(
+  public logAuthentication(
     action: string,
     email: string,
     success: boolean,
     requestId: string,
     reason?: string,
-  ): Promise<void> {
-    const level = success ? LogLevel.INFO : LogLevel.WARN;
-    await this.log(
-      level,
+  ): void {
+    const level = success ? "INFO" : "WARN";
+    this.log(
       "AUTH",
-      `${action} for ${email}: ${success ? "SUCCESS" : "FAILED"}`,
+      `[${level}] ${action} for ${email}: ${success ? "SUCCESS" : "FAILED"}`,
       {
         action,
         email,
@@ -294,7 +232,7 @@ export class Logger {
     );
   }
 
-  public async logValidationError(
+  public logValidationError(
     category: string,
     errors: string[],
     data?: unknown,
@@ -303,15 +241,15 @@ export class Logger {
       userId?: string | undefined;
       userRole?: string | undefined;
     },
-  ): Promise<void> {
-    await this.warn("VALIDATION", `Validation failed in ${category}`, {
+  ): void {
+    this.warn("VALIDATION", `Validation failed in ${category}`, {
       category,
       errors,
       input: data,
     }, { requestId, ...context });
   }
 
-  public async logBusinessLogic(
+  public logBusinessLogic(
     category: string,
     action: string,
     message: string,
@@ -321,8 +259,8 @@ export class Logger {
       userId?: string | undefined;
       userRole?: string | undefined;
     },
-  ): Promise<void> {
-    await this.info("BUSINESS", `${category}: ${action} - ${message}`, {
+  ): void {
+    this.info("BUSINESS", `${category}: ${action} - ${message}`, {
       category,
       action,
       data,
@@ -330,20 +268,8 @@ export class Logger {
   }
 
   // Configuración
-  public setLogLevel(level: LogLevel): void {
-    this.logLevel = level;
-  }
-
   public setConsoleEnabled(enabled: boolean): void {
     this.enableConsole = enabled;
-  }
-
-  public setFileEnabled(enabled: boolean): void {
-    this.enableFile = enabled;
-  }
-
-  public setLogFile(path: string): void {
-    this.logFile = path;
   }
 }
 

@@ -15,10 +15,8 @@ import {
   createAppointment,
   getAllRooms,
   getAllUsers,
-  getAvailableRooms,
 } from "../../lib/kv.ts";
 import { getPatientRepository } from "../../lib/database/index.ts";
-import AppointmentFormValidator from "../../islands/AppointmentFormValidator.tsx";
 import PatientSelect from "../../islands/PatientSelect.tsx";
 import Toast from "../../islands/Toast.tsx";
 import { extractUserContext, logger } from "../../lib/logger.ts";
@@ -30,7 +28,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
   const requestId = ctx.state.requestId || "unknown";
   const userContext = extractUserContext(ctx.state.user);
 
-  await logger.info(
+  logger.info(
     "APPOINTMENTS_NEW",
     `Handler called with method: ${req.method}`,
     {
@@ -55,7 +53,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         notes: url.searchParams.get("notes") || "",
       }
       : undefined;
-    await logger.debug(
+    logger.debug(
       "APPOINTMENTS_NEW",
       "Processing GET request for new appointment form",
       {},
@@ -97,7 +95,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
   }
 
   if (req.method === "POST") {
-    await logger.info(
+    logger.info(
       "APPOINTMENTS_NEW",
       "Processing POST request for appointment creation",
       {},
@@ -113,7 +111,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     const roomId = formData.get("roomId")?.toString() as RoomId;
     const notes = formData.get("notes")?.toString();
 
-    await logger.debug("APPOINTMENTS_NEW", "Form data extracted", {
+    logger.debug("APPOINTMENTS_NEW", "Form data extracted", {
       patientName,
       psychologistEmail,
       appointmentDate,
@@ -134,7 +132,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       ctx.state.user?.role === "psychologist" &&
       psychologistEmail !== ctx.state.user.email
     ) {
-      await logger.warn(
+      logger.warn(
         "APPOINTMENTS_NEW",
         "Permission denied: psychologist trying to assign appointment to another psychologist",
         {
@@ -181,7 +179,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       !endTime ||
       !roomId
     ) {
-      await logger.warn(
+      logger.warn(
         "APPOINTMENTS_NEW",
         "Validation failed: missing required fields",
         {
@@ -239,14 +237,14 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       patientName,
     );
 
-    await logger.debug("APPOINTMENTS_NEW", "Conflict check result", {
+    logger.debug("APPOINTMENTS_NEW", "Conflict check result", {
       hasConflicts: conflictCheck.hasConflicts,
       conflictTypes: conflictCheck.conflicts.map((c) => c.type),
       conflictDetails: conflictCheck.conflicts,
     }, { requestId, ...userContext });
 
     if (conflictCheck.hasConflicts) {
-      await logger.warn(
+      logger.warn(
         "APPOINTMENTS_NEW",
         "Conflicts detected",
         {
@@ -332,7 +330,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         createdAt: new Date().toISOString(),
       };
 
-      await logger.info(
+      logger.info(
         "APPOINTMENTS_NEW",
         "Attempting to create appointment",
         {
@@ -350,13 +348,13 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
       const success = await createAppointment(appointmentData);
 
-      await logger.info("APPOINTMENTS_NEW", "Appointment creation result", {
+      logger.info("APPOINTMENTS_NEW", "Appointment creation result", {
         appointmentId: appointmentData.id,
         success,
       }, { requestId, ...userContext });
 
       if (success) {
-        await logger.info(
+        logger.info(
           "APPOINTMENTS_NEW",
           "Appointment created successfully, redirecting to appointments list",
           {
@@ -369,7 +367,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
           headers: { Location: "/appointments" },
         });
       } else {
-        await logger.error("APPOINTMENTS_NEW", "Failed to create appointment", {
+        logger.error("APPOINTMENTS_NEW", "Failed to create appointment", {
           appointmentId: appointmentData.id,
           appointmentData,
         }, { requestId, ...userContext });
@@ -405,7 +403,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
   }
 
   // Caso inesperado - loggear para debug
-  await logger.error(
+  logger.error(
     "APPOINTMENTS_NEW",
     "Unexpected method or route reached end of handler",
     {

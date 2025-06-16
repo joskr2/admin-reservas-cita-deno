@@ -44,7 +44,7 @@ async function authenticationMiddleware(
   const { pathname } = url;
   const requestId = ctx.state.requestId || "unknown";
 
-  await logger.debug("AUTH_MIDDLEWARE", "Processing authentication", {
+  logger.debug("AUTH_MIDDLEWARE", "Processing authentication", {
     pathname,
     hasRequestId: !!ctx.state.requestId,
   }, { requestId });
@@ -56,7 +56,7 @@ async function authenticationMiddleware(
   ctx.state.user = null; // Por defecto no hay usuario
 
   if (sessionId) {
-    await logger.debug("AUTH_MIDDLEWARE", "Found session ID, validating", {
+    logger.debug("AUTH_MIDDLEWARE", "Found session ID, validating", {
       sessionId: sessionId.substring(0, 8) + "...",
     }, { requestId });
 
@@ -84,7 +84,7 @@ async function authenticationMiddleware(
             name: userData.name,
           };
 
-          await logger.info(
+          logger.info(
             "AUTH_MIDDLEWARE",
             "Session validated successfully",
             {
@@ -95,7 +95,7 @@ async function authenticationMiddleware(
             { requestId, userId: userData.id, userRole: userData.role },
           );
         } else {
-          await logger.warn(
+          logger.warn(
             "AUTH_MIDDLEWARE",
             "Session found but user not found",
             {
@@ -105,13 +105,13 @@ async function authenticationMiddleware(
           );
         }
       } else {
-        await logger.warn("AUTH_MIDDLEWARE", "Invalid session ID", {
+        logger.warn("AUTH_MIDDLEWARE", "Invalid session ID", {
           sessionId: sessionId.substring(0, 8) + "...",
         }, { requestId });
       }
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error("AUTH_MIDDLEWARE", "Error validating session", {
+      logger.error("AUTH_MIDDLEWARE", "Error validating session", {
         error: errorDetails.message,
         stack: errorDetails.stack,
       }, { requestId });
@@ -119,7 +119,7 @@ async function authenticationMiddleware(
       await kv.close();
     }
   } else {
-    await logger.debug("AUTH_MIDDLEWARE", "No session ID found", {}, {
+    logger.debug("AUTH_MIDDLEWARE", "No session ID found", {}, {
       requestId,
     });
   }
@@ -134,7 +134,7 @@ async function authenticationMiddleware(
 
   const userContext = extractUserContext(ctx.state.user);
 
-  await logger.debug("AUTH_MIDDLEWARE", "Route access evaluation", {
+  logger.debug("AUTH_MIDDLEWARE", "Route access evaluation", {
     pathname,
     isAuthenticated,
     isProtectedRoute,
@@ -146,7 +146,7 @@ async function authenticationMiddleware(
 
   // 1. Si el usuario no está autenticado y trata de acceder a una ruta protegida
   if (!isAuthenticated && isProtectedRoute) {
-    await logger.info(
+    logger.info(
       "AUTH_MIDDLEWARE",
       "Redirecting unauthenticated user to login",
       {
@@ -168,7 +168,7 @@ async function authenticationMiddleware(
     isSuperadminRoute &&
     ctx.state.user?.role !== "superadmin"
   ) {
-    await logger.warn(
+    logger.warn(
       "AUTH_MIDDLEWARE",
       "Access denied: insufficient privileges",
       {
@@ -187,7 +187,7 @@ async function authenticationMiddleware(
 
   // 3. Si el usuario está autenticado y trata de acceder a la página de login
   if (isAuthenticated && pathname === "/login") {
-    await logger.info(
+    logger.info(
       "AUTH_MIDDLEWARE",
       "Redirecting authenticated user from login to dashboard",
       {
@@ -201,7 +201,7 @@ async function authenticationMiddleware(
   }
 
   // Si ninguna de las condiciones anteriores se cumple, proceder con la solicitud
-  await logger.debug(
+  logger.debug(
     "AUTH_MIDDLEWARE",
     "Access granted, proceeding to route handler",
     {

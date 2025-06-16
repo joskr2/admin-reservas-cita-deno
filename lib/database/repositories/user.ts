@@ -80,14 +80,14 @@ export class UserRepository extends BaseRepository<User, string>
   }
 
   public override async create(user: User): Promise<boolean> {
-    await logger.debug("DATABASE", "Attempting to create user", {
+    logger.debug("DATABASE", "Attempting to create user", {
       userEmail: user.email,
       userRole: user.role,
       userName: user.name,
     });
 
     if (!this.validate(user)) {
-      await logger.error("DATABASE", "Invalid user data provided to create", {
+      logger.error("DATABASE", "Invalid user data provided to create", {
         user: { ...user, passwordHash: "[REDACTED]" },
       });
       return false;
@@ -96,7 +96,7 @@ export class UserRepository extends BaseRepository<User, string>
     // Check for existing email (case insensitive)
     const existingUser = await this.getUserByEmail(user.email);
     if (existingUser) {
-      await logger.warn("DATABASE", "User with email already exists", {
+      logger.warn("DATABASE", "User with email already exists", {
         email: user.email,
       });
       return false;
@@ -110,7 +110,7 @@ export class UserRepository extends BaseRepository<User, string>
     try {
       const kv = await this.getKv();
 
-      await logger.debug(
+      logger.debug(
         "DATABASE",
         "Starting atomic transaction for user creation",
         {
@@ -140,7 +140,7 @@ export class UserRepository extends BaseRepository<User, string>
         .commit();
 
       const resultDetails = getKvResultDetails(result);
-      await logger.info("DATABASE", "User creation transaction result", {
+      logger.info("DATABASE", "User creation transaction result", {
         userId: user.id,
         userEmail: user.email,
         success: resultDetails.ok,
@@ -150,7 +150,7 @@ export class UserRepository extends BaseRepository<User, string>
       return result.ok;
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error("DATABASE", "Error creating user", {
+      logger.error("DATABASE", "Error creating user", {
         userId: user.id,
         userEmail: user.email,
         error: errorDetails.message,
@@ -162,7 +162,7 @@ export class UserRepository extends BaseRepository<User, string>
 
   public async getUserByEmail(email: string): Promise<User | null> {
     if (typeof email !== "string" || !email) {
-      await logger.warn(
+      logger.warn(
         "DATABASE",
         "Invalid email provided to getUserByEmail",
         {
@@ -173,7 +173,7 @@ export class UserRepository extends BaseRepository<User, string>
       return null;
     }
 
-    await logger.debug("DATABASE", "Getting user by email", {
+    logger.debug("DATABASE", "Getting user by email", {
       email: email.toLowerCase(),
     });
 
@@ -183,20 +183,20 @@ export class UserRepository extends BaseRepository<User, string>
 
   public async getUserById(id: string): Promise<User | null> {
     if (typeof id !== "string" || !id) {
-      await logger.warn("DATABASE", "Invalid id provided to getUserById", {
+      logger.warn("DATABASE", "Invalid id provided to getUserById", {
         providedId: id,
         idType: typeof id,
       });
       return null;
     }
 
-    await logger.debug("DATABASE", "Getting user by ID", { userId: id });
+    logger.debug("DATABASE", "Getting user by ID", { userId: id });
 
     try {
       const kv = await this.getKv();
       const result = await kv.get<User>(["users_by_id", id] as KVUserByIdKey);
 
-      await logger.debug("DATABASE", "User by ID query result", {
+      logger.debug("DATABASE", "User by ID query result", {
         userId: id,
         found: !!result.value,
         versionstamp: result.versionstamp,
@@ -205,7 +205,7 @@ export class UserRepository extends BaseRepository<User, string>
       return result.value;
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error("DATABASE", "Error getting user by ID", {
+      logger.error("DATABASE", "Error getting user by ID", {
         userId: id,
         error: errorDetails.message,
         stack: errorDetails.stack,
@@ -216,14 +216,14 @@ export class UserRepository extends BaseRepository<User, string>
 
   public async getUsersByRole(role: string): Promise<UserProfile[]> {
     if (typeof role !== "string" || !role) {
-      await logger.warn("DATABASE", "Invalid role provided to getUsersByRole", {
+      logger.warn("DATABASE", "Invalid role provided to getUsersByRole", {
         providedRole: role,
         roleType: typeof role,
       });
       return [];
     }
 
-    await logger.debug("DATABASE", "Getting users by role", { role });
+    logger.debug("DATABASE", "Getting users by role", { role });
 
     try {
       const kv = await this.getKv();
@@ -237,7 +237,7 @@ export class UserRepository extends BaseRepository<User, string>
           processedCount++;
           const email = entry.value;
           if (typeof email !== "string" || !email) {
-            await logger.warn(
+            logger.warn(
               "DATABASE",
               "Invalid email value in users_by_role index",
               {
@@ -255,7 +255,7 @@ export class UserRepository extends BaseRepository<User, string>
           if (user) {
             users.push(this.mapUserToProfile(user));
           } else {
-            await logger.warn(
+            logger.warn(
               "DATABASE",
               "User referenced in role index but not found",
               {
@@ -267,7 +267,7 @@ export class UserRepository extends BaseRepository<User, string>
           }
         } catch (error) {
           const errorDetails = getErrorDetails(error);
-          await logger.error(
+          logger.error(
             "DATABASE",
             "Error processing user entry for role",
             {
@@ -282,7 +282,7 @@ export class UserRepository extends BaseRepository<User, string>
         }
       }
 
-      await logger.info("DATABASE", "Completed getting users by role", {
+      logger.info("DATABASE", "Completed getting users by role", {
         role,
         totalProcessed: processedCount,
         validUsers: users.length,
@@ -292,7 +292,7 @@ export class UserRepository extends BaseRepository<User, string>
       return this.sortUserProfiles(users);
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error("DATABASE", "Error getting users by role", {
+      logger.error("DATABASE", "Error getting users by role", {
         role,
         error: errorDetails.message,
         stack: errorDetails.stack,
@@ -302,13 +302,13 @@ export class UserRepository extends BaseRepository<User, string>
   }
 
   public async getAllUsersAsProfiles(): Promise<UserProfile[]> {
-    await logger.debug("DATABASE", "Getting all users as profiles");
+    logger.debug("DATABASE", "Getting all users as profiles");
 
     try {
       const users = await this.getAll();
       const profiles = users.map((user) => this.mapUserToProfile(user));
 
-      await logger.info(
+      logger.info(
         "DATABASE",
         "Successfully retrieved all users as profiles",
         {
@@ -320,7 +320,7 @@ export class UserRepository extends BaseRepository<User, string>
       return this.sortUserProfiles(profiles);
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error("DATABASE", "Error getting all users as profiles", {
+      logger.error("DATABASE", "Error getting all users as profiles", {
         error: errorDetails.message,
         stack: errorDetails.stack,
       });
@@ -332,7 +332,7 @@ export class UserRepository extends BaseRepository<User, string>
     email: string,
     updates: Partial<User>,
   ): Promise<boolean> {
-    await logger.debug("DATABASE", "Attempting to update user", {
+    logger.debug("DATABASE", "Attempting to update user", {
       userEmail: email,
       updateFields: Object.keys(updates),
       hasPasswordUpdate: "passwordHash" in updates,
@@ -341,7 +341,7 @@ export class UserRepository extends BaseRepository<User, string>
     try {
       const existingUser = await this.getUserByEmail(email);
       if (!existingUser) {
-        await logger.warn("DATABASE", "User not found for update", { email });
+        logger.warn("DATABASE", "User not found for update", { email });
         return false;
       }
 
@@ -353,7 +353,7 @@ export class UserRepository extends BaseRepository<User, string>
 
       // Si cambió el rol, actualizar índices
       if (updates.role && updates.role !== existingUser.role) {
-        await logger.info(
+        logger.info(
           "DATABASE",
           "Role change detected, updating role indices",
           {
@@ -375,7 +375,7 @@ export class UserRepository extends BaseRepository<User, string>
           .commit();
 
         const resultDetails = getKvResultDetails(result);
-        await logger.info("DATABASE", "Role update transaction result", {
+        logger.info("DATABASE", "Role update transaction result", {
           userEmail: email,
           userId: updatedUser.id,
           success: resultDetails.ok,
@@ -387,14 +387,14 @@ export class UserRepository extends BaseRepository<User, string>
         return result.ok;
       }
 
-      await logger.debug("DATABASE", "No role change, using standard update", {
+      logger.debug("DATABASE", "No role change, using standard update", {
         userEmail: email,
         updates: redactedUpdates,
       });
 
       const result = await super.update(email, updates);
 
-      await logger.info("DATABASE", "User update result", {
+      logger.info("DATABASE", "User update result", {
         userEmail: email,
         success: result,
         updates: redactedUpdates,
@@ -403,7 +403,7 @@ export class UserRepository extends BaseRepository<User, string>
       return result;
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error("DATABASE", "Error updating user", {
+      logger.error("DATABASE", "Error updating user", {
         userEmail: email,
         error: errorDetails.message,
         stack: errorDetails.stack,
@@ -413,18 +413,18 @@ export class UserRepository extends BaseRepository<User, string>
   }
 
   public override async delete(email: string): Promise<boolean> {
-    await logger.info("DATABASE", "Attempting to delete user", {
+    logger.info("DATABASE", "Attempting to delete user", {
       userEmail: email,
     });
 
     try {
       const user = await this.getUserByEmail(email);
       if (!user) {
-        await logger.warn("DATABASE", "User not found for deletion", { email });
+        logger.warn("DATABASE", "User not found for deletion", { email });
         return false;
       }
 
-      await logger.debug(
+      logger.debug(
         "DATABASE",
         "Starting atomic transaction for user deletion",
         {
@@ -448,7 +448,7 @@ export class UserRepository extends BaseRepository<User, string>
         .commit();
 
       const resultDetails = getKvResultDetails(result);
-      await logger.info("DATABASE", "User deletion transaction result", {
+      logger.info("DATABASE", "User deletion transaction result", {
         userId: user.id,
         userEmail: email,
         userRole: user.role,
@@ -459,7 +459,7 @@ export class UserRepository extends BaseRepository<User, string>
       return result.ok;
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error("DATABASE", "Error deleting user", {
+      logger.error("DATABASE", "Error deleting user", {
         userEmail: email,
         error: errorDetails.message,
         stack: errorDetails.stack,

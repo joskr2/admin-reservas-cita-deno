@@ -16,7 +16,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
   const currentUser = ctx.state.user;
   if (!currentUser) {
-    await logger.warn(
+    logger.warn(
       "QUICK_BOOK_API",
       "Unauthenticated user attempted quick booking",
       {
@@ -34,7 +34,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     const roomId = formData.get("roomId") as string;
     const patientId = formData.get("patientId") as string;
 
-    await logger.info("QUICK_BOOK_API", "Quick booking request received", {
+    logger.info("QUICK_BOOK_API", "Quick booking request received", {
       date,
       time,
       roomId,
@@ -44,7 +44,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     }, { requestId, ...userContext });
 
     if (!date || !time || !roomId || !patientId) {
-      await logger.warn(
+      logger.warn(
         "QUICK_BOOK_API",
         "Missing required fields for quick booking",
         {
@@ -74,7 +74,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     // Verificar que el paciente existe
     const patient = await patientRepository.getById(patientId);
     if (!patient) {
-      await logger.warn(
+      logger.warn(
         "QUICK_BOOK_API",
         "Patient not found for quick booking",
         {
@@ -104,7 +104,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     );
 
     if (conflictingAppointment) {
-      await logger.warn("QUICK_BOOK_API", "Time slot conflict detected", {
+      logger.warn("QUICK_BOOK_API", "Time slot conflict detected", {
         date,
         time,
         roomId,
@@ -144,7 +144,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       updatedAt: new Date().toISOString(),
     };
 
-    await logger.debug("QUICK_BOOK_API", "Creating new appointment", {
+    logger.debug("QUICK_BOOK_API", "Creating new appointment", {
       appointmentId,
       appointment: newAppointment,
     }, { requestId, ...userContext });
@@ -152,7 +152,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     const success = await appointmentRepository.create(newAppointment);
 
     if (!success) {
-      await logger.error("QUICK_BOOK_API", "Failed to create appointment", {
+      logger.error("QUICK_BOOK_API", "Failed to create appointment", {
         appointmentId,
       }, { requestId, ...userContext });
 
@@ -168,7 +168,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       );
     }
 
-    await logger.info("QUICK_BOOK_API", "Appointment created successfully", {
+    logger.info("QUICK_BOOK_API", "Appointment created successfully", {
       appointmentId: newAppointment.id,
       patientName: newAppointment.patientName,
       date: newAppointment.appointmentDate,
@@ -190,7 +190,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       },
     );
   } catch (error) {
-    await logger.error("QUICK_BOOK_API", "Error creating quick appointment", {
+    logger.error("QUICK_BOOK_API", "Error creating quick appointment", {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
     }, { requestId, ...userContext });

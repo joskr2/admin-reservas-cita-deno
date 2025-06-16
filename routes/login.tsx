@@ -19,11 +19,11 @@ interface LoginData {
 }
 
 export const handler: Handlers<LoginData, AppState> = {
-  async GET(req, ctx) {
+   GET(req, ctx) {
     const requestId = ctx.state.requestId || "unknown";
     const userContext = extractUserContext(ctx.state.user);
 
-    await logger.debug(
+    logger.debug(
       "LOGIN",
       "GET request for login page",
       {
@@ -42,7 +42,7 @@ export const handler: Handlers<LoginData, AppState> = {
     const requestId = ctx.state.requestId || "unknown";
     const userContext = extractUserContext(ctx.state.user);
 
-    await logger.info(
+    logger.info(
       "LOGIN",
       "Processing login attempt",
       {
@@ -56,7 +56,7 @@ export const handler: Handlers<LoginData, AppState> = {
     const email = form.get("email")?.toString();
     const password = form.get("password")?.toString();
 
-    await logger.debug(
+    logger.debug(
       "LOGIN",
       "Login form data extracted",
       {
@@ -68,7 +68,7 @@ export const handler: Handlers<LoginData, AppState> = {
     );
 
     if (!email || !password) {
-      await logger.warn(
+      logger.warn(
         "LOGIN",
         "Login validation failed: missing credentials",
         {
@@ -88,7 +88,7 @@ export const handler: Handlers<LoginData, AppState> = {
       // Buscar usuario en la base de datos
       const kv = await getKv();
 
-      await logger.debug(
+      logger.debug(
         "LOGIN",
         "Looking up user in database",
         {
@@ -100,7 +100,7 @@ export const handler: Handlers<LoginData, AppState> = {
       const userResult = await kv.get(["users", email]);
 
       if (!userResult.value) {
-        await logger.warn(
+        logger.warn(
           "LOGIN",
           "Login failed: user not found",
           {
@@ -117,7 +117,7 @@ export const handler: Handlers<LoginData, AppState> = {
 
       const user = userResult.value as User;
 
-      await logger.debug(
+      logger.debug(
         "LOGIN",
         "User found, verifying password",
         {
@@ -132,7 +132,7 @@ export const handler: Handlers<LoginData, AppState> = {
       const isValidPassword = await compare(password, user.passwordHash);
 
       if (!isValidPassword) {
-        await logger.warn(
+        logger.warn(
           "LOGIN",
           "Login failed: invalid password",
           {
@@ -151,7 +151,7 @@ export const handler: Handlers<LoginData, AppState> = {
       // Crear sesión simple (en producción usar JWT)
       const sessionId = crypto.randomUUID();
 
-      await logger.debug(
+      logger.debug(
         "LOGIN",
         "Creating user session",
         {
@@ -184,7 +184,7 @@ export const handler: Handlers<LoginData, AppState> = {
         path: "/",
       });
 
-      await logger.info(
+      logger.info(
         "LOGIN",
         "Login successful, redirecting to dashboard",
         {
@@ -198,7 +198,7 @@ export const handler: Handlers<LoginData, AppState> = {
 
       return response;
     } catch (error) {
-      await logger.error(
+      logger.error(
         "LOGIN",
         "Login error occurred",
         {
