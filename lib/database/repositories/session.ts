@@ -27,13 +27,13 @@ export class SessionRepository implements ISessionRepository {
     sessionId: string,
     userEmail: string,
   ): Promise<void> {
-    await logger.debug("DATABASE", "Attempting to create session", {
+    logger.debug("DATABASE", "Attempting to create session", {
       sessionId: sessionId.substring(0, 8) + "...",
       userEmail,
     });
 
     if (typeof sessionId !== "string" || !sessionId) {
-      await logger.error(
+      logger.error(
         "DATABASE",
         "Invalid sessionId provided to createSession",
         {
@@ -44,7 +44,7 @@ export class SessionRepository implements ISessionRepository {
       throw new Error("Invalid sessionId provided to createSession");
     }
     if (typeof userEmail !== "string" || !userEmail) {
-      await logger.error(
+      logger.error(
         "DATABASE",
         "Invalid userEmail provided to createSession",
         {
@@ -70,7 +70,7 @@ export class SessionRepository implements ISessionRepository {
       );
 
       const resultDetails = getKvResultDetails(result);
-      await logger.info("DATABASE", "Session created successfully", {
+      logger.info("DATABASE", "Session created successfully", {
         sessionId: sessionId.substring(0, 8) + "...",
         userEmail,
         expiresAt: session.expiresAt,
@@ -79,7 +79,7 @@ export class SessionRepository implements ISessionRepository {
       });
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error("DATABASE", "Error creating session", {
+      logger.error("DATABASE", "Error creating session", {
         sessionId: sessionId.substring(0, 8) + "...",
         userEmail,
         error: errorDetails.message,
@@ -93,7 +93,7 @@ export class SessionRepository implements ISessionRepository {
     sessionId: string,
   ): Promise<{ userEmail: string } | null> {
     if (typeof sessionId !== "string" || !sessionId) {
-      await logger.warn(
+      logger.warn(
         "DATABASE",
         "Invalid sessionId provided to getSession",
         {
@@ -104,7 +104,7 @@ export class SessionRepository implements ISessionRepository {
       return null;
     }
 
-    await logger.debug("DATABASE", "Getting session", {
+    logger.debug("DATABASE", "Getting session", {
       sessionId: sessionId.substring(0, 8) + "...",
     });
 
@@ -116,7 +116,7 @@ export class SessionRepository implements ISessionRepository {
       const session = result.value;
 
       if (!session) {
-        await logger.debug("DATABASE", "Session not found", {
+        logger.debug("DATABASE", "Session not found", {
           sessionId: sessionId.substring(0, 8) + "...",
         });
         return null;
@@ -127,7 +127,7 @@ export class SessionRepository implements ISessionRepository {
       const expiresAt = new Date(session.expiresAt);
 
       if (expiresAt < now) {
-        await logger.info("DATABASE", "Session expired, deleting", {
+        logger.info("DATABASE", "Session expired, deleting", {
           sessionId: sessionId.substring(0, 8) + "...",
           userEmail: session.userEmail,
           expiresAt: session.expiresAt,
@@ -137,7 +137,7 @@ export class SessionRepository implements ISessionRepository {
         return null;
       }
 
-      await logger.debug("DATABASE", "Valid session found", {
+      logger.debug("DATABASE", "Valid session found", {
         sessionId: sessionId.substring(0, 8) + "...",
         userEmail: session.userEmail,
         expiresAt: session.expiresAt,
@@ -146,7 +146,7 @@ export class SessionRepository implements ISessionRepository {
       return { userEmail: session.userEmail };
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error("DATABASE", "Error getting session", {
+      logger.error("DATABASE", "Error getting session", {
         sessionId: sessionId.substring(0, 8) + "...",
         error: errorDetails.message,
         stack: errorDetails.stack,
@@ -157,7 +157,7 @@ export class SessionRepository implements ISessionRepository {
 
   public async deleteSession(sessionId: string): Promise<void> {
     if (typeof sessionId !== "string" || !sessionId) {
-      await logger.warn(
+      logger.warn(
         "DATABASE",
         "Invalid sessionId provided to deleteSession",
         {
@@ -168,7 +168,7 @@ export class SessionRepository implements ISessionRepository {
       return;
     }
 
-    await logger.debug("DATABASE", "Deleting session", {
+    logger.debug("DATABASE", "Deleting session", {
       sessionId: sessionId.substring(0, 8) + "...",
     });
 
@@ -176,12 +176,12 @@ export class SessionRepository implements ISessionRepository {
       const kv = await this.getKv();
       await kv.delete(["sessions", sessionId] as KVSessionKey);
 
-      await logger.info("DATABASE", "Session deleted successfully", {
+      logger.info("DATABASE", "Session deleted successfully", {
         sessionId: sessionId.substring(0, 8) + "...",
       });
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error("DATABASE", "Error deleting session", {
+      logger.error("DATABASE", "Error deleting session", {
         sessionId: sessionId.substring(0, 8) + "...",
         error: errorDetails.message,
         stack: errorDetails.stack,
@@ -190,7 +190,7 @@ export class SessionRepository implements ISessionRepository {
   }
 
   public async cleanExpiredSessions(): Promise<void> {
-    await logger.info("DATABASE", "Starting expired sessions cleanup");
+    logger.info("DATABASE", "Starting expired sessions cleanup");
 
     try {
       const kv = await this.getKv();
@@ -209,7 +209,7 @@ export class SessionRepository implements ISessionRepository {
         }
       }
 
-      await logger.debug("DATABASE", "Found expired sessions", {
+      logger.debug("DATABASE", "Found expired sessions", {
         totalSessions,
         expiredSessions: expiredSessions.length,
         activeSessions: totalSessions - expiredSessions.length,
@@ -223,14 +223,14 @@ export class SessionRepository implements ISessionRepository {
           deletedCount++;
         } catch (error) {
           const errorDetails = getErrorDetails(error);
-          await logger.warn("DATABASE", "Failed to delete expired session", {
+          logger.warn("DATABASE", "Failed to delete expired session", {
             sessionId: sessionId.substring(0, 8) + "...",
             error: errorDetails.message,
           });
         }
       }
 
-      await logger.info("DATABASE", "Expired sessions cleanup completed", {
+      logger.info("DATABASE", "Expired sessions cleanup completed", {
         totalSessions,
         expiredSessions: expiredSessions.length,
         deletedSessions: deletedCount,
@@ -238,7 +238,7 @@ export class SessionRepository implements ISessionRepository {
       });
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error("DATABASE", "Error cleaning expired sessions", {
+      logger.error("DATABASE", "Error cleaning expired sessions", {
         error: errorDetails.message,
         stack: errorDetails.stack,
       });
@@ -249,7 +249,7 @@ export class SessionRepository implements ISessionRepository {
     sessionId: string,
     extensionDays = 7,
   ): Promise<boolean> {
-    await logger.debug("DATABASE", "Extending session", {
+    logger.debug("DATABASE", "Extending session", {
       sessionId: sessionId.substring(0, 8) + "...",
       extensionDays,
     });
@@ -262,7 +262,7 @@ export class SessionRepository implements ISessionRepository {
       const session = result.value;
 
       if (!session) {
-        await logger.warn("DATABASE", "Session not found for extension", {
+        logger.warn("DATABASE", "Session not found for extension", {
           sessionId: sessionId.substring(0, 8) + "...",
         });
         return false;
@@ -282,7 +282,7 @@ export class SessionRepository implements ISessionRepository {
       );
 
       const resultDetails = getKvResultDetails(setResult);
-      await logger.info("DATABASE", "Session extension result", {
+      logger.info("DATABASE", "Session extension result", {
         sessionId: sessionId.substring(0, 8) + "...",
         userEmail: session.userEmail,
         oldExpiresAt: session.expiresAt,
@@ -295,7 +295,7 @@ export class SessionRepository implements ISessionRepository {
       return setResult.ok;
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error("DATABASE", "Error extending session", {
+      logger.error("DATABASE", "Error extending session", {
         sessionId: sessionId.substring(0, 8) + "...",
         extensionDays,
         error: errorDetails.message,
@@ -308,7 +308,7 @@ export class SessionRepository implements ISessionRepository {
   public async getAllActiveSessions(): Promise<
     Array<{ sessionId: string; session: SessionData }>
   > {
-    await logger.debug("DATABASE", "Getting all active sessions");
+    logger.debug("DATABASE", "Getting all active sessions");
 
     try {
       const kv = await this.getKv();
@@ -331,7 +331,7 @@ export class SessionRepository implements ISessionRepository {
         }
       }
 
-      await logger.info("DATABASE", "Retrieved all active sessions", {
+      logger.info("DATABASE", "Retrieved all active sessions", {
         totalSessions,
         activeSessions: activeSessions.length,
         expiredSessions,
@@ -343,7 +343,7 @@ export class SessionRepository implements ISessionRepository {
       return activeSessions;
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error("DATABASE", "Error getting all active sessions", {
+      logger.error("DATABASE", "Error getting all active sessions", {
         error: errorDetails.message,
         stack: errorDetails.stack,
       });

@@ -95,7 +95,7 @@ export class AppointmentRepository extends BaseRepository<Appointment, string>
   }
 
   public override async create(appointment: Appointment): Promise<boolean> {
-    await logger.debug("DATABASE", "Attempting to create appointment", {
+    logger.debug("DATABASE", "Attempting to create appointment", {
       appointmentId: appointment.id,
       patientName: appointment.patientName,
       psychologistEmail: appointment.psychologistEmail,
@@ -104,7 +104,7 @@ export class AppointmentRepository extends BaseRepository<Appointment, string>
     });
 
     if (!this.validate(appointment)) {
-      await logger.error(
+      logger.error(
         "DATABASE",
         "Invalid appointment data provided to create",
         { appointment },
@@ -115,7 +115,7 @@ export class AppointmentRepository extends BaseRepository<Appointment, string>
     try {
       const kv = await this.getKv();
 
-      await logger.debug(
+      logger.debug(
         "DATABASE",
         "Starting atomic transaction for appointment creation",
         {
@@ -143,7 +143,7 @@ export class AppointmentRepository extends BaseRepository<Appointment, string>
         .commit();
 
       const resultDetails = getKvResultDetails(result);
-      await logger.info("DATABASE", "Appointment creation transaction result", {
+      logger.info("DATABASE", "Appointment creation transaction result", {
         appointmentId: appointment.id,
         success: resultDetails.ok,
         versionstamp: resultDetails.versionstamp,
@@ -152,7 +152,7 @@ export class AppointmentRepository extends BaseRepository<Appointment, string>
       return result.ok;
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error("DATABASE", "Error creating appointment", {
+      logger.error("DATABASE", "Error creating appointment", {
         appointmentId: appointment.id,
         error: errorDetails.message,
         stack: errorDetails.stack,

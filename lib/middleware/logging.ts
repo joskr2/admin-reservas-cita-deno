@@ -24,7 +24,7 @@ export async function loggingMiddleware(
   const userContext = extractUserContext(ctx.state.user);
 
   // Log de la request entrante
-  await logger.logRequest(req, requestId, userContext);
+  logger.logRequest(req, requestId, userContext);
 
   // Si es un POST con form data, loggear los datos del form
   if (
@@ -39,7 +39,7 @@ export async function loggingMiddleware(
       const formData = await clonedReq.formData();
       const url = new URL(req.url);
 
-      await logger.logFormSubmission(
+      logger.logFormSubmission(
         formData,
         url.pathname,
         req.method,
@@ -48,7 +48,7 @@ export async function loggingMiddleware(
       );
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.warn("MIDDLEWARE", "Failed to log form data", {
+      logger.warn("MIDDLEWARE", "Failed to log form data", {
         error: errorDetails.message,
       }, { requestId, ...userContext });
     }
@@ -63,7 +63,7 @@ export async function loggingMiddleware(
 
     // Log del error
     const errorDetails = getErrorDetails(error);
-    await logger.error("REQUEST_ERROR", `Unhandled error processing request`, {
+    logger.error("REQUEST_ERROR", `Unhandled error processing request`, {
       error: errorDetails.message,
       stack: errorDetails.stack,
       duration,
@@ -76,13 +76,13 @@ export async function loggingMiddleware(
   const duration = Date.now() - startTime;
 
   // Log de la response
-  await logger.logResponse(response, requestId, duration, userContext);
+  logger.logResponse(response, requestId, duration, userContext);
 
   // Si la response es una redirección, loggear la URL de destino
   if (response.status >= 300 && response.status < 400) {
     const location = response.headers.get("location");
     if (location) {
-      await logger.info("REDIRECT", `Redirecting to: ${location}`, {
+      logger.info("REDIRECT", `Redirecting to: ${location}`, {
         from: new URL(req.url).pathname,
         to: location,
         status: response.status,
@@ -92,7 +92,7 @@ export async function loggingMiddleware(
 
   // Si hay un error HTTP, loggear detalles adicionales
   if (response.status >= 400) {
-    await logger.warn(
+    logger.warn(
       "HTTP_ERROR",
       `HTTP ${response.status} ${response.statusText}`,
       {

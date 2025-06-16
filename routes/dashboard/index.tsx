@@ -10,7 +10,6 @@ import {
 import GenericFilters from "../../islands/GenericFilters.tsx";
 import DashboardStats from "../../islands/DashboardStats.tsx";
 import AvailabilityDashboard from "../../islands/AvailabilityDashboard.tsx";
-import CollapsibleSection from "../../islands/CollapsibleSection.tsx";
 import {
   getAppointmentRepository,
   getDashboardService,
@@ -51,7 +50,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
   const type = url.searchParams.get("type") || "";
   const period = url.searchParams.get("period") || "week";
 
-  await logger.info("DASHBOARD", "Dashboard page requested", {
+  logger.info("DASHBOARD", "Dashboard page requested", {
     search,
     type,
     period,
@@ -60,14 +59,14 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
   const currentUser = ctx.state.user;
   if (!currentUser) {
-    await logger.warn("DASHBOARD", "Unauthenticated user redirected to login", {
+    logger.warn("DASHBOARD", "Unauthenticated user redirected to login", {
       url: req.url,
     }, { requestId });
     return Response.redirect(new URL("/login", url.origin), 302);
   }
 
   try {
-    await logger.debug("DASHBOARD", "Loading dashboard data", {
+    logger.debug("DASHBOARD", "Loading dashboard data", {
       userRole: currentUser.role,
       userEmail: currentUser.email,
     }, { requestId, ...userContext });
@@ -83,7 +82,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       ? await dashboardService.getStats()
       : await dashboardService.getPsychologistStats(currentUser.email);
 
-    await logger.debug("DASHBOARD", "Dashboard stats retrieved", {
+    logger.debug("DASHBOARD", "Dashboard stats retrieved", {
       userRole: currentUser.role,
       totalUsers: dashboardData.totalUsers,
       totalPsychologists: dashboardData.totalPsychologists,
@@ -106,7 +105,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     let allRooms: Room[];
 
     if (currentUser.role === "superadmin") {
-      await logger.debug("DASHBOARD", "Loading data for superadmin user", {}, {
+      logger.debug("DASHBOARD", "Loading data for superadmin user", {}, {
         requestId,
         ...userContext,
       });
@@ -119,14 +118,14 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       allAppointments = recentAppointments;
       allRooms = recentRooms;
 
-      await logger.debug("DASHBOARD", "Superadmin data loaded", {
+      logger.debug("DASHBOARD", "Superadmin data loaded", {
         appointmentsCount: recentAppointments.length,
         patientsCount: recentPatients.length,
         usersCount: recentUsers.length,
         roomsCount: recentRooms.length,
       }, { requestId, ...userContext });
     } else {
-      await logger.debug("DASHBOARD", "Loading data for psychologist user", {
+      logger.debug("DASHBOARD", "Loading data for psychologist user", {
         psychologistEmail: currentUser.email,
       }, { requestId, ...userContext });
 
@@ -153,7 +152,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       allAppointments = recentAppointments;
       allRooms = recentRooms;
 
-      await logger.debug("DASHBOARD", "Psychologist data loaded", {
+      logger.debug("DASHBOARD", "Psychologist data loaded", {
         appointmentsCount: recentAppointments.length,
         patientsCount: recentPatients.length,
         totalPatients: allPatients.length,
@@ -179,7 +178,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         dateFilter = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     }
 
-    await logger.debug("DASHBOARD", "Applying filters", {
+    logger.debug("DASHBOARD", "Applying filters", {
       period,
       dateFilter: dateFilter.toISOString(),
       search,
@@ -279,7 +278,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       )
       .slice(0, 10);
 
-    await logger.info("DASHBOARD", "Dashboard data processing completed", {
+    logger.info("DASHBOARD", "Dashboard data processing completed", {
       originalCounts,
       filteredCounts: {
         appointments: recentAppointments.length,
@@ -307,7 +306,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       filters: { search, type, period },
     });
   } catch (error) {
-    await logger.error("DASHBOARD", "Error loading dashboard data", {
+    logger.error("DASHBOARD", "Error loading dashboard data", {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       userRole: currentUser?.role,
