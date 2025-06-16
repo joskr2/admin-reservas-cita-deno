@@ -74,6 +74,7 @@ export const handler: Handlers<EditPatientData, AppState> = {
 
     const form = await req.formData();
     const name = form.get("name")?.toString() || "";
+    const dni = form.get("dni")?.toString() || "";
     const email = form.get("email")?.toString() || "";
     const phone = form.get("phone")?.toString() || "";
     const dateOfBirth = form.get("dateOfBirth")?.toString() || "";
@@ -115,6 +116,7 @@ export const handler: Handlers<EditPatientData, AppState> = {
       const updatedPatient: Patient = {
         ...existingPatient,
         name,
+        dni: dni || undefined,
         email: email || undefined,
         phone: phone || undefined,
         dateOfBirth: dateOfBirth || undefined,
@@ -246,6 +248,22 @@ export default function EditPatientPage({ data }: PageProps<EditPatientData>) {
                           value={patient.name}
                           placeholder="Nombre completo del paciente"
                           required
+                          class="w-full"
+                        />
+                      </div>
+
+                      <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          <Icon name="file-digit" className="w-4 h-4 inline mr-2" />
+                          DNI
+                        </label>
+                        <Input
+                          type="text"
+                          name="dni"
+                          value={patient.dni || ""}
+                          placeholder="Documento Nacional de Identidad"
+                          pattern="[A-Za-z0-9]{7,30}"
+                          title="DNI debe tener entre 7 y 30 caracteres alfanuméricos"
                           class="w-full"
                         />
                       </div>

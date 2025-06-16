@@ -19,13 +19,70 @@ export class AppointmentRepository extends BaseRepository<Appointment, string>
   }
 
   protected override validate(entity: Appointment): boolean {
-    return super.validate(entity) &&
-      typeof entity.id === "string" &&
-      entity.id.length > 0 &&
-      typeof entity.psychologistEmail === "string" &&
-      entity.psychologistEmail.length > 0 &&
-      typeof entity.appointmentDate === "string" &&
-      typeof entity.appointmentTime === "string";
+    // Basic validation from parent
+    if (!super.validate(entity)) {
+      return false;
+    }
+
+    // Required fields
+    if (!entity.id || typeof entity.id !== "string" || entity.id.length === 0) {
+      return false;
+    }
+
+    if (!entity.psychologistEmail || typeof entity.psychologistEmail !== "string" || entity.psychologistEmail.length === 0) {
+      return false;
+    }
+
+    if (!entity.appointmentDate || typeof entity.appointmentDate !== "string") {
+      return false;
+    }
+
+    // Time validation - require either old appointmentTime OR new startTime/endTime
+    const hasOldTimeFormat = entity.appointmentTime && typeof entity.appointmentTime === "string";
+    const hasNewTimeFormat = entity.startTime && typeof entity.startTime === "string" && 
+                              entity.endTime && typeof entity.endTime === "string";
+
+    if (!hasOldTimeFormat && !hasNewTimeFormat) {
+      return false;
+    }
+
+    // If using new format, validate time logic
+    if (hasNewTimeFormat) {
+      const startTime = entity.startTime;
+      const endTime = entity.endTime;
+      
+      // Basic time format validation (HH:MM)
+      const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
+      if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) {
+        return false;
+      }
+
+      // Validate that start time is before end time
+      const startTimeParts = startTime.split(':').map(Number);
+      const endTimeParts = endTime.split(':').map(Number);
+      
+      if (startTimeParts.length !== 2 || endTimeParts.length !== 2) {
+        return false;
+      }
+      
+      const startHour = startTimeParts[0];
+      const startMin = startTimeParts[1];
+      const endHour = endTimeParts[0];
+      const endMin = endTimeParts[1];
+      
+      if (startHour === undefined || startMin === undefined || endHour === undefined || endMin === undefined) {
+        return false;
+      }
+      
+      const startMinutes = startHour * 60 + startMin;
+      const endMinutes = endHour * 60 + endMin;
+
+      if (startMinutes >= endMinutes) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   public override async create(appointment: Appointment): Promise<boolean> {

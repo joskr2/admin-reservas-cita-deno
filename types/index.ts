@@ -57,6 +57,7 @@ export interface SessionUser {
 // === TIPOS DE PACIENTES ===
 export interface Patient extends BaseEntity {
   name: string;
+  dni?: string | undefined; // Documento Nacional de Identidad (7-30 caracteres)
   email?: string | undefined;
   phone?: string | undefined;
   dateOfBirth?: string | undefined; // YYYY-MM-DD
@@ -77,6 +78,7 @@ export interface Patient extends BaseEntity {
 export interface PatientProfile {
   id: string;
   name: string;
+  dni?: string | undefined;
   email?: string | undefined;
   phone?: string | undefined;
   isActive: boolean;
@@ -85,6 +87,7 @@ export interface PatientProfile {
 
 export interface CreatePatientForm {
   name: string;
+  dni?: string | undefined;
   email?: string | undefined;
   phone?: string | undefined;
   dateOfBirth?: string | undefined;
@@ -157,7 +160,9 @@ export interface Appointment {
   psychologistName?: string | undefined; // Nombre del psicólogo para mostrar
   patientName: string;
   appointmentDate: string; // YYYY-MM-DD
-  appointmentTime: string; // HH:MM
+  appointmentTime: string; // HH:MM - DEPRECATED: use startTime instead
+  startTime: string; // HH:MM - Hora de inicio de la cita
+  endTime: string; // HH:MM - Hora de fin de la cita
   roomId: RoomId; // Sala de atención asignada
   status: AppointmentStatus;
   statusHistory?: AppointmentStatusHistory[] | undefined; // Historial de cambios
@@ -197,7 +202,9 @@ export interface CreateAppointmentForm {
   patientName: string;
   psychologistEmail: string;
   appointmentDate: string;
-  appointmentTime: string;
+  appointmentTime: string; // DEPRECATED: use startTime instead
+  startTime: string;
+  endTime: string;
   roomId: RoomId;
 }
 

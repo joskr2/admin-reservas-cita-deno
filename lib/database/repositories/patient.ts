@@ -20,10 +20,29 @@ export class PatientRepository extends BaseRepository<Patient, string>
   }
 
   protected override validate(entity: Patient): boolean {
-    return super.validate(entity) &&
-      typeof entity.name === "string" &&
-      entity.name.length > 0 &&
-      typeof entity.isActive === "boolean";
+    // Basic validation from parent
+    if (!super.validate(entity)) {
+      return false;
+    }
+
+    // Name is required
+    if (!entity.name || typeof entity.name !== "string" || entity.name.trim().length === 0) {
+      return false;
+    }
+
+    // isActive is required
+    if (typeof entity.isActive !== "boolean") {
+      return false;
+    }
+
+    // DNI validation if provided (same as psychologists)
+    if (entity.dni !== undefined && entity.dni !== null) {
+      if (typeof entity.dni !== "string" || !/^[A-Za-z0-9]{7,30}$/.test(entity.dni)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   public override async create(patient: Patient): Promise<boolean> {
@@ -395,6 +414,7 @@ export class PatientRepository extends BaseRepository<Patient, string>
     return {
       id: patient.id,
       name: patient.name,
+      dni: patient.dni,
       email: patient.email,
       phone: patient.phone,
       isActive: patient.isActive,

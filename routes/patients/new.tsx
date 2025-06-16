@@ -14,6 +14,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
       const patientData: CreatePatientForm = {
         name: formData.get("name") as string,
+        dni: formData.get("dni") as string || undefined,
         email: formData.get("email") as string || undefined,
         phone: formData.get("phone") as string || undefined,
         dateOfBirth: formData.get("dateOfBirth") as string || undefined,
@@ -131,6 +132,19 @@ export default function NewPatientPage({
                       required
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                       placeholder="Ingresa el nombre completo"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      DNI
+                    </label>
+                    <input
+                      type="text"
+                      name="dni"
+                      class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="Documento Nacional de Identidad"
+                      pattern="[A-Za-z0-9]{7,30}"
+                      title="DNI debe tener entre 7 y 30 caracteres alfanuméricos"
                     />
                   </div>
                   <div>

@@ -75,7 +75,8 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     const patientName = formData.get("patientName")?.toString();
     const psychologistEmail = formData.get("psychologistEmail")?.toString();
     const appointmentDate = formData.get("appointmentDate")?.toString();
-    const appointmentTime = formData.get("appointmentTime")?.toString();
+    const startTime = formData.get("startTime")?.toString();
+    const endTime = formData.get("endTime")?.toString();
     const roomId = formData.get("roomId")?.toString() as RoomId;
     const notes = formData.get("notes")?.toString();
 
@@ -83,13 +84,15 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       patientName,
       psychologistEmail,
       appointmentDate,
-      appointmentTime,
+      startTime,
+      endTime,
       roomId,
       notes,
       hasPatientName: !!patientName,
       hasPsychologistEmail: !!psychologistEmail,
       hasDate: !!appointmentDate,
-      hasTime: !!appointmentTime,
+      hasStartTime: !!startTime,
+      hasEndTime: !!endTime,
       hasRoomId: !!roomId,
     }, { requestId, ...userContext });
 
@@ -136,7 +139,8 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       !patientName ||
       !psychologistEmail ||
       !appointmentDate ||
-      !appointmentTime ||
+      !startTime ||
+      !endTime ||
       !roomId
     ) {
       await logger.warn('APPOINTMENTS_NEW', 'Validation failed: missing required fields', {
@@ -144,7 +148,8 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
           patientName: !patientName,
           psychologistEmail: !psychologistEmail,
           appointmentDate: !appointmentDate,
-          appointmentTime: !appointmentTime,
+          startTime: !startTime,
+          endTime: !endTime,
           roomId: !roomId,
         }
       }, { requestId, ...userContext });
@@ -181,16 +186,17 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       }
     }
 
-    // Verificar disponibilidad de la sala
+    // Verificar disponibilidad de la sala (usando startTime para compatibilidad)
     await logger.debug('APPOINTMENTS_NEW', 'Checking room availability', {
       appointmentDate,
-      appointmentTime,
+      startTime,
+      endTime,
       requestedRoomId: roomId,
     }, { requestId, ...userContext });
     
     const availableRooms = await getAvailableRooms(
       appointmentDate,
-      appointmentTime,
+      startTime, // Usar startTime temporalmente hasta actualizar getAvailableRooms
     );
     const isRoomAvailable = availableRooms.some((room) => room.id === roomId);
 
@@ -205,7 +211,8 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       await logger.warn('APPOINTMENTS_NEW', 'Room not available for selected date and time', {
         requestedRoomId: roomId,
         appointmentDate,
-        appointmentTime,
+        startTime,
+        endTime,
         availableRoomIds: availableRooms.map(r => r.id),
       }, { requestId, ...userContext });
       const kv = await Deno.openKv();
@@ -255,7 +262,9 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         psychologistName: psychologist?.name || psychologist?.email ||
           undefined,
         appointmentDate,
-        appointmentTime,
+        appointmentTime: startTime, // Mantener compatibilidad temporal
+        startTime,
+        endTime,
         roomId,
         status: "pending" as const,
         notes,
@@ -268,7 +277,8 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         psychologistEmail,
         psychologistName: appointmentData.psychologistName,
         appointmentDate,
-        appointmentTime,
+        startTime,
+        endTime,
         roomId,
       }, { requestId, ...userContext });
 
@@ -475,7 +485,7 @@ export default function NewAppointmentPage({
                   </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                   <div>
                     <label
                       htmlFor="appointmentDate"
@@ -495,15 +505,31 @@ export default function NewAppointmentPage({
 
                   <div>
                     <label
-                      htmlFor="appointmentTime"
+                      htmlFor="startTime"
                       class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                     >
                       <Icon name="clock" className="h-4 w-4 inline mr-2" />
-                      Hora de la Cita
+                      Hora de Inicio
                     </label>
                     <Input
-                      id="appointmentTime"
-                      name="appointmentTime"
+                      id="startTime"
+                      name="startTime"
+                      type="time"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="endTime"
+                      class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                    >
+                      <Icon name="clock" className="h-4 w-4 inline mr-2" />
+                      Hora de Fin
+                    </label>
+                    <Input
+                      id="endTime"
+                      name="endTime"
                       type="time"
                       required
                     />
