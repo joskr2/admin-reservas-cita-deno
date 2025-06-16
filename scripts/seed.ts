@@ -1,4 +1,4 @@
-import { hash } from "@felix/bcrypt";
+import { hash } from "../lib/crypto.ts";
 import {
   type Appointment,
   type AppointmentStatus,
@@ -66,8 +66,7 @@ const usersToSeed: UserSeedData[] = [
     education:
       "Psicólogo, Universidad de Chile (2015)\nMagíster en Psicología Clínica, Universidad Católica (2018)",
     experienceYears: 8,
-    bio:
-      "Especialista en terapia cognitivo-conductual con amplia experiencia en el tratamiento de trastornos de ansiedad y depresión.",
+    bio: "Especialista en terapia cognitivo-conductual con amplia experiencia en el tratamiento de trastornos de ansiedad y depresión.",
   },
   {
     email: "psicologo2@horizonte.com",
@@ -81,8 +80,7 @@ const usersToSeed: UserSeedData[] = [
     education:
       "Psicóloga, Universidad Diego Portales (2014)\nEspecialización en Terapia Familiar Sistémica (2017)",
     experienceYears: 9,
-    bio:
-      "Terapeuta familiar sistémica con enfoque en resolución de conflictos familiares y terapia de pareja.",
+    bio: "Terapeuta familiar sistémica con enfoque en resolución de conflictos familiares y terapia de pareja.",
   },
   {
     email: "psicologo3@horizonte.com",
@@ -96,8 +94,7 @@ const usersToSeed: UserSeedData[] = [
     education:
       "Psicólogo, Universidad de Concepción (2013)\nMagíster en Neuropsicología Clínica, Universidad de Barcelona (2016)",
     experienceYears: 10,
-    bio:
-      "Neuropsicólogo especializado en evaluación y rehabilitación cognitiva en adultos y adultos mayores.",
+    bio: "Neuropsicólogo especializado en evaluación y rehabilitación cognitiva en adultos y adultos mayores.",
   },
   {
     email: "psicologo4@horizonte.com",
@@ -111,8 +108,7 @@ const usersToSeed: UserSeedData[] = [
     education:
       "Psicóloga, Universidad Alberto Hurtado (2016)\nDiplomado en Psicología Infantil y Adolescente (2019)",
     experienceYears: 7,
-    bio:
-      "Psicóloga infantil especializada en trastornos del desarrollo y problemas de conducta en niños y adolescentes.",
+    bio: "Psicóloga infantil especializada en trastornos del desarrollo y problemas de conducta en niños y adolescentes.",
   },
   {
     email: "psicologo5@horizonte.com",
@@ -126,8 +122,7 @@ const usersToSeed: UserSeedData[] = [
     education:
       "Psicólogo, Universidad de Valparaíso (2012)\nCertificación en EMDR y Terapia del Trauma (2018)",
     experienceYears: 11,
-    bio:
-      "Especialista en trastorno de estrés postraumático y terapia EMDR, con experiencia en víctimas de violencia.",
+    bio: "Especialista en trastorno de estrés postraumático y terapia EMDR, con experiencia en víctimas de violencia.",
   },
   {
     email: "psicologo6@horizonte.com",
@@ -141,8 +136,7 @@ const usersToSeed: UserSeedData[] = [
     education:
       "Psicóloga, Universidad Católica (2015)\nFormación en Terapia de Pareja Emotivo-Focalizada (2018)",
     experienceYears: 8,
-    bio:
-      "Terapeuta de pareja especializada en terapia emotivo-focalizada y resolución de conflictos de pareja.",
+    bio: "Terapeuta de pareja especializada en terapia emotivo-focalizada y resolución de conflictos de pareja.",
   },
   {
     email: "psicologo7@horizonte.com",
@@ -156,8 +150,7 @@ const usersToSeed: UserSeedData[] = [
     education:
       "Psicólogo, Universidad de la Frontera (2014)\nEspecialización en Psicoterapia Grupal (2017)",
     experienceYears: 9,
-    bio:
-      "Psicoterapeuta grupal con experiencia en grupos de apoyo y terapia de habilidades sociales.",
+    bio: "Psicoterapeuta grupal con experiencia en grupos de apoyo y terapia de habilidades sociales.",
   },
   {
     email: "psicologo8@horizonte.com",
@@ -171,8 +164,7 @@ const usersToSeed: UserSeedData[] = [
     education:
       "Psicóloga, Universidad de los Andes (2016)\nMBA con mención en Recursos Humanos (2019)",
     experienceYears: 7,
-    bio:
-      "Psicóloga organizacional especializada en bienestar laboral, liderazgo y manejo del estrés ocupacional.",
+    bio: "Psicóloga organizacional especializada en bienestar laboral, liderazgo y manejo del estrés ocupacional.",
   },
   {
     email: "psicologo9@horizonte.com",
@@ -186,8 +178,7 @@ const usersToSeed: UserSeedData[] = [
     education:
       "Psicólogo, Universidad Mayor (2013)\nCertificación en Terapia Cognitivo-Conductual (2016)",
     experienceYears: 10,
-    bio:
-      "Especialista en terapia cognitivo-conductual para trastornos de ansiedad, depresión y fobias específicas.",
+    bio: "Especialista en terapia cognitivo-conductual para trastornos de ansiedad, depresión y fobias específicas.",
   },
   {
     email: "psicologo10@horizonte.com",
@@ -202,8 +193,7 @@ const usersToSeed: UserSeedData[] = [
     education:
       "Psicóloga, Universidad San Sebastián (2015)\nDiplomado en Psicología del Deporte (2018)",
     experienceYears: 8,
-    bio:
-      "Psicóloga deportiva especializada en rendimiento atlético, motivación y manejo de la presión competitiva.",
+    bio: "Psicóloga deportiva especializada en rendimiento atlético, motivación y manejo de la presión competitiva.",
   },
 ];
 
@@ -493,7 +483,7 @@ function generateAppointments(roomIds: RoomId[]): Appointment[] {
   const startDate = new Date("2024-11-01");
   const endDate = new Date("2025-01-31");
   const psychologists = usersToSeed.filter(
-    (user) => user.role === "psychologist",
+    (user) => user.role === "psychologist"
   );
   const statuses: AppointmentStatus[] = [
     "pending",
@@ -532,7 +522,7 @@ function generateAppointments(roomIds: RoomId[]): Appointment[] {
     if (status !== "pending") {
       const scheduledAt = new Date(createdAt);
       scheduledAt.setDate(
-        scheduledAt.getDate() + Math.floor(Math.random() * 3) + 1,
+        scheduledAt.getDate() + Math.floor(Math.random() * 3) + 1
       );
       statusHistory.push({
         status: "scheduled" as AppointmentStatus,
@@ -544,7 +534,7 @@ function generateAppointments(roomIds: RoomId[]): Appointment[] {
 
       if (status === "in_progress" || status === "completed") {
         const inProgressAt = new Date(
-          appointmentDate + "T" + appointmentTime + ":00.000Z",
+          appointmentDate + "T" + appointmentTime + ":00.000Z"
         );
         statusHistory.push({
           status: "in_progress" as AppointmentStatus,
@@ -570,7 +560,7 @@ function generateAppointments(roomIds: RoomId[]): Appointment[] {
       if (status === "cancelled") {
         const cancelledAt = new Date(appointmentDate);
         cancelledAt.setDate(
-          cancelledAt.getDate() - Math.floor(Math.random() * 2) + 1,
+          cancelledAt.getDate() - Math.floor(Math.random() * 2) + 1
         );
         statusHistory.push({
           status: "cancelled" as AppointmentStatus,
@@ -590,7 +580,9 @@ function generateAppointments(roomIds: RoomId[]): Appointment[] {
       appointmentDate,
       appointmentTime,
       startTime: appointmentTime,
-      endTime: `${parseInt(appointmentTime.split(':')[0]!) + 1}:${appointmentTime.split(':')[1]}`,
+      endTime: `${parseInt(appointmentTime.split(":")[0]!) + 1}:${
+        appointmentTime.split(":")[1]
+      }`,
       roomId: room,
       status,
       statusHistory,
@@ -749,8 +741,7 @@ async function createTestData(_kv: Deno.Kv): Promise<void> {
     phone: "+56900000000",
     education: "Universidad de Prueba",
     experienceYears: 5,
-    bio:
-      "Usuario creado específicamente para pruebas automatizadas del sistema.",
+    bio: "Usuario creado específicamente para pruebas automatizadas del sistema.",
   };
 
   await userRepo.create(testUser);
@@ -863,7 +854,7 @@ async function seedDatabase() {
       const success = await createUser(userData);
       if (success) {
         console.log(
-          `   ✅ Usuario creado: ${userSeed.name} (${userSeed.email})`,
+          `   ✅ Usuario creado: ${userSeed.name} (${userSeed.email})`
         );
       } else {
         console.log(`   ❌ Error creando usuario: ${userSeed.email}`);
@@ -911,7 +902,7 @@ async function seedDatabase() {
       const success = await createAppointment(appointment);
       if (success) {
         console.log(
-          `   ✅ Cita creada: ${appointment.patientName} - ${appointment.appointmentDate} ${appointment.appointmentTime}`,
+          `   ✅ Cita creada: ${appointment.patientName} - ${appointment.appointmentDate} ${appointment.appointmentTime}`
         );
       } else {
         console.log(`   ❌ Error creando cita: ${appointment.id}`);

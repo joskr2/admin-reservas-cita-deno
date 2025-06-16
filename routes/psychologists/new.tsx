@@ -1,6 +1,6 @@
 import type { Handlers, PageProps } from "$fresh/server.ts";
 import { Head } from "$fresh/runtime.ts";
-import { hash } from "@felix/bcrypt";
+import { hash } from "../../lib/crypto.ts";
 
 import type { AppState, User } from "../../types/index.ts";
 import { getUserRepository } from "../../lib/database/index.ts";
@@ -171,7 +171,8 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
     if (experienceYears.trim()) {
       experienceYearsNum = parseInt(experienceYears);
       if (
-        isNaN(experienceYearsNum) || experienceYearsNum < 0 ||
+        isNaN(experienceYearsNum) ||
+        experienceYearsNum < 0 ||
         experienceYearsNum > 50
       ) {
         return ctx.render({
@@ -231,9 +232,8 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
         createdAt: new Date().toISOString(),
         dni: dni || undefined,
         specialty: specialty || undefined,
-        customSpecialty: (specialty === "Otra" && customSpecialty)
-          ? customSpecialty
-          : undefined,
+        customSpecialty:
+          specialty === "Otra" && customSpecialty ? customSpecialty : undefined,
         licenseNumber: licenseNumber || undefined,
         phone: phone || undefined,
         education: education || undefined,
@@ -471,8 +471,8 @@ export default function NewPsychologistPage({
                       name="specialty"
                       value={formData?.specialty || ""}
                       customValue={formData?.customSpecialty || ""}
-                      required={true}
-                      class="w-full"
+                      required
+                      className="w-full"
                     />
                   </div>
 
@@ -571,14 +571,13 @@ export default function NewPsychologistPage({
                 </h3>
                 <ul class="text-sm text-blue-800 dark:text-blue-200 space-y-1">
                   <li>
-                    <strong>Psicólogo:</strong>{" "}
-                    Puede gestionar sus propias citas y ver el directorio de
-                    otros psicólogos
+                    <strong>Psicólogo:</strong> Puede gestionar sus propias
+                    citas y ver el directorio de otros psicólogos
                   </li>
                   <li>
-                    <strong>Super Administrador:</strong>{" "}
-                    Acceso completo al sistema, puede gestionar todos los
-                    psicólogos y configuraciones
+                    <strong>Super Administrador:</strong> Acceso completo al
+                    sistema, puede gestionar todos los psicólogos y
+                    configuraciones
                   </li>
                 </ul>
               </div>
