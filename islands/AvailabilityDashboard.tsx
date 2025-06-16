@@ -38,7 +38,7 @@ export default function AvailabilityDashboard({
   const [bookingData, setBookingData] = useState<{
     date: string;
     time: string;
-    roomId: string;
+    roomId?: string;
   } | null>(null);
 
   // Horario laboral: 8:00 AM - 6:00 PM
@@ -171,8 +171,8 @@ export default function AvailabilityDashboard({
     setSelectedDate(new Date());
   };
 
-  const handleQuickBook = (date: string, time: string, roomId: string) => {
-    setBookingData({ date, time, roomId });
+  const handleQuickBook = (date: string, time: string, roomId?: string) => {
+    setBookingData({ date, time, roomId: roomId || "" });
     setShowBookingModal(true);
   };
 
@@ -285,7 +285,7 @@ export default function AvailabilityDashboard({
                     <div class="mt-2">
                       <button
                         type="button"
-                        onClick={() => handleQuickBook(daySchedule.date, slot.hour, availableRooms[0]?.id || "1")}
+                        onClick={() => handleQuickBook(daySchedule.date, slot.hour)}
                         class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded transition-colors"
                       >
                         Agendar
@@ -398,7 +398,7 @@ export default function AvailabilityDashboard({
                         {slot?.isAvailable ? (
                           <button
                             type="button"
-                            onClick={() => handleQuickBook(day.date, hour, availableRooms[0]?.id || "1")}
+                            onClick={() => handleQuickBook(day.date, hour)}
                             class="block w-full h-8 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 rounded border border-green-300 dark:border-green-700 transition-colors cursor-pointer"
                             title={`Crear cita para ${day.dayName} ${formatTime(hour)}`}
                           >
@@ -722,6 +722,7 @@ export default function AvailabilityDashboard({
           time={bookingData.time}
           roomId={bookingData.roomId}
           patients={patients}
+          rooms={rooms}
           psychologistEmail={psychologistEmail || ""}
         />
       )}
