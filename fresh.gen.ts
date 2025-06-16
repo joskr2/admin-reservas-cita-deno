@@ -50,6 +50,7 @@ import * as $AppointmentFilters from "./islands/AppointmentFilters.tsx";
 import * as $AppointmentForm from "./islands/AppointmentForm.tsx";
 import * as $AppointmentFormValidator from "./islands/AppointmentFormValidator.tsx";
 import * as $AppointmentStatusSelector from "./islands/AppointmentStatusSelector.tsx";
+import * as $AvailabilityDashboard from "./islands/AvailabilityDashboard.tsx";
 import * as $Counter from "./islands/Counter.tsx";
 import * as $DashboardStats from "./islands/DashboardStats.tsx";
 import * as $DeleteAppointmentButton from "./islands/DeleteAppointmentButton.tsx";
@@ -120,6 +121,7 @@ const manifest = {
     "./islands/AppointmentForm.tsx": $AppointmentForm,
     "./islands/AppointmentFormValidator.tsx": $AppointmentFormValidator,
     "./islands/AppointmentStatusSelector.tsx": $AppointmentStatusSelector,
+    "./islands/AvailabilityDashboard.tsx": $AvailabilityDashboard,
     "./islands/Counter.tsx": $Counter,
     "./islands/DashboardStats.tsx": $DashboardStats,
     "./islands/DeleteAppointmentButton.tsx": $DeleteAppointmentButton,

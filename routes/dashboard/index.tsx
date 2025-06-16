@@ -9,6 +9,7 @@ import {
 } from "../../types/index.ts";
 import GenericFilters from "../../islands/GenericFilters.tsx";
 import DashboardStats from "../../islands/DashboardStats.tsx";
+import AvailabilityDashboard from "../../islands/AvailabilityDashboard.tsx";
 import {
   getAppointmentRepository,
   getDashboardService,
@@ -25,6 +26,8 @@ interface DashboardPageData {
   recentPatients: PatientProfile[];
   recentUsers: UserProfile[];
   recentRooms: Room[];
+  allAppointments: Appointment[];
+  allRooms: Room[];
   currentUser: {
     role: string;
     email: string;
@@ -98,6 +101,8 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     let recentPatients: PatientProfile[];
     let recentUsers: UserProfile[];
     let recentRooms: Room[];
+    let allAppointments: Appointment[];
+    let allRooms: Room[];
 
     if (currentUser.role === "superadmin") {
       await logger.debug('DASHBOARD', 'Loading data for superadmin user', {}, { requestId, ...userContext });
@@ -107,6 +112,8 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       recentPatients = await patientRepository.getAllPatientsAsProfiles();
       recentUsers = await userRepository.getAllUsersAsProfiles();
       recentRooms = await roomRepository.getAll();
+      allAppointments = recentAppointments;
+      allRooms = recentRooms;
       
       await logger.debug('DASHBOARD', 'Superadmin data loaded', {
         appointmentsCount: recentAppointments.length,
@@ -139,6 +146,8 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
       // Los psicólogos pueden ver las salas (información general)
       recentRooms = await roomRepository.getAll();
+      allAppointments = recentAppointments;
+      allRooms = recentRooms;
       
       await logger.debug('DASHBOARD', 'Psychologist data loaded', {
         appointmentsCount: recentAppointments.length,
@@ -283,6 +292,8 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       recentPatients,
       recentUsers,
       recentRooms,
+      allAppointments,
+      allRooms,
       currentUser: {
         role: currentUser.role,
         email: currentUser.email,
@@ -318,6 +329,8 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       recentPatients: [],
       recentUsers: [],
       recentRooms: [],
+      allAppointments: [],
+      allRooms: [],
       currentUser: {
         role: currentUser?.role || "psychologist",
         email: currentUser?.email || "",
@@ -338,6 +351,8 @@ export default function Dashboard({
     recentPatients,
     recentUsers,
     recentRooms,
+    allAppointments,
+    allRooms,
     currentUser,
     filters,
   } = data;
@@ -416,7 +431,21 @@ export default function Dashboard({
             <DashboardStats {...dashboardData} userRole={currentUser.role} />
           </div>
 
-          {/* 3. Acciones Rápidas - TERCERO */}
+          {/* 3. Disponibilidad de Horarios y Salas - TERCERO */}
+          <div class="mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
+              <Icon name="clock" className="h-5 w-5 text-green-500 mr-2" />
+              Disponibilidad de Horarios y Salas
+            </h2>
+            <AvailabilityDashboard
+              appointments={allAppointments}
+              rooms={allRooms}
+              psychologistEmail={currentUser.email}
+              userRole={currentUser.role}
+            />
+          </div>
+
+          {/* 4. Acciones Rápidas - CUARTO */}
           <div class="mb-8">
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-6 flex items-center">
               <Icon name="activity" className="h-5 w-5 text-purple-500 mr-2" />
