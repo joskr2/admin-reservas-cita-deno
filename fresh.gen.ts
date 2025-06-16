@@ -52,6 +52,7 @@ import * as $AppointmentForm from "./islands/AppointmentForm.tsx";
 import * as $AppointmentFormValidator from "./islands/AppointmentFormValidator.tsx";
 import * as $AppointmentStatusSelector from "./islands/AppointmentStatusSelector.tsx";
 import * as $AvailabilityDashboard from "./islands/AvailabilityDashboard.tsx";
+import * as $CollapsibleSection from "./islands/CollapsibleSection.tsx";
 import * as $Counter from "./islands/Counter.tsx";
 import * as $DashboardStats from "./islands/DashboardStats.tsx";
 import * as $DeleteAppointmentButton from "./islands/DeleteAppointmentButton.tsx";
@@ -67,6 +68,7 @@ import * as $RoomFilters from "./islands/RoomFilters.tsx";
 import * as $RoomToggleButton from "./islands/RoomToggleButton.tsx";
 import * as $SpecialtySelector from "./islands/SpecialtySelector.tsx";
 import * as $ThemeToggle from "./islands/ThemeToggle.tsx";
+import * as $Toast from "./islands/Toast.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
 const manifest = {
@@ -125,6 +127,7 @@ const manifest = {
     "./islands/AppointmentFormValidator.tsx": $AppointmentFormValidator,
     "./islands/AppointmentStatusSelector.tsx": $AppointmentStatusSelector,
     "./islands/AvailabilityDashboard.tsx": $AvailabilityDashboard,
+    "./islands/CollapsibleSection.tsx": $CollapsibleSection,
     "./islands/Counter.tsx": $Counter,
     "./islands/DashboardStats.tsx": $DashboardStats,
     "./islands/DeleteAppointmentButton.tsx": $DeleteAppointmentButton,
@@ -140,6 +143,7 @@ const manifest = {
     "./islands/RoomToggleButton.tsx": $RoomToggleButton,
     "./islands/SpecialtySelector.tsx": $SpecialtySelector,
     "./islands/ThemeToggle.tsx": $ThemeToggle,
+    "./islands/Toast.tsx": $Toast,
   },
   baseUrl: import.meta.url,
 } satisfies Manifest;

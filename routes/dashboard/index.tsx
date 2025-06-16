@@ -10,6 +10,7 @@ import {
 import GenericFilters from "../../islands/GenericFilters.tsx";
 import DashboardStats from "../../islands/DashboardStats.tsx";
 import AvailabilityDashboard from "../../islands/AvailabilityDashboard.tsx";
+import CollapsibleSection from "../../islands/CollapsibleSection.tsx";
 import {
   getAppointmentRepository,
   getDashboardService,
