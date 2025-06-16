@@ -69,14 +69,38 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
     if (!name || !email || !password || !dni || !specialty) {
       return ctx.render({
         error: "Nombre, email, contraseña, DNI y especialidad son obligatorios",
-        formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
+        formData: {
+          name,
+          email,
+          role,
+          dni,
+          specialty,
+          customSpecialty,
+          licenseNumber,
+          phone,
+          education,
+          experienceYears,
+          bio,
+        },
       });
     }
 
     if (password.length < 8) {
       return ctx.render({
         error: "La contraseña debe tener al menos 8 caracteres",
-        formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
+        formData: {
+          name,
+          email,
+          role,
+          dni,
+          specialty,
+          customSpecialty,
+          licenseNumber,
+          phone,
+          education,
+          experienceYears,
+          bio,
+        },
       });
     }
 
@@ -85,7 +109,19 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
     if (!dniRegex.test(dni)) {
       return ctx.render({
         error: "El DNI debe tener entre 7 y 30 caracteres alfanuméricos",
-        formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
+        formData: {
+          name,
+          email,
+          role,
+          dni,
+          specialty,
+          customSpecialty,
+          licenseNumber,
+          phone,
+          education,
+          experienceYears,
+          bio,
+        },
       });
     }
 
@@ -94,7 +130,19 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
     if (!emailRegex.test(email)) {
       return ctx.render({
         error: "El formato del email no es válido",
-        formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
+        formData: {
+          name,
+          email,
+          role,
+          dni,
+          specialty,
+          customSpecialty,
+          licenseNumber,
+          phone,
+          education,
+          experienceYears,
+          bio,
+        },
       });
     }
 
@@ -102,7 +150,19 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
     if (specialty === "Otra" && !customSpecialty.trim()) {
       return ctx.render({
         error: "Debe especificar la especialidad personalizada",
-        formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
+        formData: {
+          name,
+          email,
+          role,
+          dni,
+          specialty,
+          customSpecialty,
+          licenseNumber,
+          phone,
+          education,
+          experienceYears,
+          bio,
+        },
       });
     }
 
@@ -110,10 +170,25 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
     let experienceYearsNum: number | undefined = undefined;
     if (experienceYears.trim()) {
       experienceYearsNum = parseInt(experienceYears);
-      if (isNaN(experienceYearsNum) || experienceYearsNum < 0 || experienceYearsNum > 50) {
+      if (
+        isNaN(experienceYearsNum) || experienceYearsNum < 0 ||
+        experienceYearsNum > 50
+      ) {
         return ctx.render({
           error: "Los años de experiencia deben ser un número entre 0 y 50",
-          formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
+          formData: {
+            name,
+            email,
+            role,
+            dni,
+            specialty,
+            customSpecialty,
+            licenseNumber,
+            phone,
+            education,
+            experienceYears,
+            bio,
+          },
         });
       }
     }
@@ -126,7 +201,19 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
       if (existingUser) {
         return ctx.render({
           error: "Ya existe un usuario con este email",
-          formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
+          formData: {
+            name,
+            email,
+            role,
+            dni,
+            specialty,
+            customSpecialty,
+            licenseNumber,
+            phone,
+            education,
+            experienceYears,
+            bio,
+          },
         });
       }
 
@@ -144,7 +231,9 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
         createdAt: new Date().toISOString(),
         dni: dni || undefined,
         specialty: specialty || undefined,
-        customSpecialty: (specialty === "Otra" && customSpecialty) ? customSpecialty : undefined,
+        customSpecialty: (specialty === "Otra" && customSpecialty)
+          ? customSpecialty
+          : undefined,
         licenseNumber: licenseNumber || undefined,
         phone: phone || undefined,
         education: education || undefined,
@@ -153,11 +242,23 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
       };
 
       const success = await userRepository.create(newPsychologist);
-      
+
       if (!success) {
         return ctx.render({
           error: "Error al crear el psicólogo",
-          formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
+          formData: {
+            name,
+            email,
+            role,
+            dni,
+            specialty,
+            customSpecialty,
+            licenseNumber,
+            phone,
+            education,
+            experienceYears,
+            bio,
+          },
         });
       }
 
@@ -169,7 +270,19 @@ export const handler: Handlers<NewPsychologistData, AppState> = {
       console.error("Error creating psychologist:", error);
       return ctx.render({
         error: "Error interno del servidor",
-        formData: { name, email, role, dni, specialty, customSpecialty, licenseNumber, phone, education, experienceYears, bio },
+        formData: {
+          name,
+          email,
+          role,
+          dni,
+          specialty,
+          customSpecialty,
+          licenseNumber,
+          phone,
+          education,
+          experienceYears,
+          bio,
+        },
       });
     }
   },
@@ -196,13 +309,18 @@ export default function NewPsychologistPage({
           <nav class="mb-8">
             <ol class="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
               <li>
-                <a href="/psychologists" class="hover:text-gray-700 dark:hover:text-gray-300">
+                <a
+                  href="/psychologists"
+                  class="hover:text-gray-700 dark:hover:text-gray-300"
+                >
                   Psicólogos
                 </a>
               </li>
               <li class="flex items-center">
                 <Icon name="arrow-left" className="w-4 h-4 mx-2 rotate-180" />
-                <span class="text-gray-900 dark:text-white">Nuevo Psicólogo</span>
+                <span class="text-gray-900 dark:text-white">
+                  Nuevo Psicólogo
+                </span>
               </li>
             </ol>
           </nav>
@@ -211,7 +329,10 @@ export default function NewPsychologistPage({
           <div class="mb-8">
             <div class="flex items-center gap-3 mb-4">
               <div class="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                <Icon name="user-plus" className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                <Icon
+                  name="user-plus"
+                  className="w-6 h-6 text-blue-600 dark:text-blue-400"
+                />
               </div>
               <div>
                 <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
@@ -239,7 +360,10 @@ export default function NewPsychologistPage({
               {error && (
                 <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
                   <div class="flex items-center">
-                    <Icon name="x" className="w-5 h-5 text-red-400 dark:text-red-300 mr-2" />
+                    <Icon
+                      name="x"
+                      className="w-5 h-5 text-red-400 dark:text-red-300 mr-2"
+                    />
                     <span class="text-red-800 dark:text-red-200 text-sm font-medium">
                       {error}
                     </span>
@@ -409,7 +533,10 @@ export default function NewPsychologistPage({
                 <div class="space-y-6">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      <Icon name="graduation-cap" className="w-4 h-4 inline mr-2" />
+                      <Icon
+                        name="graduation-cap"
+                        className="w-4 h-4 inline mr-2"
+                      />
                       Formación Académica
                     </label>
                     <Textarea

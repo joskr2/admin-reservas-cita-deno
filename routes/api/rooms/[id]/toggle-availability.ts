@@ -51,7 +51,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         {
           status: 404,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
     }
 
@@ -59,7 +59,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     const newAvailability = !room.isAvailable;
     const success = await roomRepository.updateAvailability(
       roomId,
-      newAvailability
+      newAvailability,
     );
 
     if (success) {
@@ -83,7 +83,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
           },
-        }
+        },
       );
     } else {
       return new Response(
@@ -94,7 +94,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         {
           status: 500,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
     }
   } catch (error) {
@@ -107,7 +107,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 }

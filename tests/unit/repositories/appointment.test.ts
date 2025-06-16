@@ -1,6 +1,6 @@
 // tests/unit/repositories/appointment.test.ts - Tests para AppointmentRepository
 import { assertEquals, assertExists } from "$std/testing/asserts.ts";
-import { describe, it, beforeEach, afterEach } from "$std/testing/bdd.ts";
+import { afterEach, beforeEach, describe, it } from "$std/testing/bdd.ts";
 import { AppointmentRepository } from "../../../lib/database/repositories/appointment.ts";
 import { DatabaseConnection } from "../../../lib/database/connection.ts";
 import type { Appointment } from "../../../types/index.ts";
@@ -30,6 +30,8 @@ describe("AppointmentRepository", () => {
         patientName: "Test Patient",
         appointmentDate: "2024-01-15",
         appointmentTime: "10:00",
+        startTime: "10:00",
+        endTime: "11:00",
         roomId: "room-1",
         status: "scheduled",
         notes: "Test appointment",
@@ -44,7 +46,7 @@ describe("AppointmentRepository", () => {
       assertExists(retrieved);
       assertEquals(
         retrieved.psychologistEmail,
-        appointmentData.psychologistEmail
+        appointmentData.psychologistEmail,
       );
       assertEquals(retrieved.patientName, appointmentData.patientName);
     });
@@ -81,6 +83,8 @@ describe("AppointmentRepository", () => {
         patientName: "Test Patient",
         appointmentDate: "2024-01-15",
         appointmentTime: "10:00",
+        startTime: "10:00",
+        endTime: "11:00",
         roomId: "room-1",
         status: "scheduled",
         notes: "Test appointment",
@@ -97,7 +101,7 @@ describe("AppointmentRepository", () => {
 
       const result = await appointmentRepository.update(
         appointmentData.id,
-        updates
+        updates,
       );
       assertEquals(result, true);
 
@@ -117,7 +121,7 @@ describe("AppointmentRepository", () => {
 
       const result = await appointmentRepository.update(
         appointment.id,
-        updates
+        updates,
       );
       assertEquals(result, true);
 
@@ -142,6 +146,8 @@ describe("AppointmentRepository", () => {
         patientName: "Test Patient",
         appointmentDate: "2024-01-15",
         appointmentTime: "10:00",
+        startTime: "10:00",
+        endTime: "11:00",
         roomId: "room-1",
         status: "scheduled",
         notes: "Test appointment",
@@ -152,7 +158,7 @@ describe("AppointmentRepository", () => {
       await appointmentRepository.create(appointmentData);
 
       const deleteResult = await appointmentRepository.delete(
-        appointmentData.id
+        appointmentData.id,
       );
       assertEquals(deleteResult, true);
 
@@ -188,6 +194,8 @@ describe("AppointmentRepository", () => {
         patientName: "Patient 1",
         appointmentDate,
         appointmentTime: "10:00",
+        startTime: "10:00",
+        endTime: "11:00",
         roomId: "room-1",
         status: "scheduled",
         notes: "Test appointment 1",
@@ -201,6 +209,8 @@ describe("AppointmentRepository", () => {
         patientName: "Patient 2",
         appointmentDate: "2024-01-16", // Different date
         appointmentTime: "11:00",
+        startTime: "11:00",
+        endTime: "12:00",
         roomId: "room-2",
         status: "scheduled",
         notes: "Test appointment 2",
@@ -212,7 +222,7 @@ describe("AppointmentRepository", () => {
       await appointmentRepository.create(appointment2);
 
       const appointments = await appointmentRepository.getAppointmentsByDate(
-        appointmentDate
+        appointmentDate,
       );
       assertEquals(appointments.length, 1);
       assertEquals(appointments[0]!.id, appointment1.id);
@@ -223,7 +233,7 @@ describe("AppointmentRepository", () => {
     it("should return appointments for a specific psychologist", async () => {
       // Clean data first
       await testUtils.cleanupTestData();
-      
+
       const psychologistEmail = `psychologist-${Date.now()}@test.com`;
       const appointment1: Appointment = {
         id: crypto.randomUUID(),
@@ -231,6 +241,8 @@ describe("AppointmentRepository", () => {
         patientName: "Patient 1",
         appointmentDate: "2024-01-15",
         appointmentTime: "10:00",
+        startTime: "10:00",
+        endTime: "11:00",
         roomId: "room-1",
         status: "scheduled",
         notes: "Test appointment 1",
@@ -244,6 +256,8 @@ describe("AppointmentRepository", () => {
         patientName: "Patient 2",
         appointmentDate: "2024-01-15",
         appointmentTime: "11:00",
+        startTime: "11:00",
+        endTime: "12:00",
         roomId: "room-2",
         status: "scheduled",
         notes: "Test appointment 2",
@@ -253,16 +267,16 @@ describe("AppointmentRepository", () => {
 
       const created1 = await appointmentRepository.create(appointment1);
       const created2 = await appointmentRepository.create(appointment2);
-      
+
       // Verify both were created
       assertEquals(created1, true);
       assertEquals(created2, true);
 
-      const appointments =
-        await appointmentRepository.getAppointmentsByPsychologist(
-          psychologistEmail
+      const appointments = await appointmentRepository
+        .getAppointmentsByPsychologist(
+          psychologistEmail,
         );
-      
+
       assertEquals(appointments.length, 1);
       assertEquals(appointments[0]!.id, appointment1.id);
     });
@@ -276,6 +290,8 @@ describe("AppointmentRepository", () => {
         patientName: "Patient 1",
         appointmentDate: "2024-01-15",
         appointmentTime: "10:00",
+        startTime: "10:00",
+        endTime: "11:00",
         roomId: "room-1",
         status: "scheduled",
         notes: "Test appointment 1",
@@ -289,6 +305,8 @@ describe("AppointmentRepository", () => {
         patientName: "Patient 2",
         appointmentDate: "2024-01-15",
         appointmentTime: "11:00",
+        startTime: "11:00",
+        endTime: "12:00",
         roomId: "room-2",
         status: "completed",
         notes: "Test appointment 2",
@@ -299,13 +317,13 @@ describe("AppointmentRepository", () => {
       await appointmentRepository.create(appointment1);
       await appointmentRepository.create(appointment2);
 
-      const scheduledAppointments =
-        await appointmentRepository.getAppointmentsByStatus("scheduled");
+      const scheduledAppointments = await appointmentRepository
+        .getAppointmentsByStatus("scheduled");
       assertEquals(scheduledAppointments.length, 1);
       assertEquals(scheduledAppointments[0]!.id, appointment1.id);
 
-      const completedAppointments =
-        await appointmentRepository.getAppointmentsByStatus("completed");
+      const completedAppointments = await appointmentRepository
+        .getAppointmentsByStatus("completed");
       assertEquals(completedAppointments.length, 1);
       assertEquals(completedAppointments[0]!.id, appointment2.id);
     });
@@ -319,6 +337,8 @@ describe("AppointmentRepository", () => {
         patientName: "Patient 1",
         appointmentDate: "2024-01-15",
         appointmentTime: "10:00",
+        startTime: "10:00",
+        endTime: "11:00",
         roomId: "room-1",
         status: "scheduled",
         notes: "Test appointment 1",
@@ -332,6 +352,8 @@ describe("AppointmentRepository", () => {
         patientName: "Patient 2",
         appointmentDate: "2024-01-16",
         appointmentTime: "11:00",
+        startTime: "11:00",
+        endTime: "12:00",
         roomId: "room-2",
         status: "completed",
         notes: "Test appointment 2",

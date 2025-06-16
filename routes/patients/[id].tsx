@@ -376,9 +376,11 @@ export default function PatientDetailsPage({
                     </a>
 
                     <a
-                      href={`/appointments/new?patient=${encodeURIComponent(
-                        patient.name
-                      )}`}
+                      href={`/appointments/new?patient=${
+                        encodeURIComponent(
+                          patient.name,
+                        )
+                      }`}
                       class="w-full inline-flex items-center justify-center font-medium rounded-lg px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 ease-in-out"
                     >
                       Nueva Cita

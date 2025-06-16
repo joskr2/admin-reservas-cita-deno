@@ -20,32 +20,49 @@ import {
 import { getPatientRepository } from "../../lib/database/index.ts";
 import AppointmentFormValidator from "../../islands/AppointmentFormValidator.tsx";
 import PatientSelect from "../../islands/PatientSelect.tsx";
-import { logger, extractUserContext } from "../../lib/logger.ts";
-import { checkAppointmentConflicts, generateAlternativeSuggestions, type ConflictDetail, type AlternativeSuggestion } from "../../lib/utils/conflictValidation.ts";
+import { extractUserContext, logger } from "../../lib/logger.ts";
+import {
+  type AlternativeSuggestion,
+  checkAppointmentConflicts,
+  type ConflictDetail,
+  generateAlternativeSuggestions,
+} from "../../lib/utils/conflictValidation.ts";
 
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
-  const requestId = ctx.state.requestId || 'unknown';
+  const requestId = ctx.state.requestId || "unknown";
   const userContext = extractUserContext(ctx.state.user);
-  
-  await logger.info('APPOINTMENTS_NEW', `Handler called with method: ${req.method}`, {
-    method: req.method,
-    url: req.url,
-    user: ctx.state.user,
-  }, { requestId, ...userContext });
+
+  await logger.info(
+    "APPOINTMENTS_NEW",
+    `Handler called with method: ${req.method}`,
+    {
+      method: req.method,
+      url: req.url,
+      user: ctx.state.user,
+    },
+    { requestId, ...userContext },
+  );
 
   if (req.method === "GET") {
     const url = new URL(req.url);
     const autoFill = url.searchParams.get("autoFill") === "true";
-    const prefilledData = autoFill ? {
-      patientName: url.searchParams.get("patientName") || "",
-      psychologistEmail: url.searchParams.get("psychologistEmail") || "",
-      appointmentDate: url.searchParams.get("appointmentDate") || "",
-      startTime: url.searchParams.get("startTime") || "",
-      endTime: url.searchParams.get("endTime") || "",
-      roomId: url.searchParams.get("roomId") || "",
-      notes: url.searchParams.get("notes") || "",
-    } : undefined;
-    await logger.debug('APPOINTMENTS_NEW', 'Processing GET request for new appointment form', {}, { requestId, ...userContext });
+    const prefilledData = autoFill
+      ? {
+        patientName: url.searchParams.get("patientName") || "",
+        psychologistEmail: url.searchParams.get("psychologistEmail") || "",
+        appointmentDate: url.searchParams.get("appointmentDate") || "",
+        startTime: url.searchParams.get("startTime") || "",
+        endTime: url.searchParams.get("endTime") || "",
+        roomId: url.searchParams.get("roomId") || "",
+        notes: url.searchParams.get("notes") || "",
+      }
+      : undefined;
+    await logger.debug(
+      "APPOINTMENTS_NEW",
+      "Processing GET request for new appointment form",
+      {},
+      { requestId, ...userContext },
+    );
     const kv = await Deno.openKv();
 
     try {
@@ -82,8 +99,13 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
   }
 
   if (req.method === "POST") {
-    await logger.info('APPOINTMENTS_NEW', 'Processing POST request for appointment creation', {}, { requestId, ...userContext });
-    
+    await logger.info(
+      "APPOINTMENTS_NEW",
+      "Processing POST request for appointment creation",
+      {},
+      { requestId, ...userContext },
+    );
+
     const formData = await req.formData();
     const patientName = formData.get("patientName")?.toString();
     const psychologistEmail = formData.get("psychologistEmail")?.toString();
@@ -93,7 +115,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     const roomId = formData.get("roomId")?.toString() as RoomId;
     const notes = formData.get("notes")?.toString();
 
-    await logger.debug('APPOINTMENTS_NEW', 'Form data extracted', {
+    await logger.debug("APPOINTMENTS_NEW", "Form data extracted", {
       patientName,
       psychologistEmail,
       appointmentDate,
@@ -114,10 +136,15 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       ctx.state.user?.role === "psychologist" &&
       psychologistEmail !== ctx.state.user.email
     ) {
-      await logger.warn('APPOINTMENTS_NEW', 'Permission denied: psychologist trying to assign appointment to another psychologist', {
-        currentUserEmail: ctx.state.user.email,
-        requestedPsychologistEmail: psychologistEmail,
-      }, { requestId, ...userContext });
+      await logger.warn(
+        "APPOINTMENTS_NEW",
+        "Permission denied: psychologist trying to assign appointment to another psychologist",
+        {
+          currentUserEmail: ctx.state.user.email,
+          requestedPsychologistEmail: psychologistEmail,
+        },
+        { requestId, ...userContext },
+      );
       const kv = await Deno.openKv();
       try {
         const users = await getAllUsers();
@@ -156,16 +183,21 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       !endTime ||
       !roomId
     ) {
-      await logger.warn('APPOINTMENTS_NEW', 'Validation failed: missing required fields', {
-        missingFields: {
-          patientName: !patientName,
-          psychologistEmail: !psychologistEmail,
-          appointmentDate: !appointmentDate,
-          startTime: !startTime,
-          endTime: !endTime,
-          roomId: !roomId,
-        }
-      }, { requestId, ...userContext });
+      await logger.warn(
+        "APPOINTMENTS_NEW",
+        "Validation failed: missing required fields",
+        {
+          missingFields: {
+            patientName: !patientName,
+            psychologistEmail: !psychologistEmail,
+            appointmentDate: !appointmentDate,
+            startTime: !startTime,
+            endTime: !endTime,
+            roomId: !roomId,
+          },
+        },
+        { requestId, ...userContext },
+      );
       const kv = await Deno.openKv();
       try {
         const users = await getAllUsers();
@@ -206,12 +238,12 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       endTime,
       psychologistEmail,
       roomId,
-      patientName
+      patientName,
     );
 
-    await logger.debug('APPOINTMENTS_NEW', 'Conflict check result', {
+    await logger.debug("APPOINTMENTS_NEW", "Conflict check result", {
       hasConflicts: conflictCheck.hasConflicts,
-      conflictTypes: conflictCheck.conflicts.map(c => c.type),
+      conflictTypes: conflictCheck.conflicts.map((c) => c.type),
       conflictDetails: conflictCheck.conflicts,
     }, { requestId, ...userContext });
 
@@ -222,14 +254,19 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         startTime,
         endTime,
         psychologistEmail,
-        roomId
+        roomId,
       );
 
-      await logger.warn('APPOINTMENTS_NEW', 'Conflicts detected, providing suggestions', {
-        conflicts: conflictCheck.conflicts,
-        suggestionsCount: suggestions.length,
-        suggestions: suggestions.slice(0, 3), // Log solo las primeras 3 sugerencias
-      }, { requestId, ...userContext });
+      await logger.warn(
+        "APPOINTMENTS_NEW",
+        "Conflicts detected, providing suggestions",
+        {
+          conflicts: conflictCheck.conflicts,
+          suggestionsCount: suggestions.length,
+          suggestions: suggestions.slice(0, 3), // Log solo las primeras 3 sugerencias
+        },
+        { requestId, ...userContext },
+      );
 
       const kv = await Deno.openKv();
       try {
@@ -295,34 +332,44 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         createdAt: new Date().toISOString(),
       };
 
-      await logger.info('APPOINTMENTS_NEW', 'Attempting to create appointment', {
-        appointmentId: appointmentData.id,
-        patientName,
-        psychologistEmail,
-        psychologistName: appointmentData.psychologistName,
-        appointmentDate,
-        startTime,
-        endTime,
-        roomId,
-      }, { requestId, ...userContext });
+      await logger.info(
+        "APPOINTMENTS_NEW",
+        "Attempting to create appointment",
+        {
+          appointmentId: appointmentData.id,
+          patientName,
+          psychologistEmail,
+          psychologistName: appointmentData.psychologistName,
+          appointmentDate,
+          startTime,
+          endTime,
+          roomId,
+        },
+        { requestId, ...userContext },
+      );
 
       const success = await createAppointment(appointmentData);
 
-      await logger.info('APPOINTMENTS_NEW', 'Appointment creation result', {
+      await logger.info("APPOINTMENTS_NEW", "Appointment creation result", {
         appointmentId: appointmentData.id,
         success,
       }, { requestId, ...userContext });
 
       if (success) {
-        await logger.info('APPOINTMENTS_NEW', 'Appointment created successfully, redirecting to appointments list', {
-          appointmentId: appointmentData.id,
-        }, { requestId, ...userContext });
+        await logger.info(
+          "APPOINTMENTS_NEW",
+          "Appointment created successfully, redirecting to appointments list",
+          {
+            appointmentId: appointmentData.id,
+          },
+          { requestId, ...userContext },
+        );
         return new Response(null, {
           status: 303,
           headers: { Location: "/appointments" },
         });
       } else {
-        await logger.error('APPOINTMENTS_NEW', 'Failed to create appointment', {
+        await logger.error("APPOINTMENTS_NEW", "Failed to create appointment", {
           appointmentId: appointmentData.id,
           appointmentData,
         }, { requestId, ...userContext });
@@ -358,11 +405,16 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
   }
 
   // Caso inesperado - loggear para debug
-  await logger.error('APPOINTMENTS_NEW', 'Unexpected method or route reached end of handler', {
-    method: req.method,
-    url: req.url,
-    headers: Object.fromEntries(req.headers.entries()),
-  }, { requestId, ...userContext });
+  await logger.error(
+    "APPOINTMENTS_NEW",
+    "Unexpected method or route reached end of handler",
+    {
+      method: req.method,
+      url: req.url,
+      headers: Object.fromEntries(req.headers.entries()),
+    },
+    { requestId, ...userContext },
+  );
 
   return new Response("Method not allowed", { status: 405 });
 }
@@ -479,7 +531,10 @@ export default function NewAppointmentPage({
                         </h3>
                         <div class="mt-2 space-y-1">
                           {conflicts.map((conflict, index) => (
-                            <div key={index} class="text-sm text-yellow-700 dark:text-yellow-300">
+                            <div
+                              key={index}
+                              class="text-sm text-yellow-700 dark:text-yellow-300"
+                            >
                               • {conflict.message}
                             </div>
                           ))}
@@ -506,19 +561,23 @@ export default function NewAppointmentPage({
                           {suggestions.slice(0, 4).map((suggestion, index) => (
                             <a
                               key={index}
-                              href={`/appointments/new?${new URLSearchParams({
-                                patientName: formData?.patientName || "",
-                                psychologistEmail: formData?.psychologistEmail || "",
-                                appointmentDate: suggestion.date || formData?.appointmentDate || "",
-                                startTime: suggestion.startTime || "",
-                                endTime: suggestion.endTime || "",
-                                roomId: suggestion.roomId || "",
-                                notes: formData?.notes || "",
-                                autoFill: "true"
-                              }).toString()}`}
+                              href={`/appointments/new?${
+                                new URLSearchParams({
+                                  patientName: formData?.patientName || "",
+                                  psychologistEmail:
+                                    formData?.psychologistEmail || "",
+                                  appointmentDate: suggestion.date ||
+                                    formData?.appointmentDate || "",
+                                  startTime: suggestion.startTime || "",
+                                  endTime: suggestion.endTime || "",
+                                  roomId: suggestion.roomId || "",
+                                  notes: formData?.notes || "",
+                                  autoFill: "true",
+                                }).toString()
+                              }`}
                               class={`block p-3 rounded-md border hover:bg-blue-100 dark:hover:bg-blue-800/30 transition-colors ${
-                                suggestion.urgency === "high" 
-                                  ? "border-green-300 bg-green-50 dark:bg-green-900/20 dark:border-green-600" 
+                                suggestion.urgency === "high"
+                                  ? "border-green-300 bg-green-50 dark:bg-green-900/20 dark:border-green-600"
                                   : suggestion.urgency === "medium"
                                   ? "border-blue-300 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-600"
                                   : "border-gray-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-600"
@@ -528,22 +587,28 @@ export default function NewAppointmentPage({
                                 <div class="text-sm font-medium text-gray-900 dark:text-white">
                                   {suggestion.message}
                                 </div>
-                                <div class={`text-xs px-2 py-1 rounded-full ${
-                                  suggestion.urgency === "high" 
-                                    ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200"
+                                <div
+                                  class={`text-xs px-2 py-1 rounded-full ${
+                                    suggestion.urgency === "high"
+                                      ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200"
+                                      : suggestion.urgency === "medium"
+                                      ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200"
+                                      : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+                                  }`}
+                                >
+                                  {suggestion.urgency === "high"
+                                    ? "Recomendado"
                                     : suggestion.urgency === "medium"
-                                    ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200"
-                                    : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
-                                }`}>
-                                  {suggestion.urgency === "high" ? "Recomendado" : 
-                                   suggestion.urgency === "medium" ? "Buena opción" : "Disponible"}
+                                    ? "Buena opción"
+                                    : "Disponible"}
                                 </div>
                               </div>
                             </a>
                           ))}
                         </div>
                         <div class="mt-3 text-xs text-blue-600 dark:text-blue-400">
-                          💡 Haz clic en cualquier sugerencia para usar automáticamente esa opción
+                          💡 Haz clic en cualquier sugerencia para usar
+                          automáticamente esa opción
                         </div>
                       </div>
                     </div>
@@ -559,9 +624,9 @@ export default function NewAppointmentPage({
                       <Icon name="user" className="h-4 w-4 inline mr-2" />
                       Paciente
                     </label>
-                    <PatientSelect 
-                      patients={patients} 
-                      required 
+                    <PatientSelect
+                      patients={patients}
+                      required
                       defaultValue={formData?.patientName}
                     />
                   </div>
@@ -674,7 +739,12 @@ export default function NewAppointmentPage({
                       <Icon name="briefcase" className="h-4 w-4 inline mr-2" />
                       Sala de Atención
                     </label>
-                    <Select id="roomId" name="roomId" required value={formData?.roomId || ""}>
+                    <Select
+                      id="roomId"
+                      name="roomId"
+                      required
+                      value={formData?.roomId || ""}
+                    >
                       <option value="">Seleccione una sala</option>
                       {rooms.map((room) => (
                         <option

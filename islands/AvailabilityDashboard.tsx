@@ -1,7 +1,7 @@
 import { useState } from "preact/hooks";
 import { Icon } from "../components/ui/Icon.tsx";
 import QuickBookingModal from "./QuickBookingModal.tsx";
-import type { Appointment, Room, PatientProfile } from "../types/index.ts";
+import type { Appointment, PatientProfile, Room } from "../types/index.ts";
 
 interface AvailabilityDashboardProps {
   appointments: Appointment[];
@@ -35,51 +35,76 @@ export default function AvailabilityDashboard({
   const [viewMode, setViewMode] = useState<"day" | "week" | "month">("week");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showBookingModal, setShowBookingModal] = useState(false);
-  const [bookingData, setBookingData] = useState<{
-    date: string;
-    time: string;
-    roomId?: string;
-  } | null>(null);
+  const [bookingData, setBookingData] = useState<
+    {
+      date: string;
+      time: string;
+      roomId?: string;
+    } | null
+  >(null);
 
   // Horario laboral: 8:00 AM - 6:00 PM
   const workingHours = [
-    "08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
-    "14:00", "15:00", "16:00", "17:00", "18:00"
+    "08:00",
+    "09:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+    "18:00",
   ];
 
   const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
   const monthNames = [
-    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    "Enero",
+    "Febrero",
+    "Marzo",
+    "Abril",
+    "Mayo",
+    "Junio",
+    "Julio",
+    "Agosto",
+    "Septiembre",
+    "Octubre",
+    "Noviembre",
+    "Diciembre",
   ];
 
   // Filtrar citas según el rol
-  const filteredAppointments = userRole === "superadmin" 
-    ? appointments 
-    : appointments.filter(apt => apt.psychologistEmail === psychologistEmail);
+  const filteredAppointments = userRole === "superadmin"
+    ? appointments
+    : appointments.filter((apt) => apt.psychologistEmail === psychologistEmail);
 
   // Salas disponibles (activas)
-  const availableRooms = rooms.filter(room => room.isAvailable);
+  const availableRooms = rooms.filter((room) => room.isAvailable);
 
   const formatTime = (time: string) => {
-    const [hour, minute] = time.split(':');
+    const [hour, minute] = time.split(":");
     const hourNum = parseInt(hour || "0");
-    const period = hourNum >= 12 ? 'PM' : 'AM';
-    const displayHour = hourNum > 12 ? hourNum - 12 : hourNum === 0 ? 12 : hourNum;
+    const period = hourNum >= 12 ? "PM" : "AM";
+    const displayHour = hourNum > 12
+      ? hourNum - 12
+      : hourNum === 0
+      ? 12
+      : hourNum;
     return `${displayHour}:${minute || "00"} ${period}`;
   };
 
   const generateDaySchedule = (date: Date): DaySchedule => {
-    const dateString = date.toISOString().split('T')[0];
-    
+    const dateString = date.toISOString().split("T")[0];
+
     // Citas del día
     const dayAppointments = filteredAppointments.filter(
-      apt => apt.appointmentDate === dateString
+      (apt) => apt.appointmentDate === dateString,
     );
 
     // Generar slots de tiempo para el día
-    const timeSlots: TimeSlot[] = workingHours.map(hour => {
-      const appointment = dayAppointments.find(apt => {
+    const timeSlots: TimeSlot[] = workingHours.map((hour) => {
+      const appointment = dayAppointments.find((apt) => {
         const aptStart = apt.startTime || apt.appointmentTime;
         return aptStart === hour;
       });
@@ -117,20 +142,20 @@ export default function AvailabilityDashboard({
     const month = date.getMonth();
     const _firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
-    
+
     const monthSchedule: DaySchedule[] = [];
-    
+
     for (let day = 1; day <= lastDay.getDate(); day++) {
       const currentDate = new Date(year, month, day);
       monthSchedule.push(generateDaySchedule(currentDate));
     }
-    
+
     return monthSchedule;
   };
 
   const getAvailabilityStats = () => {
     let schedule: DaySchedule[] = [];
-    
+
     if (viewMode === "day") {
       schedule = [generateDaySchedule(selectedDate)];
     } else if (viewMode === "week") {
@@ -138,10 +163,12 @@ export default function AvailabilityDashboard({
     } else {
       schedule = generateMonthSchedule(selectedDate);
     }
-    
+
     const totalSlots = schedule.length * workingHours.length;
-    const occupiedSlots = schedule.reduce((acc, day) => 
-      acc + day.timeSlots.filter(slot => !slot.isAvailable).length, 0
+    const occupiedSlots = schedule.reduce(
+      (acc, day) =>
+        acc + day.timeSlots.filter((slot) => !slot.isAvailable).length,
+      0,
     );
     const availableSlots = totalSlots - occupiedSlots;
 
@@ -149,21 +176,25 @@ export default function AvailabilityDashboard({
       totalSlots,
       availableSlots,
       occupiedSlots,
-      availabilityPercentage: totalSlots > 0 ? Math.round((availableSlots / totalSlots) * 100) : 0,
+      availabilityPercentage: totalSlots > 0
+        ? Math.round((availableSlots / totalSlots) * 100)
+        : 0,
     };
   };
 
   const navigateDate = (direction: "prev" | "next") => {
     const newDate = new Date(selectedDate);
-    
+
     if (viewMode === "day") {
       newDate.setDate(selectedDate.getDate() + (direction === "next" ? 1 : -1));
     } else if (viewMode === "week") {
       newDate.setDate(selectedDate.getDate() + (direction === "next" ? 7 : -7));
     } else {
-      newDate.setMonth(selectedDate.getMonth() + (direction === "next" ? 1 : -1));
+      newDate.setMonth(
+        selectedDate.getMonth() + (direction === "next" ? 1 : -1),
+      );
     }
-    
+
     setSelectedDate(newDate);
   };
 
@@ -177,8 +208,8 @@ export default function AvailabilityDashboard({
   };
 
   const getAppointmentsInRoom = (roomId: string, date?: string) => {
-    return filteredAppointments.filter(apt => 
-      apt.roomId === roomId && 
+    return filteredAppointments.filter((apt) =>
+      apt.roomId === roomId &&
       (!date || apt.appointmentDate === date)
     );
   };
@@ -196,13 +227,26 @@ export default function AvailabilityDashboard({
       const dayOfWeek = weekStart.getDay();
       const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
       weekStart.setDate(selectedDate.getDate() - daysToSubtract);
-      
+
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekStart.getDate() + 6);
-      
-      return `${weekStart.toLocaleDateString("es-ES", { day: "numeric", month: "short" })} - ${weekEnd.toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}`;
+
+      return `${
+        weekStart.toLocaleDateString("es-ES", {
+          day: "numeric",
+          month: "short",
+        })
+      } - ${
+        weekEnd.toLocaleDateString("es-ES", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        })
+      }`;
     } else {
-      return `${monthNames[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`;
+      return `${
+        monthNames[selectedDate.getMonth()]
+      } ${selectedDate.getFullYear()}`;
     }
   };
 
@@ -210,7 +254,8 @@ export default function AvailabilityDashboard({
 
   const renderDayView = () => {
     const daySchedule = generateDaySchedule(selectedDate);
-    const availableCount = daySchedule.timeSlots.filter(slot => slot.isAvailable).length;
+    const availableCount =
+      daySchedule.timeSlots.filter((slot) => slot.isAvailable).length;
 
     return (
       <div class="space-y-6">
@@ -262,7 +307,7 @@ export default function AvailabilityDashboard({
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Horarios del Día
           </h3>
-          
+
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {daySchedule.timeSlots.map((slot) => (
               <div
@@ -276,34 +321,37 @@ export default function AvailabilityDashboard({
                 <div class="font-medium text-gray-900 dark:text-white">
                   {formatTime(slot.hour)}
                 </div>
-                
-                {slot.isAvailable ? (
-                  <div class="mt-1">
-                    <span class="text-xs text-green-600 dark:text-green-400 font-medium">
-                      Disponible
-                    </span>
-                    <div class="mt-2">
-                      <button
-                        type="button"
-                        onClick={() => handleQuickBook(daySchedule.date, slot.hour)}
-                        class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded transition-colors"
-                      >
-                        Agendar
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div class="mt-1">
-                    <span class="text-xs text-red-600 dark:text-red-400 font-medium">
-                      Ocupado
-                    </span>
-                    {slot.appointment && (
-                      <div class="text-xs text-gray-600 dark:text-gray-400 mt-1 truncate">
-                        {slot.appointment.patientName}
+
+                {slot.isAvailable
+                  ? (
+                    <div class="mt-1">
+                      <span class="text-xs text-green-600 dark:text-green-400 font-medium">
+                        Disponible
+                      </span>
+                      <div class="mt-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleQuickBook(daySchedule.date, slot.hour)}
+                          class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded transition-colors"
+                        >
+                          Agendar
+                        </button>
                       </div>
-                    )}
-                  </div>
-                )}
+                    </div>
+                  )
+                  : (
+                    <div class="mt-1">
+                      <span class="text-xs text-red-600 dark:text-red-400 font-medium">
+                        Ocupado
+                      </span>
+                      {slot.appointment && (
+                        <div class="text-xs text-gray-600 dark:text-gray-400 mt-1 truncate">
+                          {slot.appointment.patientName}
+                        </div>
+                      )}
+                    </div>
+                  )}
               </div>
             ))}
           </div>
@@ -367,7 +415,7 @@ export default function AvailabilityDashboard({
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Horarios de la Semana
           </h3>
-          
+
           <div class="overflow-x-auto">
             <div class="grid grid-cols-8 gap-2 min-w-full">
               {/* Header */}
@@ -380,7 +428,8 @@ export default function AvailabilityDashboard({
                     {day.dayName}
                   </div>
                   <div class="text-xs text-gray-500 dark:text-gray-400">
-                    {new Date(day.date).getDate()}/{new Date(day.date).getMonth() + 1}
+                    {new Date(day.date)
+                      .getDate()}/{new Date(day.date).getMonth() + 1}
                   </div>
                 </div>
               ))}
@@ -388,30 +437,42 @@ export default function AvailabilityDashboard({
               {/* Rows */}
               {workingHours.map((hour) => (
                 <>
-                  <div key={`hour-${hour}`} class="text-sm text-gray-600 dark:text-gray-400 p-2 flex items-center">
+                  <div
+                    key={`hour-${hour}`}
+                    class="text-sm text-gray-600 dark:text-gray-400 p-2 flex items-center"
+                  >
                     {formatTime(hour)}
                   </div>
                   {weekSchedule.map((day) => {
-                    const slot = day.timeSlots.find(s => s.hour === hour);
+                    const slot = day.timeSlots.find((s) => s.hour === hour);
                     return (
                       <div key={`${day.date}-${hour}`} class="p-1">
-                        {slot?.isAvailable ? (
-                          <button
-                            type="button"
-                            onClick={() => handleQuickBook(day.date, hour)}
-                            class="block w-full h-8 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 rounded border border-green-300 dark:border-green-700 transition-colors cursor-pointer"
-                            title={`Crear cita para ${day.dayName} ${formatTime(hour)}`}
-                          >
-                            <span class="sr-only">Disponible</span>
-                          </button>
-                        ) : (
-                          <div
-                            class="w-full h-8 bg-red-100 dark:bg-red-900/30 rounded border border-red-300 dark:border-red-700 flex items-center justify-center"
-                            title={slot?.appointment ? `Ocupado - ${slot.appointment.patientName}` : "Ocupado"}
-                          >
-                            <Icon name="x" className="h-3 w-3 text-red-600 dark:text-red-400" />
-                          </div>
-                        )}
+                        {slot?.isAvailable
+                          ? (
+                            <button
+                              type="button"
+                              onClick={() => handleQuickBook(day.date, hour)}
+                              class="block w-full h-8 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 rounded border border-green-300 dark:border-green-700 transition-colors cursor-pointer"
+                              title={`Crear cita para ${day.dayName} ${
+                                formatTime(hour)
+                              }`}
+                            >
+                              <span class="sr-only">Disponible</span>
+                            </button>
+                          )
+                          : (
+                            <div
+                              class="w-full h-8 bg-red-100 dark:bg-red-900/30 rounded border border-red-300 dark:border-red-700 flex items-center justify-center"
+                              title={slot?.appointment
+                                ? `Ocupado - ${slot.appointment.patientName}`
+                                : "Ocupado"}
+                            >
+                              <Icon
+                                name="x"
+                                className="h-3 w-3 text-red-600 dark:text-red-400"
+                              />
+                            </div>
+                          )}
                       </div>
                     );
                   })}
@@ -447,7 +508,9 @@ export default function AvailabilityDashboard({
                 Días con Disponibilidad
               </p>
               <p class="text-3xl font-bold text-green-600 dark:text-green-400">
-                {monthSchedule.filter(day => day.timeSlots.some(slot => slot.isAvailable)).length}
+                {monthSchedule.filter((day) =>
+                  day.timeSlots.some((slot) => slot.isAvailable)
+                ).length}
               </p>
             </div>
           </div>
@@ -479,20 +542,27 @@ export default function AvailabilityDashboard({
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
             Resumen Diario del Mes
           </h3>
-          
+
           <div class="grid grid-cols-7 gap-2">
             {/* Headers */}
             {dayNames.slice(1).concat(dayNames.slice(0, 1)).map((dayName) => (
-              <div key={dayName} class="text-center text-sm font-medium text-gray-600 dark:text-gray-400 p-2">
+              <div
+                key={dayName}
+                class="text-center text-sm font-medium text-gray-600 dark:text-gray-400 p-2"
+              >
                 {dayName}
               </div>
             ))}
 
             {/* Days */}
             {monthSchedule.map((day) => {
-              const availableCount = day.timeSlots.filter(slot => slot.isAvailable).length;
-              const availabilityPercent = Math.round((availableCount / workingHours.length) * 100);
-              
+              const availableCount = day.timeSlots.filter((slot) =>
+                slot.isAvailable
+              ).length;
+              const availabilityPercent = Math.round(
+                (availableCount / workingHours.length) * 100,
+              );
+
               return (
                 <div
                   key={day.date}
@@ -506,11 +576,13 @@ export default function AvailabilityDashboard({
                     {new Date(day.date).getDate()}
                   </div>
                   <div class="text-xs mt-1">
-                    <span class={`font-medium ${
-                      availableCount > 0 
-                        ? "text-green-600 dark:text-green-400" 
-                        : "text-red-600 dark:text-red-400"
-                    }`}>
+                    <span
+                      class={`font-medium ${
+                        availableCount > 0
+                          ? "text-green-600 dark:text-green-400"
+                          : "text-red-600 dark:text-red-400"
+                      }`}
+                    >
                       {availabilityPercent}%
                     </span>
                   </div>
@@ -538,11 +610,11 @@ export default function AvailabilityDashboard({
           >
             <Icon name="chevron-left" size={20} />
           </button>
-          
+
           <h2 class="text-xl font-semibold text-gray-900 dark:text-white min-w-[250px] text-center">
             {getDateRangeText()}
           </h2>
-          
+
           <button
             type="button"
             onClick={() => navigateDate("next")}
@@ -560,7 +632,7 @@ export default function AvailabilityDashboard({
           >
             Hoy
           </button>
-          
+
           <div class="flex rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden">
             {["day", "week", "month"].map((mode) => (
               <button
@@ -602,10 +674,14 @@ export default function AvailabilityDashboard({
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {rooms.map((room) => {
-            const todayDate = new Date().toISOString().split('T')[0] || "";
-            const roomAppointments = getAppointmentsInRoom(room.id || "", todayDate);
-            const isAvailable = room.isAvailable && roomAppointments.length === 0;
-            
+            const todayDate = new Date().toISOString().split("T")[0] || "";
+            const roomAppointments = getAppointmentsInRoom(
+              room.id || "",
+              todayDate,
+            );
+            const isAvailable = room.isAvailable &&
+              roomAppointments.length === 0;
+
             return (
               <div
                 key={room.id}
@@ -619,14 +695,15 @@ export default function AvailabilityDashboard({
                   <h4 class="font-medium text-gray-900 dark:text-white">
                     {room.name}
                   </h4>
-                  <div 
+                  <div
                     class={`w-3 h-3 rounded-full ${
                       isAvailable ? "bg-green-400" : "bg-red-400"
                     }`}
                     title={isAvailable ? "Disponible" : "Ocupada"}
-                  ></div>
+                  >
+                  </div>
                 </div>
-                
+
                 {room.description && (
                   <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
                     {room.description}
@@ -641,7 +718,7 @@ export default function AvailabilityDashboard({
                     </h5>
                     <div class="space-y-1">
                       {roomAppointments.slice(0, 3).map((apt) => (
-                        <div 
+                        <div
                           key={apt.id}
                           class="text-xs p-2 bg-white dark:bg-gray-700 rounded border"
                         >
@@ -649,12 +726,13 @@ export default function AvailabilityDashboard({
                             {apt.patientName}
                           </div>
                           <div class="text-gray-500 dark:text-gray-400">
-                            {apt.startTime && apt.endTime 
-                              ? `${formatTime(apt.startTime)} - ${formatTime(apt.endTime)}`
-                              : formatTime(apt.appointmentTime)
-                            }
+                            {apt.startTime && apt.endTime
+                              ? `${formatTime(apt.startTime)} - ${
+                                formatTime(apt.endTime)
+                              }`
+                              : formatTime(apt.appointmentTime)}
                           </div>
-                          <a 
+                          <a
                             href={`/appointments/${apt.id}`}
                             class="text-blue-600 dark:text-blue-400 hover:underline"
                           >
@@ -662,7 +740,7 @@ export default function AvailabilityDashboard({
                           </a>
                         </div>
                       ))}
-                      
+
                       {roomAppointments.length > 3 && (
                         <div class="text-xs text-gray-500 dark:text-gray-400 text-center">
                           +{roomAppointments.length - 3} más...
@@ -673,30 +751,34 @@ export default function AvailabilityDashboard({
                 )}
 
                 <div class="flex items-center justify-between">
-                  <span class={`text-xs font-medium ${
-                    isAvailable 
-                      ? "text-green-600 dark:text-green-400" 
-                      : "text-red-600 dark:text-red-400"
-                  }`}>
+                  <span
+                    class={`text-xs font-medium ${
+                      isAvailable
+                        ? "text-green-600 dark:text-green-400"
+                        : "text-red-600 dark:text-red-400"
+                    }`}
+                  >
                     Sala #{room.id}
                   </span>
-                  
-                  {isAvailable ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        handleQuickBook(todayDate, "09:00", room.id || "1");
-                      }}
-                      class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded transition-colors"
-                      title={`Agendar cita en ${room.name}`}
-                    >
-                      Agendar
-                    </button>
-                  ) : (
-                    <span class="text-xs text-red-600 dark:text-red-400 font-medium">
-                      {!room.isAvailable ? "Inactiva" : "Ocupada"}
-                    </span>
-                  )}
+
+                  {isAvailable
+                    ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          handleQuickBook(todayDate, "09:00", room.id || "1");
+                        }}
+                        class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded transition-colors"
+                        title={`Agendar cita en ${room.name}`}
+                      >
+                        Agendar
+                      </button>
+                    )
+                    : (
+                      <span class="text-xs text-red-600 dark:text-red-400 font-medium">
+                        {!room.isAvailable ? "Inactiva" : "Ocupada"}
+                      </span>
+                    )}
                 </div>
               </div>
             );
@@ -705,7 +787,10 @@ export default function AvailabilityDashboard({
 
         {rooms.length === 0 && (
           <div class="text-center py-8">
-            <Icon name="briefcase" className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <Icon
+              name="briefcase"
+              className="h-12 w-12 text-gray-400 mx-auto mb-4"
+            />
             <p class="text-gray-500 dark:text-gray-400">
               No hay salas configuradas
             </p>

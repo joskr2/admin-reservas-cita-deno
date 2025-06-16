@@ -40,19 +40,26 @@ export class DashboardService implements IDashboardService {
       ]);
 
       // Calcular métricas adicionales
-      const today = new Date().toISOString().split('T')[0];
-      const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      
-      const todayAppointments = appointments.filter(apt => apt.appointmentDate === today).length;
-      const upcomingAppointments = appointments.filter(apt => 
-        apt.appointmentDate && today && nextWeek && 
+      const today = new Date().toISOString().split("T")[0];
+      const nextWeek =
+        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split(
+          "T",
+        )[0];
+
+      const todayAppointments = appointments.filter((apt) =>
+        apt.appointmentDate === today
+      ).length;
+      const upcomingAppointments = appointments.filter((apt) =>
+        apt.appointmentDate && today && nextWeek &&
         apt.appointmentDate >= today && apt.appointmentDate <= nextWeek
       ).length;
 
       // Calcular utilización de salas (citas hoy / total de salas disponibles)
       const availableRoomsCount = rooms.filter((r) => r.isAvailable).length;
-      const roomUtilization = availableRoomsCount > 0 ? Math.round((todayAppointments / availableRoomsCount) * 100) : 0;
-      
+      const roomUtilization = availableRoomsCount > 0
+        ? Math.round((todayAppointments / availableRoomsCount) * 100)
+        : 0;
+
       // Estimar franjas horarias disponibles (8am-6pm = 10 horas, cada cita 1 hora)
       const totalSlotsPerDay = availableRoomsCount * 10; // 10 horas por sala
       const availableTimeSlots = totalSlotsPerDay - todayAppointments;
@@ -186,33 +193,44 @@ export class DashboardService implements IDashboardService {
     try {
       // Obtener solo los datos específicos del psicólogo
       const [psychologistAppointments, allPatients, rooms] = await Promise.all([
-        this.appointmentRepository.getAppointmentsByPsychologist(psychologistEmail),
+        this.appointmentRepository.getAppointmentsByPsychologist(
+          psychologistEmail,
+        ),
         this.patientRepository.getAllPatientsAsProfiles(),
         this.roomRepository.getAll(),
       ]);
 
       // Filtrar pacientes que tienen citas con este psicólogo
       const patientNamesWithAppointments = new Set(
-        psychologistAppointments.map((apt) => apt.patientName)
+        psychologistAppointments.map((apt) => apt.patientName),
       );
       const psychologistPatients = allPatients.filter((patient) =>
         patientNamesWithAppointments.has(patient.name)
       );
 
       // Calcular métricas de tiempo
-      const today = new Date().toISOString().split('T')[0];
-      const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      
-      const todayAppointments = psychologistAppointments.filter(apt => apt.appointmentDate === today).length;
-      const upcomingAppointments = psychologistAppointments.filter(apt => 
-        apt.appointmentDate && today && nextWeek && 
+      const today = new Date().toISOString().split("T")[0];
+      const nextWeek =
+        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split(
+          "T",
+        )[0];
+
+      const todayAppointments = psychologistAppointments.filter((apt) =>
+        apt.appointmentDate === today
+      ).length;
+      const upcomingAppointments = psychologistAppointments.filter((apt) =>
+        apt.appointmentDate && today && nextWeek &&
         apt.appointmentDate >= today && apt.appointmentDate <= nextWeek
       ).length;
 
       // Métricas de salas (globales pero útiles para el psicólogo)
-      const availableRoomsCount = rooms.filter((r) => r.isAvailable).length;
-      const roomUtilization = availableRoomsCount > 0 ? Math.round((todayAppointments / availableRoomsCount) * 100) : 0;
-      
+      const availableRoomsCount = rooms.filter((r) =>
+        r.isAvailable
+      ).length;
+      const roomUtilization = availableRoomsCount > 0
+        ? Math.round((todayAppointments / availableRoomsCount) * 100)
+        : 0;
+
       // Franjas horarias disponibles específicas para este psicólogo
       // Asumiendo jornada de 8 horas (8am-4pm) para cálculo más realista por psicólogo
       const psychologistWorkHours = 8;
@@ -231,7 +249,10 @@ export class DashboardService implements IDashboardService {
         upcomingAppointments,
       };
     } catch (error) {
-      console.error(`Error getting psychologist stats for ${psychologistEmail}:`, error);
+      console.error(
+        `Error getting psychologist stats for ${psychologistEmail}:`,
+        error,
+      );
 
       // Retornar estadísticas vacías en caso de error
       return {

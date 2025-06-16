@@ -1,13 +1,13 @@
 // tests/unit/repositories/room.test.ts - Tests para RoomRepository
-import { assertEquals, assertExists, assert } from "$std/testing/asserts.ts";
-import { describe, it, beforeEach } from "$std/testing/bdd.ts";
+import { assert, assertEquals, assertExists } from "$std/testing/asserts.ts";
+import { beforeEach, describe, it } from "$std/testing/bdd.ts";
 import { RoomRepository } from "../../../lib/database/repositories/room.ts";
 import { AppointmentRepository } from "../../../lib/database/repositories/appointment.ts";
 import { DatabaseConnection } from "../../../lib/database/connection.ts";
 import type { Room, RoomId } from "../../../types/index.ts";
 import type {
-  IDatabaseConnection,
   IAppointmentRepository,
+  IDatabaseConnection,
 } from "../../../lib/database/interfaces.ts";
 import { testUtils } from "../../setup.ts";
 
@@ -46,7 +46,7 @@ describe("RoomRepository", () => {
 
     it("should create room with generated ID", async () => {
       const room = testUtils.createRoom();
-      
+
       const result = await roomRepository.create(room);
       assertEquals(result, true);
 
@@ -89,7 +89,7 @@ describe("RoomRepository", () => {
 
     it("should add timestamps on creation", async () => {
       const room = testUtils.createRoom();
-      
+
       const result = await roomRepository.create(room);
       assertEquals(result, true);
 
@@ -113,7 +113,7 @@ describe("RoomRepository", () => {
 
     it("should return null when ID does not exist", async () => {
       const foundRoom = await roomRepository.getById(
-        "nonexistent-id" as RoomId
+        "nonexistent-id" as RoomId,
       );
       assertEquals(foundRoom, null);
     });
@@ -135,7 +135,7 @@ describe("RoomRepository", () => {
 
       const availableRooms = await roomRepository.getAvailableRooms(
         "2024-03-15",
-        "10:00"
+        "10:00",
       );
       assertEquals(availableRooms.length, 1);
       const firstAvailable = availableRooms[0];
@@ -150,7 +150,7 @@ describe("RoomRepository", () => {
 
       const availableRooms = await roomRepository.getAvailableRooms(
         "2024-03-15",
-        "10:00"
+        "10:00",
       );
       assertEquals(availableRooms.length, 0);
     });
@@ -182,7 +182,7 @@ describe("RoomRepository", () => {
     it("should return false when room does not exist", async () => {
       const result = await roomRepository.updateAvailability(
         "nonexistent-id" as RoomId,
-        true
+        true,
       );
       assertEquals(result, false);
     });
@@ -363,7 +363,7 @@ describe("RoomRepository", () => {
       const invalidRoom = testUtils.createRoom({
         id: null as unknown as string, // This will cause validation to fail
       });
-      
+
       const result = await roomRepository.create(invalidRoom);
       assertEquals(result, false);
     });

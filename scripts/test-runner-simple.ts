@@ -63,7 +63,7 @@ function getTestSuites(type: string): Array<{ name: string; path: string }> {
     suites.push(
       { name: "Unit Tests - Repositories", path: "tests/unit/repositories/" },
       { name: "Unit Tests - Components", path: "tests/unit/components/" },
-      { name: "Unit Tests - Utils", path: "tests/unit/utils/" }
+      { name: "Unit Tests - Utils", path: "tests/unit/utils/" },
     );
   }
 
@@ -83,7 +83,7 @@ function getTestSuites(type: string): Array<{ name: string; path: string }> {
 
 async function runTestSuite(
   suite: { name: string; path: string },
-  config: SimpleTestConfig
+  config: SimpleTestConfig,
 ): Promise<{ success: boolean; output: string }> {
   try {
     const args = ["test", "--unstable-kv", "--allow-all"];
@@ -125,7 +125,7 @@ async function generateSimpleReport(
     duration: number;
     output: string;
   }>,
-  config: SimpleTestConfig
+  config: SimpleTestConfig,
 ): Promise<void> {
   const report = {
     timestamp: new Date().toISOString(),
@@ -141,14 +141,14 @@ async function generateSimpleReport(
 
   await Deno.writeTextFile(
     `${config.outputDir}/test-report.json`,
-    JSON.stringify(report, null, 2)
+    JSON.stringify(report, null, 2),
   );
 
   console.log(`📊 Reporte generado en: ${config.outputDir}/test-report.json`);
 }
 
 function showSummary(
-  results: Array<{ suite: string; success: boolean; duration: number }>
+  results: Array<{ suite: string; success: boolean; duration: number }>,
 ): void {
   console.log("\n" + "=".repeat(60));
   console.log("📊 RESUMEN DE TESTS");
@@ -233,7 +233,7 @@ Ejemplos:
   } catch (error) {
     console.error(
       "\n💥 Error ejecutando tests:",
-      error instanceof Error ? error.message : String(error)
+      error instanceof Error ? error.message : String(error),
     );
     Deno.exit(1);
   }

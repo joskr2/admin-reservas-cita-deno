@@ -1,13 +1,13 @@
 // tests/integration/api/patients-real.test.ts - Tests de integración reales para APIs de pacientes
-import { assertEquals, assertExists, assert } from "$std/testing/asserts.ts";
-import { describe, it, beforeEach, afterEach } from "$std/testing/bdd.ts";
+import { assert, assertEquals, assertExists } from "$std/testing/asserts.ts";
+import { afterEach, beforeEach, describe, it } from "$std/testing/bdd.ts";
 import {
-  createTestServer,
-  createApiRequest,
+  assertApiError,
+  assertApiResponse,
   authenticateUser,
   cleanupTestData,
-  assertApiResponse,
-  assertApiError,
+  createApiRequest,
+  createTestServer,
   generateTestData,
   type TestServer,
 } from "../../helpers/integration.ts";
@@ -46,7 +46,7 @@ describe("Patients API Integration (Real)", () => {
     it("should return empty list when no patients exist", async () => {
       const response = await server.request(
         "/api/patients",
-        createApiRequest("GET", undefined, authCookies)
+        createApiRequest("GET", undefined, authCookies),
       );
 
       assertEquals(response.status, 200);
@@ -81,17 +81,17 @@ describe("Patients API Integration (Real)", () => {
       // Crear pacientes
       await server.request(
         "/api/patients",
-        createApiRequest("POST", patient1, authCookies)
+        createApiRequest("POST", patient1, authCookies),
       );
       await server.request(
         "/api/patients",
-        createApiRequest("POST", patient2, authCookies)
+        createApiRequest("POST", patient2, authCookies),
       );
 
       // Obtener lista de pacientes
       const response = await server.request(
         "/api/patients",
-        createApiRequest("GET", undefined, authCookies)
+        createApiRequest("GET", undefined, authCookies),
       );
 
       assertEquals(response.status, 200);
@@ -113,7 +113,7 @@ describe("Patients API Integration (Real)", () => {
     it("should handle unauthorized access", async () => {
       const response = await server.request(
         "/api/patients",
-        createApiRequest("GET")
+        createApiRequest("GET"),
       );
 
       // Dependiendo de la implementación, podría ser 401 o redirección
@@ -134,7 +134,7 @@ describe("Patients API Integration (Real)", () => {
 
       const response = await server.request(
         "/api/patients",
-        createApiRequest("POST", patientData, authCookies)
+        createApiRequest("POST", patientData, authCookies),
       );
 
       assertEquals(response.status, 201);
@@ -155,7 +155,7 @@ describe("Patients API Integration (Real)", () => {
 
       const response = await server.request(
         "/api/patients",
-        createApiRequest("POST", invalidPatientData, authCookies)
+        createApiRequest("POST", invalidPatientData, authCookies),
       );
 
       assertEquals(response.status, 400);
@@ -175,7 +175,7 @@ describe("Patients API Integration (Real)", () => {
 
       const response = await server.request(
         "/api/patients",
-        createApiRequest("POST", invalidPatientData, authCookies)
+        createApiRequest("POST", invalidPatientData, authCookies),
       );
 
       assertEquals(response.status, 400);
@@ -196,14 +196,14 @@ describe("Patients API Integration (Real)", () => {
       // Crear primer paciente
       const firstResponse = await server.request(
         "/api/patients",
-        createApiRequest("POST", patientData, authCookies)
+        createApiRequest("POST", patientData, authCookies),
       );
       assertEquals(firstResponse.status, 201);
 
       // Intentar crear segundo paciente con mismo email
       const secondResponse = await server.request(
         "/api/patients",
-        createApiRequest("POST", patientData, authCookies)
+        createApiRequest("POST", patientData, authCookies),
       );
 
       assertEquals(secondResponse.status, 409);
@@ -241,7 +241,7 @@ describe("Patients API Integration (Real)", () => {
 
       const createResponse = await server.request(
         "/api/patients",
-        createApiRequest("POST", patientData, authCookies)
+        createApiRequest("POST", patientData, authCookies),
       );
       assertEquals(createResponse.status, 201);
       const createdPatient = await createResponse.json();
@@ -249,7 +249,7 @@ describe("Patients API Integration (Real)", () => {
       // Obtener paciente por ID
       const response = await server.request(
         `/api/patients/${createdPatient.patient.id}`,
-        createApiRequest("GET", undefined, authCookies)
+        createApiRequest("GET", undefined, authCookies),
       );
 
       assertEquals(response.status, 200);
@@ -263,7 +263,7 @@ describe("Patients API Integration (Real)", () => {
     it("should return 404 for non-existent patient", async () => {
       const response = await server.request(
         "/api/patients/non-existent-id",
-        createApiRequest("GET", undefined, authCookies)
+        createApiRequest("GET", undefined, authCookies),
       );
 
       assertEquals(response.status, 404);
@@ -286,7 +286,7 @@ describe("Patients API Integration (Real)", () => {
 
       const createResponse = await server.request(
         "/api/patients",
-        createApiRequest("POST", patientData, authCookies)
+        createApiRequest("POST", patientData, authCookies),
       );
       const createdPatient = await createResponse.json();
 
@@ -298,7 +298,7 @@ describe("Patients API Integration (Real)", () => {
 
       const response = await server.request(
         `/api/patients/${createdPatient.patient.id}`,
-        createApiRequest("PUT", updateData, authCookies)
+        createApiRequest("PUT", updateData, authCookies),
       );
 
       assertEquals(response.status, 200);
@@ -315,7 +315,7 @@ describe("Patients API Integration (Real)", () => {
 
       const response = await server.request(
         "/api/patients/non-existent-id",
-        createApiRequest("PUT", updateData, authCookies)
+        createApiRequest("PUT", updateData, authCookies),
       );
 
       assertEquals(response.status, 404);
@@ -338,14 +338,14 @@ describe("Patients API Integration (Real)", () => {
 
       const createResponse = await server.request(
         "/api/patients",
-        createApiRequest("POST", patientData, authCookies)
+        createApiRequest("POST", patientData, authCookies),
       );
       const createdPatient = await createResponse.json();
 
       // Eliminar paciente
       const response = await server.request(
         `/api/patients/${createdPatient.patient.id}`,
-        createApiRequest("DELETE", undefined, authCookies)
+        createApiRequest("DELETE", undefined, authCookies),
       );
 
       assertEquals(response.status, 200);
@@ -356,7 +356,7 @@ describe("Patients API Integration (Real)", () => {
       // Verificar que el paciente fue eliminado
       const getResponse = await server.request(
         `/api/patients/${createdPatient.patient.id}`,
-        createApiRequest("GET", undefined, authCookies)
+        createApiRequest("GET", undefined, authCookies),
       );
       assertEquals(getResponse.status, 404);
     });
@@ -364,7 +364,7 @@ describe("Patients API Integration (Real)", () => {
     it("should return 404 when deleting non-existent patient", async () => {
       const response = await server.request(
         "/api/patients/non-existent-id",
-        createApiRequest("DELETE", undefined, authCookies)
+        createApiRequest("DELETE", undefined, authCookies),
       );
 
       assertEquals(response.status, 404);
@@ -399,19 +399,21 @@ describe("Patients API Integration (Real)", () => {
 
       await server.request(
         "/api/patients",
-        createApiRequest("POST", patient1, authCookies)
+        createApiRequest("POST", patient1, authCookies),
       );
       await server.request(
         "/api/patients",
-        createApiRequest("POST", patient2, authCookies)
+        createApiRequest("POST", patient2, authCookies),
       );
 
       // Obtener pacientes del psicólogo
       const response = await server.request(
-        `/api/patients/by-psychologist/${encodeURIComponent(
-          psychologistEmail
-        )}`,
-        createApiRequest("GET", undefined, authCookies)
+        `/api/patients/by-psychologist/${
+          encodeURIComponent(
+            psychologistEmail,
+          )
+        }`,
+        createApiRequest("GET", undefined, authCookies),
       );
 
       assertEquals(response.status, 200);
@@ -430,7 +432,7 @@ describe("Patients API Integration (Real)", () => {
     it("should return empty list for psychologist with no patients", async () => {
       const response = await server.request(
         "/api/patients/by-psychologist/nopatientspsych@example.com",
-        createApiRequest("GET", undefined, authCookies)
+        createApiRequest("GET", undefined, authCookies),
       );
 
       assertEquals(response.status, 200);

@@ -46,7 +46,7 @@ export async function createTestServer(): Promise<TestServer> {
 export function createApiRequest(
   method: string,
   body?: unknown,
-  headers: Record<string, string> = {}
+  headers: Record<string, string> = {},
 ): RequestInit {
   const init: RequestInit = {
     method,
@@ -87,7 +87,7 @@ export function extractCookies(response: Response): Record<string, string> {
  * Helper para crear headers con cookies
  */
 export function createCookieHeaders(
-  cookies: Record<string, string>
+  cookies: Record<string, string>,
 ): Record<string, string> {
   const cookieString = Object.entries(cookies)
     .map(([name, value]) => `${name}=${value}`)
@@ -102,7 +102,7 @@ export function createCookieHeaders(
 export async function authenticateUser(
   server: TestServer,
   email: string = "admin@horizonte.com",
-  password: string = "password123"
+  password: string = "password123",
 ): Promise<{ cookies: Record<string, string>; user: User }> {
   // Crear el usuario de prueba directamente en la base de datos de test
   const kv = await Deno.openKv();
@@ -137,13 +137,13 @@ export async function authenticateUser(
   // Intentar login
   const loginResponse = await server.request(
     "/api/auth/login",
-    createApiRequest("POST", { email, password })
+    createApiRequest("POST", { email, password }),
   );
 
   if (!loginResponse.ok) {
     const errorText = await loginResponse.text();
     throw new Error(
-      `Failed to authenticate user: ${loginResponse.status} - ${errorText}`
+      `Failed to authenticate user: ${loginResponse.status} - ${errorText}`,
     );
   }
 
@@ -191,7 +191,7 @@ export async function cleanupTestData(): Promise<void> {
  */
 export function assertApiResponse(
   response: Record<string, unknown>,
-  expectedKeys: string[] = ["success"]
+  expectedKeys: string[] = ["success"],
 ): void {
   if (typeof response !== "object" || response === null) {
     throw new Error("Response is not an object");
@@ -209,7 +209,7 @@ export function assertApiResponse(
  */
 export function assertApiError(
   response: Record<string, unknown>,
-  expectedErrorCode?: string
+  expectedErrorCode?: string,
 ): void {
   assertApiResponse(response, ["success", "error"]);
 
@@ -219,7 +219,7 @@ export function assertApiError(
 
   if (expectedErrorCode && response.error !== expectedErrorCode) {
     throw new Error(
-      `Expected error code '${expectedErrorCode}', got '${response.error}'`
+      `Expected error code '${expectedErrorCode}', got '${response.error}'`,
     );
   }
 }
@@ -261,7 +261,7 @@ export async function cleanupTestResources() {
     // Ignorar errores de limpieza
     console.warn(
       "Warning during cleanup:",
-      error instanceof Error ? error.message : String(error)
+      error instanceof Error ? error.message : String(error),
     );
   }
 }

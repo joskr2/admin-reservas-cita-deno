@@ -1,6 +1,6 @@
 // tests/unit/repositories/patient.test.ts - Tests para PatientRepository
-import { assertEquals, assertExists, assert } from "$std/testing/asserts.ts";
-import { describe, it, beforeEach } from "$std/testing/bdd.ts";
+import { assert, assertEquals, assertExists } from "$std/testing/asserts.ts";
+import { beforeEach, describe, it } from "$std/testing/bdd.ts";
 import { PatientRepository } from "../../../lib/database/repositories/patient.ts";
 import { DatabaseConnection } from "../../../lib/database/connection.ts";
 import { testUtils } from "../../setup.ts";
@@ -175,7 +175,7 @@ describe("PatientRepository", () => {
       assertEquals(results1.length, 0);
 
       const results2 = await patientRepository.getPatientByName(
-        null as unknown as string
+        null as unknown as string,
       );
       assertEquals(results2.length, 0);
     });
@@ -361,7 +361,7 @@ describe("PatientRepository", () => {
 
       // Verificar que se puede encontrar por el nuevo nombre
       const foundByNewName = await patientRepository.getPatientByName(
-        "New Name"
+        "New Name",
       );
       assertEquals(foundByNewName.length, 1);
       const foundPatient = foundByNewName[0];
@@ -370,7 +370,7 @@ describe("PatientRepository", () => {
 
       // Verificar que no se encuentra por el nombre anterior
       const foundByOldName = await patientRepository.getPatientByName(
-        "Original Name"
+        "Original Name",
       );
       assertEquals(foundByOldName.length, 0);
     });
@@ -419,7 +419,7 @@ describe("PatientRepository", () => {
       await patientRepository.delete(patient.id);
 
       const foundByName = await patientRepository.getPatientByName(
-        "Test Patient"
+        "Test Patient",
       );
       assertEquals(foundByName.length, 0);
     });
@@ -483,7 +483,7 @@ describe("PatientRepository", () => {
       };
 
       const result = await patientRepository.create(
-        malformedPatient as unknown as Patient
+        malformedPatient as unknown as Patient,
       );
       assertEquals(result, false);
     });

@@ -1,6 +1,6 @@
 // tests/unit/repositories/session.test.ts - Tests unitarios para SessionRepository
-import { assertEquals, assertRejects, assert } from "$std/testing/asserts.ts";
-import { describe, it, beforeEach } from "$std/testing/bdd.ts";
+import { assert, assertEquals, assertRejects } from "$std/testing/asserts.ts";
+import { beforeEach, describe, it } from "$std/testing/bdd.ts";
 import { SessionRepository } from "../../../lib/database/repositories/session.ts";
 import type { IDatabaseConnection } from "../../../lib/database/interfaces.ts";
 import { DatabaseConnection } from "../../../lib/database/connection.ts";
@@ -71,7 +71,7 @@ describe("SessionRepository", () => {
       await assertRejects(
         () => sessionRepository.createSession("", "test@example.com"),
         Error,
-        "Invalid sessionId provided to createSession"
+        "Invalid sessionId provided to createSession",
       );
     });
 
@@ -81,7 +81,7 @@ describe("SessionRepository", () => {
       await assertRejects(
         () => sessionRepository.createSession(sessionId, ""),
         Error,
-        "Invalid userEmail provided to createSession"
+        "Invalid userEmail provided to createSession",
       );
     });
 
@@ -97,7 +97,7 @@ describe("SessionRepository", () => {
       await assertRejects(
         () => errorRepository.createSession("session-123", "test@example.com"),
         Error,
-        "Database error"
+        "Database error",
       );
     });
   });
@@ -127,7 +127,7 @@ describe("SessionRepository", () => {
       };
 
       const repositoryWithSession = new SessionRepository(
-        connectionWithSession
+        connectionWithSession,
       );
       const result = await repositoryWithSession.getSession(sessionId);
 
@@ -164,7 +164,7 @@ describe("SessionRepository", () => {
       };
 
       const repositoryWithExpired = new SessionRepository(
-        connectionWithExpired
+        connectionWithExpired,
       );
       const result = await repositoryWithExpired.getSession(sessionId);
 
@@ -250,7 +250,7 @@ describe("SessionRepository", () => {
       };
 
       const repositoryWithExpired = new SessionRepository(
-        connectionWithExpired
+        connectionWithExpired,
       );
 
       // cleanExpiredSessions retorna void
@@ -297,7 +297,7 @@ describe("SessionRepository", () => {
       };
 
       const repositoryWithSession = new SessionRepository(
-        connectionWithSession
+        connectionWithSession,
       );
       const result = await repositoryWithSession.extendSession(sessionId, 14);
 
@@ -306,7 +306,7 @@ describe("SessionRepository", () => {
 
     it("should return false for non-existent session", async () => {
       const result = await sessionRepository.extendSession(
-        "non-existent-session"
+        "non-existent-session",
       );
       assertEquals(result, false);
     });
@@ -350,7 +350,7 @@ describe("SessionRepository", () => {
       };
 
       const repositoryWithSessions = new SessionRepository(
-        connectionWithSessions
+        connectionWithSessions,
       );
       const result = await repositoryWithSessions.getAllActiveSessions();
 
@@ -394,7 +394,7 @@ describe("SessionRepository", () => {
       };
 
       const repositoryWithBadData = new SessionRepository(
-        connectionWithBadData
+        connectionWithBadData,
       );
       const result = await repositoryWithBadData.getSession("bad-session");
 

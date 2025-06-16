@@ -1,7 +1,7 @@
 // tests/setup.ts - Configuración global para tests
-import { beforeAll, afterAll } from "$std/testing/bdd.ts";
+import { afterAll, beforeAll } from "$std/testing/bdd.ts";
 import { DatabaseConnection } from "../lib/database/connection.ts";
-import type { User, Patient, Appointment, Room } from "../types/index.ts";
+import type { Appointment, Patient, Room, User } from "../types/index.ts";
 
 beforeAll(() => {
   console.log("🧪 Configurando entorno de testing...");
@@ -30,9 +30,11 @@ export const testUtils = {
       customSpecialty: undefined,
       licenseNumber: "PSI-001",
       phone: "+1234567890",
-      education: "Universidad de Psicología, Licenciatura en Psicología Clínica",
+      education:
+        "Universidad de Psicología, Licenciatura en Psicología Clínica",
       experienceYears: 5,
-      bio: "Psicólogo clínico especializado en terapia cognitivo-conductual con 5 años de experiencia.",
+      bio:
+        "Psicólogo clínico especializado en terapia cognitivo-conductual con 5 años de experiencia.",
     };
 
     return { ...defaultUser, ...overrides };
@@ -59,6 +61,8 @@ export const testUtils = {
       patientName: "Test Patient",
       appointmentDate: new Date().toISOString().split("T")[0]!,
       appointmentTime: "10:00",
+      startTime: "10:00",
+      endTime: "11:00",
       roomId: "room-1",
       status: "scheduled",
       notes: "Test appointment",
@@ -115,8 +119,7 @@ export const testUtils = {
       testUtils.createUser({
         email: `user${i}@test.com`,
         name: `Test User ${i}`,
-      })
-    );
+      }));
   },
 
   generateTestPatients: (count: number): Patient[] => {
@@ -124,15 +127,14 @@ export const testUtils = {
       testUtils.createPatient({
         name: `Test Patient ${i}`,
         email: `patient${i}@test.com`,
-      })
-    );
+      }));
   },
 };
 
 // Mock para Request en entorno de testing
 export const mockRequest = (
   url: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Request => {
   return new Request(url, {
     method: "GET",
@@ -147,7 +149,7 @@ export const mockRequest = (
 // Mock para Response en entorno de testing
 export const mockResponse = (
   data: Record<string, unknown>,
-  status = 200
+  status = 200,
 ): Response => {
   return new Response(JSON.stringify(data), {
     status,
@@ -182,7 +184,7 @@ export const mockFormData = (data: Record<string, string> = {}): FormData => {
 
 // Mock para URLSearchParams
 export const mockSearchParams = (
-  params: Record<string, string> = {}
+  params: Record<string, string> = {},
 ): URLSearchParams => {
   return new URLSearchParams(params);
 };
@@ -196,14 +198,14 @@ export const mockBlob = (data: string, type = "application/json"): Blob => {
 export const mockFile = (
   data: string,
   filename: string,
-  type = "text/plain"
+  type = "text/plain",
 ): File => {
   return new File([data], filename, { type });
 };
 
 // Mock para ReadableStream
 export const mockReadableStream = (
-  data: string
+  data: string,
 ): ReadableStream<Uint8Array> => {
   const encoder = new TextEncoder();
   return new ReadableStream({
@@ -272,7 +274,7 @@ export const mockEvent = (type: string, options: EventInit = {}): Event => {
 // Mock para CustomEvent
 export const mockCustomEvent = <T>(
   type: string,
-  options: CustomEventInit<T> = {}
+  options: CustomEventInit<T> = {},
 ): CustomEvent<T> => {
   return new CustomEvent(type, options);
 };
@@ -280,7 +282,7 @@ export const mockCustomEvent = <T>(
 // Mock para MessageEvent
 export const mockMessageEvent = <T>(
   type: string,
-  options: MessageEventInit<T> = {}
+  options: MessageEventInit<T> = {},
 ): MessageEvent<T> => {
   return new MessageEvent(type, options);
 };
@@ -288,7 +290,7 @@ export const mockMessageEvent = <T>(
 // Mock para ErrorEvent
 export const mockErrorEvent = (
   type: string,
-  options: ErrorEventInit = {}
+  options: ErrorEventInit = {},
 ): ErrorEvent => {
   return new ErrorEvent(type, options);
 };
@@ -296,7 +298,7 @@ export const mockErrorEvent = (
 // Mock para ProgressEvent
 export const mockProgressEvent = (
   type: string,
-  options: ProgressEventInit = {}
+  options: ProgressEventInit = {},
 ): ProgressEvent => {
   return new ProgressEvent(type, options);
 };
@@ -304,7 +306,7 @@ export const mockProgressEvent = (
 // Mock para CloseEvent
 export const mockCloseEvent = (
   type: string,
-  options: CloseEventInit = {}
+  options: CloseEventInit = {},
 ): CloseEvent => {
   return new CloseEvent(type, options);
 };
@@ -344,7 +346,7 @@ export const mockServiceWorker = (): ServiceWorker => {
 // Mock para Notification
 export const mockNotification = (
   title: string,
-  options: NotificationOptions = {}
+  options: NotificationOptions = {},
 ): Notification => {
   return new Notification(title, options);
 };
@@ -371,7 +373,7 @@ export const mockFetch = {
       new Response(JSON.stringify({ success: true }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      })
+      }),
     );
   },
 };
@@ -472,12 +474,12 @@ export const mockNavigator = {
     getCurrentPosition: (
       _success: PositionCallback,
       _error?: PositionErrorCallback,
-      _options?: PositionOptions
+      _options?: PositionOptions,
     ) => {},
     watchPosition: (
       _success: PositionCallback,
       _error?: PositionErrorCallback,
-      _options?: PositionOptions
+      _options?: PositionOptions,
     ) => 0,
     clearWatch: (_watchId: number) => {},
   },
@@ -525,12 +527,12 @@ export const mockHistory = {
   pushState: (
     _data: unknown,
     _unused: string,
-    _url?: string | URL | null
+    _url?: string | URL | null,
   ) => {},
   replaceState: (
     _data: unknown,
     _unused: string,
-    _url?: string | URL | null
+    _url?: string | URL | null,
   ) => {},
 };
 
@@ -548,12 +550,12 @@ export const mockScreen = {
     addEventListener: (
       _type: string,
       _listener: EventListenerOrEventListenerObject,
-      _options?: boolean | AddEventListenerOptions
+      _options?: boolean | AddEventListenerOptions,
     ) => {},
     removeEventListener: (
       _type: string,
       _listener: EventListenerOrEventListenerObject,
-      _options?: boolean | EventListenerOptions
+      _options?: boolean | EventListenerOptions,
     ) => {},
     dispatchEvent: (_event: Event) => true,
   },
@@ -579,12 +581,12 @@ export const mockDocument = {
     addEventListener: (
       _type: string,
       _listener: EventListenerOrEventListenerObject,
-      _options?: boolean | AddEventListenerOptions
+      _options?: boolean | AddEventListenerOptions,
     ) => {},
     removeEventListener: (
       _type: string,
       _listener: EventListenerOrEventListenerObject,
-      _options?: boolean | EventListenerOptions
+      _options?: boolean | EventListenerOptions,
     ) => {},
     dispatchEvent: (_event: Event) => true,
     appendChild: (_node: Node) => _node,
@@ -623,12 +625,12 @@ export const mockDocument = {
   addEventListener: (
     _type: string,
     _listener: EventListenerOrEventListenerObject,
-    _options?: boolean | AddEventListenerOptions
+    _options?: boolean | AddEventListenerOptions,
   ) => {},
   removeEventListener: (
     _type: string,
     _listener: EventListenerOrEventListenerObject,
-    _options?: boolean | EventListenerOptions
+    _options?: boolean | EventListenerOptions,
   ) => {},
   dispatchEvent: (_event: Event) => true,
 };
@@ -672,8 +674,10 @@ export const mockWindow = {
   resizeBy: (_x: number, _y: number) => {},
   moveTo: (_x: number, _y: number) => {},
   moveBy: (_x: number, _y: number) => {},
-  getComputedStyle: (_elt: Element, _pseudoElt?: string | null) =>
-    ({} as CSSStyleDeclaration),
+  getComputedStyle: (
+    _elt: Element,
+    _pseudoElt?: string | null,
+  ) => ({} as CSSStyleDeclaration),
   getSelection: () => null,
   matchMedia: (_query: string) => ({
     matches: false,
@@ -681,22 +685,22 @@ export const mockWindow = {
     addListener: (
       _listener:
         | ((this: MediaQueryList, ev: MediaQueryListEvent) => unknown)
-        | null
+        | null,
     ) => {},
     removeListener: (
       _listener:
         | ((this: MediaQueryList, ev: MediaQueryListEvent) => unknown)
-        | null
+        | null,
     ) => {},
     addEventListener: (
       _type: string,
       _listener: EventListenerOrEventListenerObject,
-      _options?: boolean | AddEventListenerOptions
+      _options?: boolean | AddEventListenerOptions,
     ) => {},
     removeEventListener: (
       _type: string,
       _listener: EventListenerOrEventListenerObject,
-      _options?: boolean | EventListenerOptions
+      _options?: boolean | EventListenerOptions,
     ) => {},
     dispatchEvent: (_event: Event) => true,
   }),
@@ -717,12 +721,12 @@ export const mockWindow = {
   addEventListener: (
     _type: string,
     _listener: EventListenerOrEventListenerObject,
-    _options?: boolean | AddEventListenerOptions
+    _options?: boolean | AddEventListenerOptions,
   ) => {},
   removeEventListener: (
     _type: string,
     _listener: EventListenerOrEventListenerObject,
-    _options?: boolean | EventListenerOptions
+    _options?: boolean | EventListenerOptions,
   ) => {},
   dispatchEvent: (_event: Event) => true,
 };
@@ -736,7 +740,7 @@ interface TestContext {
 }
 
 export function createTestContext(
-  overrides: Partial<TestContext> = {}
+  overrides: Partial<TestContext> = {},
 ): TestContext {
   return {
     user: overrides.user || testUtils.createUser(),

@@ -1,6 +1,10 @@
 import { type FreshContext, type PageProps } from "$fresh/server.ts";
 import { type Appointment, type AppState } from "../../types/index.ts";
-import { getAppointmentRepository, getUserRepository, getRoomRepository } from "../../lib/database/index.ts";
+import {
+  getAppointmentRepository,
+  getRoomRepository,
+  getUserRepository,
+} from "../../lib/database/index.ts";
 import { extractUserContext, logger } from "../../lib/logger.ts";
 import InteractiveCalendar from "../../islands/InteractiveCalendar.tsx";
 
@@ -17,7 +21,9 @@ interface CalendarPageData {
 }
 
 // Función para enriquecer citas con nombres de psicólogos y salas
-async function enrichAppointmentsWithNames(appointments: Appointment[]): Promise<Appointment[]> {
+async function enrichAppointmentsWithNames(
+  appointments: Appointment[],
+): Promise<Appointment[]> {
   if (appointments.length === 0) return appointments;
 
   const userRepository = getUserRepository();
@@ -31,12 +37,17 @@ async function enrichAppointmentsWithNames(appointments: Appointment[]): Promise
     // Enriquecer con nombre del psicólogo si no existe
     if (!appointment.psychologistName && appointment.psychologistEmail) {
       try {
-        const psychologist = await userRepository.getUserByEmail(appointment.psychologistEmail);
+        const psychologist = await userRepository.getUserByEmail(
+          appointment.psychologistEmail,
+        );
         if (psychologist && psychologist.name) {
           enrichedAppointment.psychologistName = psychologist.name;
         }
       } catch (error) {
-        console.warn(`Failed to fetch psychologist name for ${appointment.psychologistEmail}:`, error);
+        console.warn(
+          `Failed to fetch psychologist name for ${appointment.psychologistEmail}:`,
+          error,
+        );
       }
     }
 
@@ -48,7 +59,10 @@ async function enrichAppointmentsWithNames(appointments: Appointment[]): Promise
           enrichedAppointment.roomName = room.name;
         }
       } catch (error) {
-        console.warn(`Failed to fetch room name for ${appointment.roomId}:`, error);
+        console.warn(
+          `Failed to fetch room name for ${appointment.roomId}:`,
+          error,
+        );
       }
     }
 
@@ -128,12 +142,19 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     }
 
     // Enriquecer citas con nombres de psicólogos y salas
-    const enrichedAppointments = await enrichAppointmentsWithNames(appointments);
-    
-    await logger.debug("APPOINTMENTS_CALENDAR", "Enriched appointments with names", {
-      originalCount: appointments.length,
-      enrichedCount: enrichedAppointments.length,
-    }, { requestId, ...userContext });
+    const enrichedAppointments = await enrichAppointmentsWithNames(
+      appointments,
+    );
+
+    await logger.debug(
+      "APPOINTMENTS_CALENDAR",
+      "Enriched appointments with names",
+      {
+        originalCount: appointments.length,
+        enrichedCount: enrichedAppointments.length,
+      },
+      { requestId, ...userContext },
+    );
 
     await logger.info(
       "APPOINTMENTS_CALENDAR",

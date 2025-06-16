@@ -19,7 +19,7 @@ export const handler: Handlers = {
           {
             status: 400,
             headers: { "Content-Type": "application/json" },
-          }
+          },
         );
       }
 
@@ -36,7 +36,7 @@ export const handler: Handlers = {
           {
             status: 401,
             headers: { "Content-Type": "application/json" },
-          }
+          },
         );
       }
 
@@ -54,7 +54,7 @@ export const handler: Handlers = {
           {
             status: 401,
             headers: { "Content-Type": "application/json" },
-          }
+          },
         );
       }
 
@@ -63,7 +63,7 @@ export const handler: Handlers = {
       await kv.set(
         ["sessions", sessionId],
         { userEmail: email },
-        { expireIn: 7 * 24 * 60 * 60 * 1000 }
+        { expireIn: 7 * 24 * 60 * 60 * 1000 },
       );
 
       // Crear respuesta con cookie y datos del usuario
@@ -79,7 +79,7 @@ export const handler: Handlers = {
         {
           status: 200,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
 
       setCookie(response.headers, {
@@ -103,7 +103,7 @@ export const handler: Handlers = {
         {
           status: 500,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
     }
   },

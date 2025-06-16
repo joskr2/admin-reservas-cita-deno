@@ -18,7 +18,7 @@ import {
   getUserRepository,
 } from "../../lib/database/index.ts";
 import { Icon } from "../../components/ui/Icon.tsx";
-import { logger, extractUserContext } from "../../lib/logger.ts";
+import { extractUserContext, logger } from "../../lib/logger.ts";
 
 interface DashboardPageData {
   dashboardData: DashboardData;
@@ -42,15 +42,15 @@ interface DashboardPageData {
 }
 
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
-  const requestId = ctx.state.requestId || 'unknown';
+  const requestId = ctx.state.requestId || "unknown";
   const userContext = extractUserContext(ctx.state.user);
-  
+
   const url = new URL(req.url);
   const search = url.searchParams.get("search") || "";
   const type = url.searchParams.get("type") || "";
   const period = url.searchParams.get("period") || "week";
 
-  await logger.info('DASHBOARD', 'Dashboard page requested', {
+  await logger.info("DASHBOARD", "Dashboard page requested", {
     search,
     type,
     period,
@@ -59,18 +59,18 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
 
   const currentUser = ctx.state.user;
   if (!currentUser) {
-    await logger.warn('DASHBOARD', 'Unauthenticated user redirected to login', {
+    await logger.warn("DASHBOARD", "Unauthenticated user redirected to login", {
       url: req.url,
     }, { requestId });
     return Response.redirect(new URL("/login", url.origin), 302);
   }
 
   try {
-    await logger.debug('DASHBOARD', 'Loading dashboard data', {
+    await logger.debug("DASHBOARD", "Loading dashboard data", {
       userRole: currentUser.role,
       userEmail: currentUser.email,
     }, { requestId, ...userContext });
-    
+
     const dashboardService = getDashboardService();
     const appointmentRepository = getAppointmentRepository();
     const patientRepository = getPatientRepository();
@@ -78,11 +78,11 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     const roomRepository = getRoomRepository();
 
     // Usar el método correcto según el rol del usuario
-    const dashboardData = currentUser.role === "superadmin" 
+    const dashboardData = currentUser.role === "superadmin"
       ? await dashboardService.getStats()
       : await dashboardService.getPsychologistStats(currentUser.email);
-    
-    await logger.debug('DASHBOARD', 'Dashboard stats retrieved', {
+
+    await logger.debug("DASHBOARD", "Dashboard stats retrieved", {
       userRole: currentUser.role,
       totalUsers: dashboardData.totalUsers,
       totalPsychologists: dashboardData.totalPsychologists,
@@ -105,8 +105,11 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     let allRooms: Room[];
 
     if (currentUser.role === "superadmin") {
-      await logger.debug('DASHBOARD', 'Loading data for superadmin user', {}, { requestId, ...userContext });
-      
+      await logger.debug("DASHBOARD", "Loading data for superadmin user", {}, {
+        requestId,
+        ...userContext,
+      });
+
       // Superadmin ve todo
       recentAppointments = await appointmentRepository.getAll();
       recentPatients = await patientRepository.getAllPatientsAsProfiles();
@@ -114,28 +117,28 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       recentRooms = await roomRepository.getAll();
       allAppointments = recentAppointments;
       allRooms = recentRooms;
-      
-      await logger.debug('DASHBOARD', 'Superadmin data loaded', {
+
+      await logger.debug("DASHBOARD", "Superadmin data loaded", {
         appointmentsCount: recentAppointments.length,
         patientsCount: recentPatients.length,
         usersCount: recentUsers.length,
         roomsCount: recentRooms.length,
       }, { requestId, ...userContext });
     } else {
-      await logger.debug('DASHBOARD', 'Loading data for psychologist user', {
+      await logger.debug("DASHBOARD", "Loading data for psychologist user", {
         psychologistEmail: currentUser.email,
       }, { requestId, ...userContext });
-      
+
       // Psicólogos solo ven sus propias citas y datos relacionados
-      recentAppointments =
-        await appointmentRepository.getAppointmentsByPsychologist(
-          currentUser.email
+      recentAppointments = await appointmentRepository
+        .getAppointmentsByPsychologist(
+          currentUser.email,
         );
 
       // Para pacientes, solo mostrar aquellos que tienen citas con este psicólogo
       const allPatients = await patientRepository.getAllPatientsAsProfiles();
       const patientNamesWithAppointments = new Set(
-        recentAppointments.map((apt) => apt.patientName)
+        recentAppointments.map((apt) => apt.patientName),
       );
       recentPatients = allPatients.filter((patient) =>
         patientNamesWithAppointments.has(patient.name)
@@ -148,8 +151,8 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       recentRooms = await roomRepository.getAll();
       allAppointments = recentAppointments;
       allRooms = recentRooms;
-      
-      await logger.debug('DASHBOARD', 'Psychologist data loaded', {
+
+      await logger.debug("DASHBOARD", "Psychologist data loaded", {
         appointmentsCount: recentAppointments.length,
         patientsCount: recentPatients.length,
         totalPatients: allPatients.length,
@@ -174,8 +177,8 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       default:
         dateFilter = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     }
-    
-    await logger.debug('DASHBOARD', 'Applying filters', {
+
+    await logger.debug("DASHBOARD", "Applying filters", {
       period,
       dateFilter: dateFilter.toISOString(),
       search,
@@ -189,24 +192,24 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         (apt) =>
           apt.patientName.toLowerCase().includes(searchLower) ||
           apt.psychologistEmail.toLowerCase().includes(searchLower) ||
-          apt.id.toLowerCase().includes(searchLower)
+          apt.id.toLowerCase().includes(searchLower),
       );
       recentPatients = recentPatients.filter(
         (patient) =>
           patient.name.toLowerCase().includes(searchLower) ||
-          patient.id.toLowerCase().includes(searchLower)
+          patient.id.toLowerCase().includes(searchLower),
       );
       recentUsers = recentUsers.filter(
         (user) =>
           (user.name && user.name.toLowerCase().includes(searchLower)) ||
-          user.email.toLowerCase().includes(searchLower)
+          user.email.toLowerCase().includes(searchLower),
       );
       recentRooms = recentRooms.filter(
         (room) =>
           room.name.toLowerCase().includes(searchLower) ||
           room.id.toLowerCase().includes(searchLower) ||
           (room.description &&
-            room.description.toLowerCase().includes(searchLower))
+            room.description.toLowerCase().includes(searchLower)),
       );
     }
 
@@ -242,12 +245,12 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       users: recentUsers.length,
       rooms: recentRooms.length,
     };
-    
+
     recentAppointments = recentAppointments
       .filter((apt) => new Date(apt.createdAt) >= dateFilter)
       .sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       )
       .slice(0, 10);
 
@@ -255,7 +258,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       .filter((patient) => new Date(patient.createdAt) >= dateFilter)
       .sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       )
       .slice(0, 10);
 
@@ -263,7 +266,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       .filter((user) => new Date(user.createdAt) >= dateFilter)
       .sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       )
       .slice(0, 10);
 
@@ -271,11 +274,11 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       .filter((room) => new Date(room.createdAt) >= dateFilter)
       .sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       )
       .slice(0, 10);
-      
-    await logger.info('DASHBOARD', 'Dashboard data processing completed', {
+
+    await logger.info("DASHBOARD", "Dashboard data processing completed", {
       originalCounts,
       filteredCounts: {
         appointments: recentAppointments.length,
@@ -303,13 +306,13 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       filters: { search, type, period },
     });
   } catch (error) {
-    await logger.error('DASHBOARD', 'Error loading dashboard data', {
+    await logger.error("DASHBOARD", "Error loading dashboard data", {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       userRole: currentUser?.role,
       filters: { search, type, period },
     }, { requestId, ...userContext });
-    
+
     // Retornar datos vacíos en caso de error
     const dashboardData: DashboardData = {
       totalUsers: 0,
@@ -366,7 +369,11 @@ export default function Dashboard({
 
   // Solo agregar "users" para superadmin
   if (currentUser.role === "superadmin") {
-    typeOptions.splice(2, 0, { value: "users", label: "Usuarios", emoji: "👥" });
+    typeOptions.splice(2, 0, {
+      value: "users",
+      label: "Usuarios",
+      emoji: "👥",
+    });
   }
 
   const filterFields = [
@@ -562,14 +569,14 @@ export default function Dashboard({
               // Calcular cuántas cards se van a mostrar
               const visibleCards = [
                 (!filters.type || filters.type === "appointments") &&
-                  recentAppointments.length > 0,
+                recentAppointments.length > 0,
                 (!filters.type || filters.type === "patients") &&
-                  recentPatients.length > 0,
+                recentPatients.length > 0,
                 (!filters.type || filters.type === "users") &&
-                  currentUser.role === "superadmin" &&
-                  recentUsers.length > 0,
+                currentUser.role === "superadmin" &&
+                recentUsers.length > 0,
                 (!filters.type || filters.type === "rooms") &&
-                  recentRooms.length > 0,
+                recentRooms.length > 0,
               ].filter(Boolean).length;
 
               // Determinar las clases del grid basado en el número de cards
@@ -603,40 +610,42 @@ export default function Dashboard({
                           </span>
                         </div>
                         <div class="space-y-3 max-h-64 overflow-y-auto">
-                          {recentAppointments.length === 0 ? (
-                            <div class="text-center py-8">
-                              <Icon
-                                name="calendar"
-                                className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
-                              />
-                              <p class="text-gray-500 dark:text-gray-400 text-sm">
-                                No hay citas recientes
-                              </p>
-                            </div>
-                          ) : (
-                            recentAppointments.map((appointment) => (
-                              <div
-                                key={appointment.id}
-                                class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                              >
-                                <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
-                                  <Icon
-                                    name="calendar"
-                                    className="h-4 w-4 text-blue-600 dark:text-blue-400"
-                                  />
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                    {appointment.patientName}
-                                  </p>
-                                  <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    {appointment.appointmentDate} -{" "}
-                                    {appointment.appointmentTime}
-                                  </p>
-                                </div>
+                          {recentAppointments.length === 0
+                            ? (
+                              <div class="text-center py-8">
+                                <Icon
+                                  name="calendar"
+                                  className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
+                                />
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">
+                                  No hay citas recientes
+                                </p>
                               </div>
-                            ))
-                          )}
+                            )
+                            : (
+                              recentAppointments.map((appointment) => (
+                                <div
+                                  key={appointment.id}
+                                  class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                  <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
+                                    <Icon
+                                      name="calendar"
+                                      className="h-4 w-4 text-blue-600 dark:text-blue-400"
+                                    />
+                                  </div>
+                                  <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                      {appointment.patientName}
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                      {appointment.appointmentDate} -{" "}
+                                      {appointment.appointmentTime}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))
+                            )}
                         </div>
                         {recentAppointments.length > 0 && (
                           <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -673,38 +682,40 @@ export default function Dashboard({
                           </span>
                         </div>
                         <div class="space-y-3 max-h-64 overflow-y-auto">
-                          {recentPatients.length === 0 ? (
-                            <div class="text-center py-8">
-                              <Icon
-                                name="user"
-                                className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
-                              />
-                              <p class="text-gray-500 dark:text-gray-400 text-sm">
-                                No hay pacientes recientes
-                              </p>
-                            </div>
-                          ) : (
-                            recentPatients.map((patient) => (
-                              <div
-                                key={patient.id}
-                                class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                              >
-                                <div class="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center">
-                                  <span class="text-sm font-medium text-green-600 dark:text-green-400">
-                                    {patient.name.charAt(0).toUpperCase()}
-                                  </span>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                    {patient.name}
-                                  </p>
-                                  <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    {patient.email || "Sin email"}
-                                  </p>
-                                </div>
+                          {recentPatients.length === 0
+                            ? (
+                              <div class="text-center py-8">
+                                <Icon
+                                  name="user"
+                                  className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
+                                />
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">
+                                  No hay pacientes recientes
+                                </p>
                               </div>
-                            ))
-                          )}
+                            )
+                            : (
+                              recentPatients.map((patient) => (
+                                <div
+                                  key={patient.id}
+                                  class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                  <div class="w-10 h-10 bg-green-100 dark:bg-green-900/50 rounded-full flex items-center justify-center">
+                                    <span class="text-sm font-medium text-green-600 dark:text-green-400">
+                                      {patient.name.charAt(0).toUpperCase()}
+                                    </span>
+                                  </div>
+                                  <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                      {patient.name}
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                      {patient.email || "Sin email"}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))
+                            )}
                         </div>
                         {recentPatients.length > 0 && (
                           <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -725,7 +736,8 @@ export default function Dashboard({
                   )}
 
                   {/* Usuarios Recientes - Solo para superadmin */}
-                  {currentUser.role === "superadmin" && (!filters.type || filters.type === "users") && (
+                  {currentUser.role === "superadmin" &&
+                    (!filters.type || filters.type === "users") && (
                     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                       <div class="p-6">
                         <div class="flex items-center justify-between mb-4">
@@ -741,42 +753,44 @@ export default function Dashboard({
                           </span>
                         </div>
                         <div class="space-y-3 max-h-64 overflow-y-auto">
-                          {recentUsers.length === 0 ? (
-                            <div class="text-center py-8">
-                              <Icon
-                                name="users"
-                                className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
-                              />
-                              <p class="text-gray-500 dark:text-gray-400 text-sm">
-                                No hay usuarios recientes
-                              </p>
-                            </div>
-                          ) : (
-                            recentUsers.map((user) => (
-                              <div
-                                key={user.id}
-                                class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                              >
-                                <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center">
-                                  <span class="text-sm font-medium text-purple-600 dark:text-purple-400">
-                                    {(user.name || user.email)
-                                      .charAt(0)
-                                      .toUpperCase()}
-                                  </span>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                    {user.name || user.email}
-                                  </p>
-                                  <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    {user.role === "psychologist"
-                                      ? "Psicólogo"
-                                      : "Administrador"}
-                                  </p>
-                                </div>
+                          {recentUsers.length === 0
+                            ? (
+                              <div class="text-center py-8">
+                                <Icon
+                                  name="users"
+                                  className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
+                                />
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">
+                                  No hay usuarios recientes
+                                </p>
                               </div>
-                            ))
-                          )}
+                            )
+                            : (
+                              recentUsers.map((user) => (
+                                <div
+                                  key={user.id}
+                                  class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                  <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/50 rounded-full flex items-center justify-center">
+                                    <span class="text-sm font-medium text-purple-600 dark:text-purple-400">
+                                      {(user.name || user.email)
+                                        .charAt(0)
+                                        .toUpperCase()}
+                                    </span>
+                                  </div>
+                                  <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                      {user.name || user.email}
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                      {user.role === "psychologist"
+                                        ? "Psicólogo"
+                                        : "Administrador"}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))
+                            )}
                         </div>
                         {recentUsers.length > 0 && (
                           <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
@@ -813,38 +827,40 @@ export default function Dashboard({
                           </span>
                         </div>
                         <div class="space-y-3 max-h-64 overflow-y-auto">
-                          {recentRooms.length === 0 ? (
-                            <div class="text-center py-8">
-                              <Icon
-                                name="briefcase"
-                                className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
-                              />
-                              <p class="text-gray-500 dark:text-gray-400 text-sm">
-                                No hay salas recientes
-                              </p>
-                            </div>
-                          ) : (
-                            recentRooms.map((room) => (
-                              <div
-                                key={room.id}
-                                class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                              >
-                                <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900/50 rounded-full flex items-center justify-center">
-                                  <span class="text-sm font-medium text-orange-600 dark:text-orange-400">
-                                    {room.name.charAt(0).toUpperCase()}
-                                  </span>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                  <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                    {room.name}
-                                  </p>
-                                  <p class="text-xs text-gray-500 dark:text-gray-400">
-                                    {room.description || "Sin descripción"}
-                                  </p>
-                                </div>
+                          {recentRooms.length === 0
+                            ? (
+                              <div class="text-center py-8">
+                                <Icon
+                                  name="briefcase"
+                                  className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-3"
+                                />
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">
+                                  No hay salas recientes
+                                </p>
                               </div>
-                            ))
-                          )}
+                            )
+                            : (
+                              recentRooms.map((room) => (
+                                <div
+                                  key={room.id}
+                                  class="flex items-center space-x-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                  <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900/50 rounded-full flex items-center justify-center">
+                                    <span class="text-sm font-medium text-orange-600 dark:text-orange-400">
+                                      {room.name.charAt(0).toUpperCase()}
+                                    </span>
+                                  </div>
+                                  <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                                      {room.name}
+                                    </p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                                      {room.description || "Sin descripción"}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))
+                            )}
                         </div>
                         {recentRooms.length > 0 && (
                           <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">

@@ -28,7 +28,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   } catch (error) {
     console.error("Error fetching rooms:", error);
@@ -40,7 +40,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 }

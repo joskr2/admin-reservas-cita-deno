@@ -16,7 +16,7 @@ export default function DeleteRoomButton({
   const handleDelete = async () => {
     if (
       !confirm(
-        `¿Estás seguro de eliminar la sala ${roomId} (${roomName})?\n\nEsta acción no se puede deshacer.`
+        `¿Estás seguro de eliminar la sala ${roomId} (${roomName})?\n\nEsta acción no se puede deshacer.`,
       )
     ) {
       return;
@@ -34,7 +34,7 @@ export default function DeleteRoomButton({
       } else {
         const errorData = await response.json().catch(() => ({}));
         alert(
-          errorData.error || "Error al eliminar la sala. Inténtalo de nuevo."
+          errorData.error || "Error al eliminar la sala. Inténtalo de nuevo.",
         );
       }
     } catch (error) {

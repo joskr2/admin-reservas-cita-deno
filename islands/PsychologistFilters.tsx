@@ -1,4 +1,4 @@
-import { useState, useEffect } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { type UserRole } from "../types/index.ts";
 import { Button } from "../components/ui/Button.tsx";
 import { Icon } from "../components/ui/Icon.tsx";
@@ -42,12 +42,12 @@ export default function PsychologistFilters({
 
   const handleSearch = (value: string) => {
     setSearch(value);
-    
+
     // Clear existing timeout
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
-    
+
     // Set new timeout for debounced search
     const timeout = setTimeout(() => {
       const url = buildUrl({
@@ -57,7 +57,7 @@ export default function PsychologistFilters({
       });
       navigateToUrl(url);
     }, 500); // 500ms delay
-    
+
     setSearchTimeout(timeout);
   };
 

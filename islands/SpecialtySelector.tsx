@@ -23,7 +23,10 @@ export default function SpecialtySelector({
   const specialtyOptions = [
     { value: "", label: "Seleccionar especialidad" },
     { value: "Psicología Clínica", label: "Psicología Clínica" },
-    { value: "Psicología Cognitivo-Conductual", label: "Psicología Cognitivo-Conductual" },
+    {
+      value: "Psicología Cognitivo-Conductual",
+      label: "Psicología Cognitivo-Conductual",
+    },
     { value: "Psicología Familiar", label: "Psicología Familiar" },
     { value: "Psicología Infantil", label: "Psicología Infantil" },
     { value: "Neuropsicología", label: "Neuropsicología" },

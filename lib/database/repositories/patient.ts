@@ -9,7 +9,7 @@ import type {
 } from "../../../types/index.ts";
 import type { IPatientRepository } from "../interfaces.ts";
 import { BaseRepository } from "./base.ts";
-import { logger, getErrorDetails, getKvResultDetails } from "../../logger.ts";
+import { getErrorDetails, getKvResultDetails, logger } from "../../logger.ts";
 
 export class PatientRepository extends BaseRepository<Patient, string>
   implements IPatientRepository {
@@ -26,7 +26,10 @@ export class PatientRepository extends BaseRepository<Patient, string>
     }
 
     // Name is required
-    if (!entity.name || typeof entity.name !== "string" || entity.name.trim().length === 0) {
+    if (
+      !entity.name || typeof entity.name !== "string" ||
+      entity.name.trim().length === 0
+    ) {
       return false;
     }
 
@@ -37,7 +40,10 @@ export class PatientRepository extends BaseRepository<Patient, string>
 
     // DNI validation if provided (same as psychologists)
     if (entity.dni !== undefined && entity.dni !== null) {
-      if (typeof entity.dni !== "string" || !/^[A-Za-z0-9]{7,30}$/.test(entity.dni)) {
+      if (
+        typeof entity.dni !== "string" ||
+        !/^[A-Za-z0-9]{7,30}$/.test(entity.dni)
+      ) {
         return false;
       }
     }
@@ -46,16 +52,20 @@ export class PatientRepository extends BaseRepository<Patient, string>
   }
 
   public override async create(patient: Patient): Promise<boolean> {
-    await logger.debug('DATABASE', 'Attempting to create patient', {
+    await logger.debug("DATABASE", "Attempting to create patient", {
       patientId: patient.id,
       patientName: patient.name,
       hasEmail: !!patient.email,
       hasPhone: !!patient.phone,
       isActive: patient.isActive,
     });
-    
+
     if (!this.validate(patient)) {
-      await logger.error('DATABASE', 'Invalid patient data provided to create', { patient });
+      await logger.error(
+        "DATABASE",
+        "Invalid patient data provided to create",
+        { patient },
+      );
       return false;
     }
 
@@ -69,14 +79,18 @@ export class PatientRepository extends BaseRepository<Patient, string>
     patient.createdAt = now;
     patient.updatedAt = now;
 
-    await logger.debug('DATABASE', 'Starting atomic transaction for patient creation', {
-      patientId: patient.id,
-      patientName: patient.name,
-      keys: [
-        ["patients", patient.id],
-        ["patients_by_name", patient.name.toLowerCase(), patient.id]
-      ]
-    });
+    await logger.debug(
+      "DATABASE",
+      "Starting atomic transaction for patient creation",
+      {
+        patientId: patient.id,
+        patientName: patient.name,
+        keys: [
+          ["patients", patient.id],
+          ["patients_by_name", patient.name.toLowerCase(), patient.id],
+        ],
+      },
+    );
 
     try {
       const kv = await this.getKv();
@@ -96,7 +110,7 @@ export class PatientRepository extends BaseRepository<Patient, string>
         .commit();
 
       const resultDetails = getKvResultDetails(result);
-      await logger.info('DATABASE', 'Patient creation transaction result', {
+      await logger.info("DATABASE", "Patient creation transaction result", {
         patientId: patient.id,
         patientName: patient.name,
         success: resultDetails.ok,
@@ -106,7 +120,7 @@ export class PatientRepository extends BaseRepository<Patient, string>
       return result.ok;
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error('DATABASE', 'Error creating patient', {
+      await logger.error("DATABASE", "Error creating patient", {
         patientId: patient.id,
         patientName: patient.name,
         error: errorDetails.message,
@@ -118,14 +132,20 @@ export class PatientRepository extends BaseRepository<Patient, string>
 
   public async getPatientByName(name: string): Promise<Patient[]> {
     if (typeof name !== "string" || !name) {
-      await logger.warn('DATABASE', 'Invalid name provided to getPatientByName', {
-        providedName: name,
-        nameType: typeof name,
-      });
+      await logger.warn(
+        "DATABASE",
+        "Invalid name provided to getPatientByName",
+        {
+          providedName: name,
+          nameType: typeof name,
+        },
+      );
       return [];
     }
 
-    await logger.debug('DATABASE', 'Searching patients by name', { searchName: name });
+    await logger.debug("DATABASE", "Searching patients by name", {
+      searchName: name,
+    });
 
     try {
       const kv = await this.getKv();
@@ -147,15 +167,19 @@ export class PatientRepository extends BaseRepository<Patient, string>
           if (patient) {
             patients.push(patient);
           } else {
-            await logger.warn('DATABASE', 'Patient referenced in name index but not found', {
-              patientId,
-              storedName,
-            });
+            await logger.warn(
+              "DATABASE",
+              "Patient referenced in name index but not found",
+              {
+                patientId,
+                storedName,
+              },
+            );
           }
         }
       }
 
-      await logger.info('DATABASE', 'Completed patient search by name', {
+      await logger.info("DATABASE", "Completed patient search by name", {
         searchName: name,
         processedEntries,
         foundMatches,
@@ -165,7 +189,7 @@ export class PatientRepository extends BaseRepository<Patient, string>
       return patients;
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error('DATABASE', 'Error getting patients by name', {
+      await logger.error("DATABASE", "Error getting patients by name", {
         searchName: name,
         error: errorDetails.message,
         stack: errorDetails.stack,
@@ -175,23 +199,27 @@ export class PatientRepository extends BaseRepository<Patient, string>
   }
 
   public async getAllPatientsAsProfiles(): Promise<PatientProfile[]> {
-    await logger.debug('DATABASE', 'Getting all patients as profiles');
-    
+    await logger.debug("DATABASE", "Getting all patients as profiles");
+
     try {
       const patients = await this.getAll();
       const profiles = patients.map((patient) =>
         this.mapPatientToProfile(patient)
       );
-      
-      await logger.info('DATABASE', 'Successfully retrieved all patients as profiles', {
-        totalPatients: patients.length,
-        totalProfiles: profiles.length,
-      });
-      
+
+      await logger.info(
+        "DATABASE",
+        "Successfully retrieved all patients as profiles",
+        {
+          totalPatients: patients.length,
+          totalProfiles: profiles.length,
+        },
+      );
+
       return this.sortPatientProfiles(profiles);
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error('DATABASE', 'Error getting all patients as profiles', {
+      await logger.error("DATABASE", "Error getting all patients as profiles", {
         error: errorDetails.message,
         stack: errorDetails.stack,
       });
@@ -201,11 +229,16 @@ export class PatientRepository extends BaseRepository<Patient, string>
 
   public async searchPatients(query: string): Promise<PatientProfile[]> {
     if (typeof query !== "string" || !query) {
-      await logger.debug('DATABASE', 'Empty search query, returning all patients');
+      await logger.debug(
+        "DATABASE",
+        "Empty search query, returning all patients",
+      );
       return await this.getAllPatientsAsProfiles();
     }
 
-    await logger.debug('DATABASE', 'Searching patients', { searchQuery: query });
+    await logger.debug("DATABASE", "Searching patients", {
+      searchQuery: query,
+    });
 
     try {
       const searchQuery = query.toLowerCase();
@@ -217,7 +250,7 @@ export class PatientRepository extends BaseRepository<Patient, string>
         (patient.phone && patient.phone.includes(searchQuery))
       );
 
-      await logger.info('DATABASE', 'Patient search completed', {
+      await logger.info("DATABASE", "Patient search completed", {
         searchQuery: query,
         totalPatients: allPatients.length,
         matchingPatients: matchingPatients.length,
@@ -229,7 +262,7 @@ export class PatientRepository extends BaseRepository<Patient, string>
       return this.sortPatientProfiles(profiles);
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error('DATABASE', 'Error searching patients', {
+      await logger.error("DATABASE", "Error searching patients", {
         searchQuery: query,
         error: errorDetails.message,
         stack: errorDetails.stack,
@@ -239,25 +272,25 @@ export class PatientRepository extends BaseRepository<Patient, string>
   }
 
   public async getActivePatients(): Promise<PatientProfile[]> {
-    await logger.debug('DATABASE', 'Getting active patients only');
-    
+    await logger.debug("DATABASE", "Getting active patients only");
+
     try {
       const allPatients = await this.getAll();
       const activePatients = allPatients.filter((patient) => patient.isActive);
-      
-      await logger.info('DATABASE', 'Successfully retrieved active patients', {
+
+      await logger.info("DATABASE", "Successfully retrieved active patients", {
         totalPatients: allPatients.length,
         activePatients: activePatients.length,
         inactivePatients: allPatients.length - activePatients.length,
       });
-      
+
       const profiles = activePatients.map((patient) =>
         this.mapPatientToProfile(patient)
       );
       return this.sortPatientProfiles(profiles);
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error('DATABASE', 'Error getting active patients', {
+      await logger.error("DATABASE", "Error getting active patients", {
         error: errorDetails.message,
         stack: errorDetails.stack,
       });
@@ -269,16 +302,18 @@ export class PatientRepository extends BaseRepository<Patient, string>
     id: string,
     updates: Partial<Patient>,
   ): Promise<boolean> {
-    await logger.debug('DATABASE', 'Attempting to update patient', {
+    await logger.debug("DATABASE", "Attempting to update patient", {
       patientId: id,
       updateFields: Object.keys(updates),
-      hasNameUpdate: 'name' in updates,
+      hasNameUpdate: "name" in updates,
     });
-    
+
     try {
       const existingPatient = await this.getById(id);
       if (!existingPatient) {
-        await logger.warn('DATABASE', 'Patient not found for update', { patientId: id });
+        await logger.warn("DATABASE", "Patient not found for update", {
+          patientId: id,
+        });
         return false;
       }
 
@@ -291,12 +326,16 @@ export class PatientRepository extends BaseRepository<Patient, string>
 
       // Si cambió el nombre, actualizar índices
       if (updates.name && updates.name !== existingPatient.name) {
-        await logger.info('DATABASE', 'Name change detected, updating name indices', {
-          patientId: id,
-          oldName: existingPatient.name,
-          newName: updates.name,
-        });
-        
+        await logger.info(
+          "DATABASE",
+          "Name change detected, updating name indices",
+          {
+            patientId: id,
+            oldName: existingPatient.name,
+            newName: updates.name,
+          },
+        );
+
         const kv = await this.getKv();
         const result = await kv
           .atomic()
@@ -317,39 +356,39 @@ export class PatientRepository extends BaseRepository<Patient, string>
             id,
           )
           .commit();
-          
+
         const resultDetails = getKvResultDetails(result);
-        await logger.info('DATABASE', 'Name update transaction result', {
+        await logger.info("DATABASE", "Name update transaction result", {
           patientId: id,
           success: resultDetails.ok,
           versionstamp: resultDetails.versionstamp,
           oldName: existingPatient.name,
           newName: updates.name,
         });
-        
+
         return result.ok;
       }
 
-      await logger.debug('DATABASE', 'No name change, using standard update', {
+      await logger.debug("DATABASE", "No name change, using standard update", {
         patientId: id,
         updates,
       });
-      
+
       const result = await super.update(id, {
         ...updates,
         updatedAt: new Date().toISOString(),
       });
-      
-      await logger.info('DATABASE', 'Patient update result', {
+
+      await logger.info("DATABASE", "Patient update result", {
         patientId: id,
         success: result,
         updates,
       });
-      
+
       return result;
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error('DATABASE', 'Error updating patient', {
+      await logger.error("DATABASE", "Error updating patient", {
         patientId: id,
         error: errorDetails.message,
         stack: errorDetails.stack,
@@ -359,23 +398,31 @@ export class PatientRepository extends BaseRepository<Patient, string>
   }
 
   public override async delete(id: string): Promise<boolean> {
-    await logger.info('DATABASE', 'Attempting to delete patient', { patientId: id });
-    
+    await logger.info("DATABASE", "Attempting to delete patient", {
+      patientId: id,
+    });
+
     try {
       const patient = await this.getById(id);
       if (!patient) {
-        await logger.warn('DATABASE', 'Patient not found for deletion', { patientId: id });
+        await logger.warn("DATABASE", "Patient not found for deletion", {
+          patientId: id,
+        });
         return false;
       }
 
-      await logger.debug('DATABASE', 'Starting atomic transaction for patient deletion', {
-        patientId: id,
-        patientName: patient.name,
-        keys: [
-          ["patients", id],
-          ["patients_by_name", patient.name.toLowerCase(), id]
-        ]
-      });
+      await logger.debug(
+        "DATABASE",
+        "Starting atomic transaction for patient deletion",
+        {
+          patientId: id,
+          patientName: patient.name,
+          keys: [
+            ["patients", id],
+            ["patients_by_name", patient.name.toLowerCase(), id],
+          ],
+        },
+      );
 
       const kv = await this.getKv();
       const result = await kv
@@ -391,7 +438,7 @@ export class PatientRepository extends BaseRepository<Patient, string>
         .commit();
 
       const resultDetails = getKvResultDetails(result);
-      await logger.info('DATABASE', 'Patient deletion transaction result', {
+      await logger.info("DATABASE", "Patient deletion transaction result", {
         patientId: id,
         patientName: patient.name,
         success: resultDetails.ok,
@@ -401,7 +448,7 @@ export class PatientRepository extends BaseRepository<Patient, string>
       return result.ok;
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error('DATABASE', 'Error deleting patient', {
+      await logger.error("DATABASE", "Error deleting patient", {
         patientId: id,
         error: errorDetails.message,
         stack: errorDetails.stack,

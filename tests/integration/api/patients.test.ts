@@ -1,6 +1,6 @@
 // tests/integration/api/patients.test.ts - Tests de integración para API de pacientes
-import { assertEquals, assert } from "$std/testing/asserts.ts";
-import { describe, it, beforeEach } from "$std/testing/bdd.ts";
+import { assert, assertEquals } from "$std/testing/asserts.ts";
+import { beforeEach, describe, it } from "$std/testing/bdd.ts";
 
 describe("Patients API Integration Tests", () => {
   let _testServer: {

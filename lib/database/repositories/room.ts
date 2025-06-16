@@ -4,7 +4,7 @@
 import type { Room, RoomId } from "../../../types/index.ts";
 import type { IAppointmentRepository, IRoomRepository } from "../interfaces.ts";
 import { BaseRepository } from "./base.ts";
-import { logger, getErrorDetails, getKvResultDetails } from "../../logger.ts";
+import { getErrorDetails, getKvResultDetails, logger } from "../../logger.ts";
 
 export class RoomRepository extends BaseRepository<Room, RoomId>
   implements IRoomRepository {
@@ -29,40 +29,43 @@ export class RoomRepository extends BaseRepository<Room, RoomId>
       entity.name.length > 0 &&
       typeof entity.isAvailable === "boolean" &&
       Array.isArray(entity.equipment) &&
-      (entity.capacity === undefined || (typeof entity.capacity === "number" && entity.capacity > 0))
+      (entity.capacity === undefined ||
+        (typeof entity.capacity === "number" && entity.capacity > 0))
     );
   }
 
   public override async create(room: Room): Promise<boolean> {
-    await logger.debug('DATABASE', 'Attempting to create room', {
+    await logger.debug("DATABASE", "Attempting to create room", {
       roomId: room.id,
       roomName: room.name,
       roomType: room.roomType,
       isAvailable: room.isAvailable,
       equipment: room.equipment,
     });
-    
+
     if (!this.validate(room)) {
-      await logger.error('DATABASE', 'Invalid room data provided to create', { room });
+      await logger.error("DATABASE", "Invalid room data provided to create", {
+        room,
+      });
       return false;
     }
 
     try {
       const kv = await this.getKv();
       const result = await kv.set(["rooms", room.id], room);
-      
+
       const resultDetails = getKvResultDetails(result);
-      await logger.info('DATABASE', 'Room creation result', {
+      await logger.info("DATABASE", "Room creation result", {
         roomId: room.id,
         roomName: room.name,
         success: resultDetails.ok,
         versionstamp: resultDetails.versionstamp,
       });
-      
+
       return result.ok;
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error('DATABASE', 'Error creating room', {
+      await logger.error("DATABASE", "Error creating room", {
         roomId: room.id,
         roomName: room.name,
         error: errorDetails.message,
@@ -76,26 +79,30 @@ export class RoomRepository extends BaseRepository<Room, RoomId>
     id: RoomId,
     isAvailable: boolean,
   ): Promise<boolean> {
-    await logger.debug('DATABASE', 'Updating room availability', {
+    await logger.debug("DATABASE", "Updating room availability", {
       roomId: id,
       newAvailability: isAvailable,
     });
-    
+
     try {
       const room = await this.getById(id);
       if (!room) {
-        await logger.warn('DATABASE', 'Room not found for availability update', { roomId: id });
+        await logger.warn(
+          "DATABASE",
+          "Room not found for availability update",
+          { roomId: id },
+        );
         return false;
       }
 
       const oldAvailability = room.isAvailable;
       const updatedRoom = { ...room, isAvailable };
-      
+
       const kv = await this.getKv();
       const result = await kv.set(["rooms", id], updatedRoom);
-      
+
       const resultDetails = getKvResultDetails(result);
-      await logger.info('DATABASE', 'Room availability update result', {
+      await logger.info("DATABASE", "Room availability update result", {
         roomId: id,
         roomName: room.name,
         oldAvailability,
@@ -103,11 +110,11 @@ export class RoomRepository extends BaseRepository<Room, RoomId>
         success: resultDetails.ok,
         versionstamp: resultDetails.versionstamp,
       });
-      
+
       return result.ok;
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error('DATABASE', 'Error updating room availability', {
+      await logger.error("DATABASE", "Error updating room availability", {
         roomId: id,
         isAvailable,
         error: errorDetails.message,
@@ -122,12 +129,12 @@ export class RoomRepository extends BaseRepository<Room, RoomId>
     time: string,
     excludeAppointmentId?: string,
   ): Promise<Room[]> {
-    await logger.debug('DATABASE', 'Getting available rooms', {
+    await logger.debug("DATABASE", "Getting available rooms", {
       date,
       time,
       excludeAppointmentId,
     });
-    
+
     try {
       const allRooms = await this.getAll();
       const appointments = await this.appointmentRepository.getAll();
@@ -146,7 +153,7 @@ export class RoomRepository extends BaseRepository<Room, RoomId>
         (room) => room.isAvailable && !occupiedRoomIds.includes(room.id),
       );
 
-      await logger.info('DATABASE', 'Available rooms calculation completed', {
+      await logger.info("DATABASE", "Available rooms calculation completed", {
         date,
         time,
         totalRooms: allRooms.length,
@@ -154,14 +161,14 @@ export class RoomRepository extends BaseRepository<Room, RoomId>
         conflictingAppointments: conflictingAppointments.length,
         occupiedRoomIds,
         availableRooms: availableRooms.length,
-        availableRoomIds: availableRooms.map(r => r.id),
+        availableRoomIds: availableRooms.map((r) => r.id),
         excludeAppointmentId,
       });
 
       return availableRooms;
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error('DATABASE', 'Error getting available rooms', {
+      await logger.error("DATABASE", "Error getting available rooms", {
         date,
         time,
         excludeAppointmentId,
@@ -173,8 +180,8 @@ export class RoomRepository extends BaseRepository<Room, RoomId>
   }
 
   public async initializeDefaultRooms(): Promise<void> {
-    await logger.info('DATABASE', 'Starting default rooms initialization');
-    
+    await logger.info("DATABASE", "Starting default rooms initialization");
+
     const defaultRooms: Room[] = [
       {
         id: crypto.randomUUID(),
@@ -234,15 +241,19 @@ export class RoomRepository extends BaseRepository<Room, RoomId>
       // Verificar si ya existen salas en la base de datos
       const existingRooms = await this.getAll();
       if (existingRooms.length > 0) {
-        await logger.info('DATABASE', 'Rooms already initialized, skipping default room creation', {
-          existingRoomsCount: existingRooms.length,
-        });
+        await logger.info(
+          "DATABASE",
+          "Rooms already initialized, skipping default room creation",
+          {
+            existingRoomsCount: existingRooms.length,
+          },
+        );
         return;
       }
 
-      await logger.info('DATABASE', 'Creating default rooms', {
+      await logger.info("DATABASE", "Creating default rooms", {
         roomsToCreate: defaultRooms.length,
-        roomNames: defaultRooms.map(r => r.name),
+        roomNames: defaultRooms.map((r) => r.name),
       });
 
       let createdCount = 0;
@@ -250,28 +261,27 @@ export class RoomRepository extends BaseRepository<Room, RoomId>
         const result = await kv.set(["rooms", room.id], room);
         if (result.ok) {
           createdCount++;
-          await logger.debug('DATABASE', 'Default room created', {
+          await logger.debug("DATABASE", "Default room created", {
             roomId: room.id,
             roomName: room.name,
             roomType: room.roomType,
           });
         } else {
-          await logger.error('DATABASE', 'Failed to create default room', {
+          await logger.error("DATABASE", "Failed to create default room", {
             roomId: room.id,
             roomName: room.name,
           });
         }
       }
-      
-      await logger.info('DATABASE', 'Default rooms initialization completed', {
+
+      await logger.info("DATABASE", "Default rooms initialization completed", {
         totalRooms: defaultRooms.length,
         createdRooms: createdCount,
         failedRooms: defaultRooms.length - createdCount,
       });
-      
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error('DATABASE', 'Error initializing default rooms', {
+      await logger.error("DATABASE", "Error initializing default rooms", {
         error: errorDetails.message,
         stack: errorDetails.stack,
         totalRooms: defaultRooms.length,
@@ -280,22 +290,22 @@ export class RoomRepository extends BaseRepository<Room, RoomId>
   }
 
   public override async getAll(): Promise<Room[]> {
-    await logger.debug('DATABASE', 'Getting all rooms');
-    
+    await logger.debug("DATABASE", "Getting all rooms");
+
     try {
       const rooms = await super.getAll();
       const sortedRooms = rooms.sort((a, b) => a.id.localeCompare(b.id));
-      
-      await logger.info('DATABASE', 'Successfully retrieved all rooms', {
+
+      await logger.info("DATABASE", "Successfully retrieved all rooms", {
         totalRooms: rooms.length,
-        availableRooms: rooms.filter(r => r.isAvailable).length,
-        unavailableRooms: rooms.filter(r => !r.isAvailable).length,
+        availableRooms: rooms.filter((r) => r.isAvailable).length,
+        unavailableRooms: rooms.filter((r) => !r.isAvailable).length,
       });
-      
+
       return sortedRooms;
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error('DATABASE', 'Error getting all rooms', {
+      await logger.error("DATABASE", "Error getting all rooms", {
         error: errorDetails.message,
         stack: errorDetails.stack,
       });

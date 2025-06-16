@@ -17,24 +17,27 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
   }
 
   const psychologistEmailParam = ctx.params.email;
-  
+
   if (!psychologistEmailParam) {
-    return new Response(JSON.stringify({ error: "Email de psicólogo requerido" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: "Email de psicólogo requerido" }),
+      {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
   }
-  
+
   const psychologistEmail = decodeURIComponent(psychologistEmailParam);
 
   try {
     const patientRepository = getPatientRepository();
-    
+
     // Get all patients and filter by psychologist (assuming there's a relationship)
     // For now, we'll return all patients since we don't have a direct relationship
     // This would need to be implemented based on the actual business logic
     const allPatients = await patientRepository.getAll();
-    
+
     // In a real implementation, you'd filter patients by their assigned psychologist
     // For now, return empty array for non-existent psychologists or all for existing ones
     const patients = allPatients; // This should be filtered based on actual relationships
@@ -47,7 +50,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   } catch (error) {
     console.error("Error fetching patients by psychologist:", error);
@@ -59,7 +62,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 }

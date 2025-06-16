@@ -194,8 +194,9 @@ export default function Home({}: PageProps) {
 
                 <div class="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
                   <p class="text-sm text-blue-700 dark:text-blue-300">
-                    <strong>💡 Consejo:</strong> Usa los filtros para encontrar
-                    información específica rápidamente
+                    <strong>💡 Consejo:</strong>{" "}
+                    Usa los filtros para encontrar información específica
+                    rápidamente
                   </p>
                 </div>
               </div>
@@ -263,8 +264,8 @@ export default function Home({}: PageProps) {
 
                 <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
                   <p class="text-sm text-green-700 dark:text-green-300">
-                    <strong>⚡ Función avanzada:</strong> Cambia estados
-                    directamente desde la lista de citas
+                    <strong>⚡ Función avanzada:</strong>{" "}
+                    Cambia estados directamente desde la lista de citas
                   </p>
                 </div>
               </div>
@@ -322,8 +323,8 @@ export default function Home({}: PageProps) {
 
                 <div class="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
                   <p class="text-sm text-purple-700 dark:text-purple-300">
-                    <strong>🔒 Privacidad:</strong> Toda la información está
-                    protegida y encriptada
+                    <strong>🔒 Privacidad:</strong>{" "}
+                    Toda la información está protegida y encriptada
                   </p>
                 </div>
               </div>
@@ -374,8 +375,8 @@ export default function Home({}: PageProps) {
 
                 <div class="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-200 dark:border-orange-800">
                   <p class="text-sm text-orange-700 dark:text-orange-300">
-                    <strong>🏢 Equipamiento:</strong> Registra el equipamiento
-                    disponible en cada sala
+                    <strong>🏢 Equipamiento:</strong>{" "}
+                    Registra el equipamiento disponible en cada sala
                   </p>
                 </div>
               </div>

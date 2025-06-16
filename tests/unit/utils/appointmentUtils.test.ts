@@ -2,9 +2,9 @@
 import { assertEquals } from "$std/testing/asserts.ts";
 import { describe, it } from "$std/testing/bdd.ts";
 import {
+  getNextStatuses,
   getStatusColor,
   getStatusText,
-  getNextStatuses,
 } from "../../../lib/utils/appointmentUtils.ts";
 import type { AppointmentStatus } from "../../../types/index.ts";
 
@@ -14,7 +14,7 @@ describe("AppointmentUtils", () => {
       const color = getStatusColor("pending");
       assertEquals(
         color,
-        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
       );
     });
 
@@ -22,7 +22,7 @@ describe("AppointmentUtils", () => {
       const color = getStatusColor("scheduled");
       assertEquals(
         color,
-        "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+        "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
       );
     });
 
@@ -30,7 +30,7 @@ describe("AppointmentUtils", () => {
       const color = getStatusColor("in_progress");
       assertEquals(
         color,
-        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+        "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
       );
     });
 
@@ -38,7 +38,7 @@ describe("AppointmentUtils", () => {
       const color = getStatusColor("completed");
       assertEquals(
         color,
-        "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+        "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300",
       );
     });
 
@@ -46,7 +46,7 @@ describe("AppointmentUtils", () => {
       const color = getStatusColor("cancelled");
       assertEquals(
         color,
-        "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+        "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
       );
     });
 
@@ -54,7 +54,7 @@ describe("AppointmentUtils", () => {
       const color = getStatusColor("unknown" as AppointmentStatus);
       assertEquals(
         color,
-        "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+        "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300",
       );
     });
   });
@@ -154,7 +154,7 @@ describe("AppointmentUtils", () => {
         assertEquals(
           nextStatuses.includes("cancelled"),
           true,
-          `Status ${status} should allow cancellation`
+          `Status ${status} should allow cancellation`,
         );
       }
     });
@@ -167,7 +167,7 @@ describe("AppointmentUtils", () => {
         assertEquals(
           nextStatuses.length,
           0,
-          `Terminal status ${status} should not allow transitions`
+          `Terminal status ${status} should not allow transitions`,
         );
       }
     });
@@ -225,14 +225,14 @@ describe("AppointmentUtils", () => {
       const color = getStatusColor(undefined as unknown as AppointmentStatus);
       assertEquals(
         color,
-        "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+        "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300",
       );
 
       const text = getStatusText(undefined as unknown as AppointmentStatus);
       assertEquals(text, "Desconocido");
 
       const nextStatuses = getNextStatuses(
-        undefined as unknown as AppointmentStatus
+        undefined as unknown as AppointmentStatus,
       );
       assertEquals(nextStatuses, []);
     });
@@ -241,14 +241,14 @@ describe("AppointmentUtils", () => {
       const color = getStatusColor(null as unknown as AppointmentStatus);
       assertEquals(
         color,
-        "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+        "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300",
       );
 
       const text = getStatusText(null as unknown as AppointmentStatus);
       assertEquals(text, "Desconocido");
 
       const nextStatuses = getNextStatuses(
-        null as unknown as AppointmentStatus
+        null as unknown as AppointmentStatus,
       );
       assertEquals(nextStatuses, []);
     });
@@ -257,7 +257,7 @@ describe("AppointmentUtils", () => {
       const color = getStatusColor("" as AppointmentStatus);
       assertEquals(
         color,
-        "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300"
+        "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300",
       );
 
       const text = getStatusText("" as AppointmentStatus);

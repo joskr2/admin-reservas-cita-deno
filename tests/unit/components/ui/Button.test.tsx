@@ -1,5 +1,5 @@
 // tests/unit/components/ui/Button.test.tsx - Tests para el componente Button
-import { assertEquals, assert } from "$std/assert/mod.ts";
+import { assert, assertEquals } from "$std/assert/mod.ts";
 import { describe, it } from "$std/testing/bdd.ts";
 import { Button } from "../../../../components/ui/Button.tsx";
 

@@ -30,20 +30,29 @@ export default function AvailabilitySchedule({
 }: AvailabilityScheduleProps) {
   // Horario laboral: 8:00 AM - 6:00 PM
   const workingHours = [
-    "08:00", "09:00", "10:00", "11:00", "12:00", "13:00",
-    "14:00", "15:00", "16:00", "17:00", "18:00"
+    "08:00",
+    "09:00",
+    "10:00",
+    "11:00",
+    "12:00",
+    "13:00",
+    "14:00",
+    "15:00",
+    "16:00",
+    "17:00",
+    "18:00",
   ];
 
   const today = new Date();
   const dayNames = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
   // Filtrar citas según el rol
-  const filteredAppointments = userRole === "superadmin" 
-    ? appointments 
-    : appointments.filter(apt => apt.psychologistEmail === psychologistEmail);
+  const filteredAppointments = userRole === "superadmin"
+    ? appointments
+    : appointments.filter((apt) => apt.psychologistEmail === psychologistEmail);
 
   // Salas disponibles (activas)
-  const availableRooms = rooms.filter(room => room.isAvailable);
+  const availableRooms = rooms.filter((room) => room.isAvailable);
 
   // Generar horario para los próximos 7 días
   const generateWeekSchedule = (): DaySchedule[] => {
@@ -52,16 +61,16 @@ export default function AvailabilitySchedule({
     for (let i = 0; i < 7; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
-      const dateString = date.toISOString().split('T')[0];
-      
+      const dateString = date.toISOString().split("T")[0];
+
       // Citas del día
       const dayAppointments = filteredAppointments.filter(
-        apt => apt.appointmentDate === dateString
+        (apt) => apt.appointmentDate === dateString,
       );
 
       // Generar slots de tiempo para el día
-      const timeSlots: TimeSlot[] = workingHours.map(hour => {
-        const appointment = dayAppointments.find(apt => {
+      const timeSlots: TimeSlot[] = workingHours.map((hour) => {
+        const appointment = dayAppointments.find((apt) => {
           const aptStart = apt.startTime || apt.appointmentTime;
           return aptStart === hour;
         });
@@ -88,21 +97,24 @@ export default function AvailabilitySchedule({
   // Obtener estadísticas de disponibilidad
   const getAvailabilityStats = () => {
     const weekSchedule = generateWeekSchedule();
-    
+
     const totalSlots = weekSchedule.length * workingHours.length;
-    const occupiedSlots = weekSchedule.reduce((acc, day) => 
-      acc + day.timeSlots.filter(slot => !slot.isAvailable).length, 0
+    const occupiedSlots = weekSchedule.reduce(
+      (acc, day) =>
+        acc + day.timeSlots.filter((slot) => !slot.isAvailable).length,
+      0,
     );
     const availableSlots = totalSlots - occupiedSlots;
 
     // Calcular disponibilidad por día (hoy)
     const todaySchedule = weekSchedule[0];
-    const todayAvailable = todaySchedule.timeSlots.filter(slot => slot.isAvailable).length;
-    
+    const todayAvailable =
+      todaySchedule.timeSlots.filter((slot) => slot.isAvailable).length;
+
     // Calcular próximo slot disponible
     let nextAvailableSlot = null;
     for (const day of weekSchedule) {
-      const availableSlot = day.timeSlots.find(slot => slot.isAvailable);
+      const availableSlot = day.timeSlots.find((slot) => slot.isAvailable);
       if (availableSlot) {
         nextAvailableSlot = {
           date: day.date,
@@ -127,10 +139,14 @@ export default function AvailabilitySchedule({
   const weekSchedule = generateWeekSchedule();
 
   const formatTime = (time: string) => {
-    const [hour, minute] = time.split(':');
+    const [hour, minute] = time.split(":");
     const hourNum = parseInt(hour);
-    const period = hourNum >= 12 ? 'PM' : 'AM';
-    const displayHour = hourNum > 12 ? hourNum - 12 : hourNum === 0 ? 12 : hourNum;
+    const period = hourNum >= 12 ? "PM" : "AM";
+    const displayHour = hourNum > 12
+      ? hourNum - 12
+      : hourNum === 0
+      ? 12
+      : hourNum;
     return `${displayHour}:${minute} ${period}`;
   };
 
@@ -149,7 +165,10 @@ export default function AvailabilitySchedule({
               </p>
             </div>
             <div class="h-12 w-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-              <Icon name="clock" className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <Icon
+                name="clock"
+                className="h-6 w-6 text-green-600 dark:text-green-400"
+              />
             </div>
           </div>
         </div>
@@ -165,7 +184,10 @@ export default function AvailabilitySchedule({
               </p>
             </div>
             <div class="h-12 w-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
-              <Icon name="activity" className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <Icon
+                name="activity"
+                className="h-6 w-6 text-blue-600 dark:text-blue-400"
+              />
             </div>
           </div>
         </div>
@@ -181,7 +203,10 @@ export default function AvailabilitySchedule({
               </p>
             </div>
             <div class="h-12 w-12 bg-purple-100 dark:bg-purple-900/20 rounded-lg flex items-center justify-center">
-              <Icon name="briefcase" className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+              <Icon
+                name="briefcase"
+                className="h-6 w-6 text-purple-600 dark:text-purple-400"
+              />
             </div>
           </div>
         </div>
@@ -193,14 +218,18 @@ export default function AvailabilitySchedule({
                 Próximo Disponible
               </p>
               <p class="text-lg font-bold text-orange-600 dark:text-orange-400">
-                {stats.nextAvailableSlot 
-                  ? `${stats.nextAvailableSlot.dayName} ${formatTime(stats.nextAvailableSlot.time)}`
-                  : "No disponible"
-                }
+                {stats.nextAvailableSlot
+                  ? `${stats.nextAvailableSlot.dayName} ${
+                    formatTime(stats.nextAvailableSlot.time)
+                  }`
+                  : "No disponible"}
               </p>
             </div>
             <div class="h-12 w-12 bg-orange-100 dark:bg-orange-900/20 rounded-lg flex items-center justify-center">
-              <Icon name="calendar-plus" className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+              <Icon
+                name="calendar-plus"
+                className="h-6 w-6 text-orange-600 dark:text-orange-400"
+              />
             </div>
           </div>
         </div>
@@ -236,7 +265,8 @@ export default function AvailabilitySchedule({
                   {day.dayName}
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400">
-                  {new Date(day.date).getDate()}/{new Date(day.date).getMonth() + 1}
+                  {new Date(day.date)
+                    .getDate()}/{new Date(day.date).getMonth() + 1}
                 </div>
               </div>
             ))}
@@ -244,29 +274,41 @@ export default function AvailabilitySchedule({
             {/* Filas de horarios */}
             {workingHours.map((hour) => (
               <>
-                <div key={`hour-${hour}`} class="text-sm text-gray-600 dark:text-gray-400 p-2 flex items-center">
+                <div
+                  key={`hour-${hour}`}
+                  class="text-sm text-gray-600 dark:text-gray-400 p-2 flex items-center"
+                >
                   {formatTime(hour)}
                 </div>
                 {weekSchedule.map((day) => {
-                  const slot = day.timeSlots.find(s => s.hour === hour);
+                  const slot = day.timeSlots.find((s) => s.hour === hour);
                   return (
                     <div key={`${day.date}-${hour}`} class="p-1">
-                      {slot?.isAvailable ? (
-                        <a
-                          href={`/appointments/new?date=${day.date}&time=${hour}`}
-                          class="block w-full h-8 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 rounded border border-green-300 dark:border-green-700 transition-colors cursor-pointer"
-                          title={`Crear cita para ${day.dayName} ${formatTime(hour)}`}
-                        >
-                          <span class="sr-only">Disponible</span>
-                        </a>
-                      ) : (
-                        <div
-                          class="w-full h-8 bg-red-100 dark:bg-red-900/30 rounded border border-red-300 dark:border-red-700 flex items-center justify-center"
-                          title={slot?.appointment ? `Ocupado - ${slot.appointment.patientName}` : "Ocupado"}
-                        >
-                          <Icon name="x" className="h-3 w-3 text-red-600 dark:text-red-400" />
-                        </div>
-                      )}
+                      {slot?.isAvailable
+                        ? (
+                          <a
+                            href={`/appointments/new?date=${day.date}&time=${hour}`}
+                            class="block w-full h-8 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 rounded border border-green-300 dark:border-green-700 transition-colors cursor-pointer"
+                            title={`Crear cita para ${day.dayName} ${
+                              formatTime(hour)
+                            }`}
+                          >
+                            <span class="sr-only">Disponible</span>
+                          </a>
+                        )
+                        : (
+                          <div
+                            class="w-full h-8 bg-red-100 dark:bg-red-900/30 rounded border border-red-300 dark:border-red-700 flex items-center justify-center"
+                            title={slot?.appointment
+                              ? `Ocupado - ${slot.appointment.patientName}`
+                              : "Ocupado"}
+                          >
+                            <Icon
+                              name="x"
+                              className="h-3 w-3 text-red-600 dark:text-red-400"
+                            />
+                          </div>
+                        )}
                     </div>
                   );
                 })}
@@ -297,9 +339,13 @@ export default function AvailabilitySchedule({
                 <h4 class="font-medium text-gray-900 dark:text-white">
                   {room.name}
                 </h4>
-                <div class="w-3 h-3 bg-green-400 rounded-full" title="Disponible"></div>
+                <div
+                  class="w-3 h-3 bg-green-400 rounded-full"
+                  title="Disponible"
+                >
+                </div>
               </div>
-              
+
               {room.description && (
                 <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
                   {room.description}
@@ -324,7 +370,10 @@ export default function AvailabilitySchedule({
 
         {availableRooms.length === 0 && (
           <div class="text-center py-8">
-            <Icon name="briefcase" className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <Icon
+              name="briefcase"
+              className="h-12 w-12 text-gray-400 mx-auto mb-4"
+            />
             <p class="text-gray-500 dark:text-gray-400">
               No hay salas disponibles en este momento
             </p>

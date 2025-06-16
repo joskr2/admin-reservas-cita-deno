@@ -34,9 +34,9 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         isAvailable: formData.get("isAvailable") === "true",
         equipment: formData.get("equipment")
           ? (formData.get("equipment") as string)
-              .split(",")
-              .map((item) => item.trim())
-              .filter(Boolean)
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean)
           : [],
         capacity: formData.get("capacity")
           ? parseInt(formData.get("capacity") as string)

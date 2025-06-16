@@ -4,7 +4,7 @@ import { getPatientRepository } from "../../../lib/database/index.ts";
 
 export async function handler(req: Request, ctx: FreshContext<AppState>) {
   const patientId = ctx.params.id;
-  
+
   if (!patientId) {
     return new Response(JSON.stringify({ error: "ID de paciente requerido" }), {
       status: 400,
@@ -58,7 +58,7 @@ async function handleGet(patientId: string) {
         {
           status: 404,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
     }
 
@@ -70,7 +70,7 @@ async function handleGet(patientId: string) {
       {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   } catch (error) {
     console.error("Error fetching patient:", error);
@@ -82,7 +82,7 @@ async function handleGet(patientId: string) {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 }
@@ -104,12 +104,12 @@ async function handlePut(req: Request, patientId: string) {
         {
           status: 400,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
     }
 
     const patientRepository = getPatientRepository();
-    
+
     // Verificar que el paciente existe
     const existingPatient = await patientRepository.getById(patientId);
     if (!existingPatient) {
@@ -121,7 +121,7 @@ async function handlePut(req: Request, patientId: string) {
         {
           status: 404,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
     }
 
@@ -144,7 +144,7 @@ async function handlePut(req: Request, patientId: string) {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
           },
-        }
+        },
       );
     } else {
       return new Response(
@@ -155,7 +155,7 @@ async function handlePut(req: Request, patientId: string) {
         {
           status: 500,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
     }
   } catch (error) {
@@ -168,7 +168,7 @@ async function handlePut(req: Request, patientId: string) {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 }
@@ -176,7 +176,7 @@ async function handlePut(req: Request, patientId: string) {
 async function handleDelete(patientId: string) {
   try {
     const patientRepository = getPatientRepository();
-    
+
     // Verificar que el paciente existe
     const existingPatient = await patientRepository.getById(patientId);
     if (!existingPatient) {
@@ -188,7 +188,7 @@ async function handleDelete(patientId: string) {
         {
           status: 404,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
     }
 
@@ -206,7 +206,7 @@ async function handleDelete(patientId: string) {
             "Content-Type": "application/json",
             "Access-Control-Allow-Origin": "*",
           },
-        }
+        },
       );
     } else {
       return new Response(
@@ -217,7 +217,7 @@ async function handleDelete(patientId: string) {
         {
           status: 500,
           headers: { "Content-Type": "application/json" },
-        }
+        },
       );
     }
   } catch (error) {
@@ -230,7 +230,7 @@ async function handleDelete(patientId: string) {
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
 }

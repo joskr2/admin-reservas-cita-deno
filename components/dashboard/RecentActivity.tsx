@@ -256,10 +256,10 @@ export default function RecentActivity({
 
             {/* Indicador de enlace */}
             <div class="flex-shrink-0">
-              <Icon 
-                name="eye" 
-                size={14} 
-                className="text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" 
+              <Icon
+                name="eye"
+                size={14}
+                className="text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors"
               />
             </div>
           </a>

@@ -1,5 +1,5 @@
 // tests/integration/api/auth.test.ts - Tests de integración para APIs de autenticación
-import { assertEquals, assert } from "$std/assert/mod.ts";
+import { assert, assertEquals } from "$std/assert/mod.ts";
 import { describe, it } from "$std/testing/bdd.ts";
 
 describe("Auth API Integration", () => {
@@ -36,7 +36,8 @@ describe("Auth API Integration", () => {
               phone: "+1234567890",
               education: "Universidad de Psicología",
               experienceYears: 5,
-              bio: "Psicólogo clínico especializado en terapia cognitivo-conductual.",
+              bio:
+                "Psicólogo clínico especializado en terapia cognitivo-conductual.",
             },
           }),
       };
@@ -223,7 +224,8 @@ describe("Auth API Integration", () => {
               phone: "+1234567890",
               education: "Universidad de Psicología",
               experienceYears: 5,
-              bio: "Psicólogo clínico especializado en terapia cognitivo-conductual.",
+              bio:
+                "Psicólogo clínico especializado en terapia cognitivo-conductual.",
             },
           }),
       };
@@ -244,7 +246,8 @@ describe("Auth API Integration", () => {
             phone: "+1234567890",
             education: "Universidad de Psicología",
             experienceYears: 5,
-            bio: "Psicólogo clínico especializado en terapia cognitivo-conductual.",
+            bio:
+              "Psicólogo clínico especializado en terapia cognitivo-conductual.",
           },
         },
       };

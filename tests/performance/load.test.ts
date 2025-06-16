@@ -1,13 +1,13 @@
 // tests/performance/load.test.ts - Tests de performance y carga
-import { assertEquals, assert } from "$std/testing/asserts.ts";
-import { describe, it, beforeEach, afterEach } from "$std/testing/bdd.ts";
+import { assert, assertEquals } from "$std/testing/asserts.ts";
+import { afterEach, beforeEach, describe, it } from "$std/testing/bdd.ts";
 import {
-  createTestServer,
-  createApiRequest,
   authenticateUser,
   cleanupTestData,
-  generateTestData,
+  createApiRequest,
+  createTestServer,
   delay,
+  generateTestData,
   type TestServer,
 } from "../helpers/integration.ts";
 
@@ -39,7 +39,7 @@ describe("Performance and Load Tests", () => {
 
       const response = await server.request(
         "/api/patients",
-        createApiRequest("GET", undefined, authCookies)
+        createApiRequest("GET", undefined, authCookies),
       );
 
       const endTime = performance.now();
@@ -48,7 +48,7 @@ describe("Performance and Load Tests", () => {
       assertEquals(response.status, 200);
       assert(
         responseTime < 1000,
-        `Response time ${responseTime}ms exceeds 1000ms threshold`
+        `Response time ${responseTime}ms exceeds 1000ms threshold`,
       );
     });
 
@@ -66,7 +66,7 @@ describe("Performance and Load Tests", () => {
 
       const response = await server.request(
         "/api/patients",
-        createApiRequest("POST", patientData, authCookies)
+        createApiRequest("POST", patientData, authCookies),
       );
 
       const endTime = performance.now();
@@ -75,7 +75,7 @@ describe("Performance and Load Tests", () => {
       assertEquals(response.status, 201);
       assert(
         responseTime < 2000,
-        `Creation time ${responseTime}ms exceeds 2000ms threshold`
+        `Creation time ${responseTime}ms exceeds 2000ms threshold`,
       );
     });
   });
@@ -92,8 +92,8 @@ describe("Performance and Load Tests", () => {
         promises.push(
           server.request(
             "/api/patients",
-            createApiRequest("GET", undefined, authCookies)
-          )
+            createApiRequest("GET", undefined, authCookies),
+          ),
         );
       }
 
@@ -109,13 +109,15 @@ describe("Performance and Load Tests", () => {
       // Verificar que el tiempo total es razonable
       assert(
         totalTime < 5000,
-        `Total time ${totalTime}ms for ${concurrentRequests} requests exceeds 5000ms`
+        `Total time ${totalTime}ms for ${concurrentRequests} requests exceeds 5000ms`,
       );
 
       console.log(
-        `✅ ${concurrentRequests} concurrent requests completed in ${totalTime.toFixed(
-          2
-        )}ms`
+        `✅ ${concurrentRequests} concurrent requests completed in ${
+          totalTime.toFixed(
+            2,
+          )
+        }ms`,
       );
     });
 
@@ -137,8 +139,8 @@ describe("Performance and Load Tests", () => {
         promises.push(
           server.request(
             "/api/patients",
-            createApiRequest("POST", patientData, authCookies)
-          )
+            createApiRequest("POST", patientData, authCookies),
+          ),
         );
       }
 
@@ -152,13 +154,13 @@ describe("Performance and Load Tests", () => {
       // Verificar que se crearon todos los pacientes
       const listResponse = await server.request(
         "/api/patients",
-        createApiRequest("GET", undefined, authCookies)
+        createApiRequest("GET", undefined, authCookies),
       );
       const data = await listResponse.json();
       assertEquals(data.patients.length, concurrentCreations);
 
       console.log(
-        `✅ ${concurrentCreations} concurrent patient creations completed successfully`
+        `✅ ${concurrentCreations} concurrent patient creations completed successfully`,
       );
     });
   });
@@ -169,7 +171,7 @@ describe("Performance and Load Tests", () => {
       const batchSize = 10;
 
       console.log(
-        `Creating ${patientCount} patients in batches of ${batchSize}...`
+        `Creating ${patientCount} patients in batches of ${batchSize}...`,
       );
 
       // Crear pacientes en lotes para evitar sobrecargar el servidor
@@ -190,8 +192,8 @@ describe("Performance and Load Tests", () => {
           batchPromises.push(
             server.request(
               "/api/patients",
-              createApiRequest("POST", patientData, authCookies)
-            )
+              createApiRequest("POST", patientData, authCookies),
+            ),
           );
         }
 
@@ -202,7 +204,7 @@ describe("Performance and Load Tests", () => {
           assertEquals(
             response.status,
             201,
-            `Batch ${batch}, patient ${index} creation failed`
+            `Batch ${batch}, patient ${index} creation failed`,
           );
         });
 
@@ -214,7 +216,7 @@ describe("Performance and Load Tests", () => {
       const startTime = performance.now();
       const listResponse = await server.request(
         "/api/patients",
-        createApiRequest("GET", undefined, authCookies)
+        createApiRequest("GET", undefined, authCookies),
       );
       const endTime = performance.now();
       const responseTime = endTime - startTime;
@@ -226,11 +228,11 @@ describe("Performance and Load Tests", () => {
       // Verificar que el tiempo de respuesta sigue siendo aceptable
       assert(
         responseTime < 3000,
-        `Large list response time ${responseTime}ms exceeds 3000ms threshold`
+        `Large list response time ${responseTime}ms exceeds 3000ms threshold`,
       );
 
       console.log(
-        `✅ Retrieved ${patientCount} patients in ${responseTime.toFixed(2)}ms`
+        `✅ Retrieved ${patientCount} patients in ${responseTime.toFixed(2)}ms`,
       );
     });
   });
@@ -242,13 +244,13 @@ describe("Performance and Load Tests", () => {
       const responses: Response[] = [];
 
       console.log(
-        `Making ${rapidRequests} rapid requests with ${requestInterval}ms intervals...`
+        `Making ${rapidRequests} rapid requests with ${requestInterval}ms intervals...`,
       );
 
       for (let i = 0; i < rapidRequests; i++) {
         const response = await server.request(
           "/api/patients",
-          createApiRequest("GET", undefined, authCookies)
+          createApiRequest("GET", undefined, authCookies),
         );
 
         responses.push(response);
@@ -256,7 +258,7 @@ describe("Performance and Load Tests", () => {
         // Verificar que no hay errores de servidor
         assert(
           response.status < 500,
-          `Server error on request ${i}: ${response.status}`
+          `Server error on request ${i}: ${response.status}`,
         );
 
         if (i < rapidRequests - 1) {
@@ -266,14 +268,14 @@ describe("Performance and Load Tests", () => {
 
       // Contar respuestas exitosas vs rate limited
       const successfulResponses = responses.filter(
-        (r) => r.status === 200
+        (r) => r.status === 200,
       ).length;
       const rateLimitedResponses = responses.filter(
-        (r) => r.status === 429
+        (r) => r.status === 429,
       ).length;
 
       console.log(
-        `✅ ${successfulResponses} successful, ${rateLimitedResponses} rate limited`
+        `✅ ${successfulResponses} successful, ${rateLimitedResponses} rate limited`,
       );
 
       // Al menos algunas respuestas deberían ser exitosas
@@ -292,7 +294,7 @@ describe("Performance and Load Tests", () => {
       const patientsPerPsychologist = 10;
 
       console.log(
-        `Creating ${patientsPerPsychologist} patients for ${psychologists.length} psychologists...`
+        `Creating ${patientsPerPsychologist} patients for ${psychologists.length} psychologists...`,
       );
 
       for (const psychEmail of psychologists) {
@@ -308,7 +310,7 @@ describe("Performance and Load Tests", () => {
 
           await server.request(
             "/api/patients",
-            createApiRequest("POST", patientData, authCookies)
+            createApiRequest("POST", patientData, authCookies),
           );
         }
       }
@@ -319,7 +321,7 @@ describe("Performance and Load Tests", () => {
 
         const response = await server.request(
           `/api/patients/by-psychologist/${encodeURIComponent(psychEmail)}`,
-          createApiRequest("GET", undefined, authCookies)
+          createApiRequest("GET", undefined, authCookies),
         );
 
         const endTime = performance.now();
@@ -331,13 +333,13 @@ describe("Performance and Load Tests", () => {
 
         assert(
           queryTime < 1000,
-          `Query time ${queryTime}ms for psychologist ${psychEmail} exceeds 1000ms`
+          `Query time ${queryTime}ms for psychologist ${psychEmail} exceeds 1000ms`,
         );
 
         console.log(
-          `✅ Query for ${psychEmail}: ${
-            data.patients.length
-          } patients in ${queryTime.toFixed(2)}ms`
+          `✅ Query for ${psychEmail}: ${data.patients.length} patients in ${
+            queryTime.toFixed(2)
+          }ms`,
         );
       }
     });
@@ -366,8 +368,9 @@ describe("Performance and Load Tests", () => {
         };
 
         if (body) {
-          requestInit.body =
-            typeof body === "string" ? body : JSON.stringify(body);
+          requestInit.body = typeof body === "string"
+            ? body
+            : JSON.stringify(body);
         }
 
         const response = await server.request(path, requestInit);
@@ -375,23 +378,23 @@ describe("Performance and Load Tests", () => {
         // Verificar que el servidor maneja el error apropiadamente
         assert(
           response.status >= 400 && response.status < 500,
-          `Invalid request ${index} should return 4xx status, got ${response.status}`
+          `Invalid request ${index} should return 4xx status, got ${response.status}`,
         );
 
         // Verificar que el servidor sigue funcionando después del error
         const healthCheck = await server.request(
           "/api/patients",
-          createApiRequest("GET", undefined, authCookies)
+          createApiRequest("GET", undefined, authCookies),
         );
         assertEquals(
           healthCheck.status,
           200,
-          `Server not responding after invalid request ${index}`
+          `Server not responding after invalid request ${index}`,
         );
       }
 
       console.log(
-        `✅ Server recovered gracefully from ${invalidRequests.length} invalid requests`
+        `✅ Server recovered gracefully from ${invalidRequests.length} invalid requests`,
       );
     });
   });

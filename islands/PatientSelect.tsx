@@ -7,6 +7,7 @@ interface PatientSelectProps {
   value?: string;
   onChange?: (value: string) => void;
   required?: boolean;
+  defaultValue?: string | undefined;
 }
 
 export default function PatientSelect({
@@ -14,6 +15,7 @@ export default function PatientSelect({
   value = "",
   onChange,
   required = false,
+  defaultValue,
 }: PatientSelectProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);

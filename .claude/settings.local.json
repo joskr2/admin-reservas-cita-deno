@@ -16,7 +16,8 @@
       "Bash(mkdir:*)",
       "Bash(deno lint:*)",
       "Bash(curl:*)",
-      "Bash(deno fmt:*)"
+      "Bash(deno fmt:*)",
+      "Bash(rg:*)"
     ]
   },
   "enableAllProjectMcpServers": false

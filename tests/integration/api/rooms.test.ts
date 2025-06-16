@@ -1,13 +1,13 @@
 // tests/integration/api/rooms.test.ts - Tests de integración para API de salas
 import { assertEquals, assertExists } from "$std/testing/asserts.ts";
-import { describe, it, beforeEach, afterEach } from "$std/testing/bdd.ts";
+import { afterEach, beforeEach, describe, it } from "$std/testing/bdd.ts";
 import {
-  createTestServer,
-  cleanupTestData,
   authenticateUser,
-  createApiRequest,
-  type TestServer,
+  cleanupTestData,
   cleanupTestResources,
+  createApiRequest,
+  createTestServer,
+  type TestServer,
 } from "../../helpers/integration.ts";
 import type { Room } from "../../../types/index.ts";
 
@@ -26,7 +26,7 @@ describe("Rooms API Integration Tests", () => {
     const authResult = await authenticateUser(
       testServer,
       "admin@horizonte.com",
-      "admin123"
+      "admin123",
     );
     adminCookies = authResult.cookies;
   });
@@ -80,7 +80,7 @@ describe("Rooms API Integration Tests", () => {
           Cookie: Object.entries(adminCookies)
             .map(([key, value]) => `${key}=${value}`)
             .join("; "),
-        })
+        }),
       );
 
       assertEquals(response.status, 201);
@@ -102,7 +102,7 @@ describe("Rooms API Integration Tests", () => {
           Cookie: Object.entries(adminCookies)
             .map(([key, value]) => `${key}=${value}`)
             .join("; "),
-        })
+        }),
       );
 
       assertEquals(response.status, 400);
@@ -120,7 +120,7 @@ describe("Rooms API Integration Tests", () => {
 
       const response = await testServer.request(
         "/api/rooms/create",
-        createApiRequest("POST", roomData)
+        createApiRequest("POST", roomData),
       );
 
       // Debería redirigir al login o devolver 401
@@ -147,7 +147,7 @@ describe("Rooms API Integration Tests", () => {
           Cookie: Object.entries(adminCookies)
             .map(([key, value]) => `${key}=${value}`)
             .join("; "),
-        })
+        }),
       );
 
       const createResult = await createResponse.json();
@@ -167,7 +167,7 @@ describe("Rooms API Integration Tests", () => {
           Cookie: Object.entries(adminCookies)
             .map(([key, value]) => `${key}=${value}`)
             .join("; "),
-        })
+        }),
       );
 
       assertEquals(response.status, 200);
@@ -190,7 +190,7 @@ describe("Rooms API Integration Tests", () => {
           Cookie: Object.entries(adminCookies)
             .map(([key, value]) => `${key}=${value}`)
             .join("; "),
-        })
+        }),
       );
 
       assertEquals(response.status, 404);
@@ -211,7 +211,7 @@ describe("Rooms API Integration Tests", () => {
           Cookie: Object.entries(adminCookies)
             .map(([key, value]) => `${key}=${value}`)
             .join("; "),
-        })
+        }),
       );
 
       assertEquals(response.status, 400);
@@ -241,7 +241,7 @@ describe("Rooms API Integration Tests", () => {
           Cookie: Object.entries(adminCookies)
             .map(([key, value]) => `${key}=${value}`)
             .join("; "),
-        })
+        }),
       );
 
       const createResult = await createResponse.json();
@@ -260,8 +260,8 @@ describe("Rooms API Integration Tests", () => {
             Cookie: Object.entries(adminCookies)
               .map(([key, value]) => `${key}=${value}`)
               .join("; "),
-          }
-        )
+          },
+        ),
       );
 
       assertEquals(response.status, 200);
@@ -282,8 +282,8 @@ describe("Rooms API Integration Tests", () => {
             Cookie: Object.entries(adminCookies)
               .map(([key, value]) => `${key}=${value}`)
               .join("; "),
-          }
-        )
+          },
+        ),
       );
 
       assertEquals(response.status, 404);
@@ -296,7 +296,7 @@ describe("Rooms API Integration Tests", () => {
     it("should handle unauthorized access", async () => {
       const response = await testServer.request(
         `/api/rooms/${testRoom.id}/toggle-availability`,
-        createApiRequest("POST", {})
+        createApiRequest("POST", {}),
       );
 
       // Debería redirigir al login o devolver 401
@@ -323,7 +323,7 @@ describe("Rooms API Integration Tests", () => {
           Cookie: Object.entries(adminCookies)
             .map(([key, value]) => `${key}=${value}`)
             .join("; "),
-        })
+        }),
       );
 
       const createResult = await createResponse.json();
@@ -340,8 +340,8 @@ describe("Rooms API Integration Tests", () => {
             Cookie: Object.entries(adminCookies)
               .map(([key, value]) => `${key}=${value}`)
               .join("; "),
-          }
-        )
+          },
+        ),
       );
 
       assertEquals(response.status, 200);
@@ -361,8 +361,8 @@ describe("Rooms API Integration Tests", () => {
             Cookie: Object.entries(adminCookies)
               .map(([key, value]) => `${key}=${value}`)
               .join("; "),
-          }
-        )
+          },
+        ),
       );
 
       assertEquals(response.status, 404);
@@ -375,7 +375,7 @@ describe("Rooms API Integration Tests", () => {
     it("should handle unauthorized deletion", async () => {
       const response = await testServer.request(
         `/api/rooms/${testRoom.id}/delete`,
-        createApiRequest("DELETE", {})
+        createApiRequest("DELETE", {}),
       );
 
       // Debería redirigir al login o devolver 401
@@ -428,7 +428,7 @@ describe("Rooms API Integration Tests", () => {
               .map(([key, value]) => `${key}=${value}`)
               .join("; "),
           },
-        }
+        },
       );
 
       assertEquals(response.status, 405);
@@ -439,7 +439,7 @@ describe("Rooms API Integration Tests", () => {
         "/api/rooms/test-id/toggle-availability",
         {
           method: "OPTIONS",
-        }
+        },
       );
 
       assertEquals(response.status, 200);

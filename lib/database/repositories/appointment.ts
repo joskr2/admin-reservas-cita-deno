@@ -8,7 +8,7 @@ import type {
 } from "../../../types/index.ts";
 import type { IAppointmentRepository } from "../interfaces.ts";
 import { BaseRepository } from "./base.ts";
-import { logger, getErrorDetails, getKvResultDetails } from "../../logger.ts";
+import { getErrorDetails, getKvResultDetails, logger } from "../../logger.ts";
 
 export class AppointmentRepository extends BaseRepository<Appointment, string>
   implements IAppointmentRepository {
@@ -29,7 +29,11 @@ export class AppointmentRepository extends BaseRepository<Appointment, string>
       return false;
     }
 
-    if (!entity.psychologistEmail || typeof entity.psychologistEmail !== "string" || entity.psychologistEmail.length === 0) {
+    if (
+      !entity.psychologistEmail ||
+      typeof entity.psychologistEmail !== "string" ||
+      entity.psychologistEmail.length === 0
+    ) {
       return false;
     }
 
@@ -38,9 +42,11 @@ export class AppointmentRepository extends BaseRepository<Appointment, string>
     }
 
     // Time validation - require either old appointmentTime OR new startTime/endTime
-    const hasOldTimeFormat = entity.appointmentTime && typeof entity.appointmentTime === "string";
-    const hasNewTimeFormat = entity.startTime && typeof entity.startTime === "string" && 
-                              entity.endTime && typeof entity.endTime === "string";
+    const hasOldTimeFormat = entity.appointmentTime &&
+      typeof entity.appointmentTime === "string";
+    const hasNewTimeFormat = entity.startTime &&
+      typeof entity.startTime === "string" &&
+      entity.endTime && typeof entity.endTime === "string";
 
     if (!hasOldTimeFormat && !hasNewTimeFormat) {
       return false;
@@ -50,7 +56,7 @@ export class AppointmentRepository extends BaseRepository<Appointment, string>
     if (hasNewTimeFormat) {
       const startTime = entity.startTime;
       const endTime = entity.endTime;
-      
+
       // Basic time format validation (HH:MM)
       const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
       if (!timeRegex.test(startTime) || !timeRegex.test(endTime)) {
@@ -58,22 +64,25 @@ export class AppointmentRepository extends BaseRepository<Appointment, string>
       }
 
       // Validate that start time is before end time
-      const startTimeParts = startTime.split(':').map(Number);
-      const endTimeParts = endTime.split(':').map(Number);
-      
+      const startTimeParts = startTime.split(":").map(Number);
+      const endTimeParts = endTime.split(":").map(Number);
+
       if (startTimeParts.length !== 2 || endTimeParts.length !== 2) {
         return false;
       }
-      
+
       const startHour = startTimeParts[0];
       const startMin = startTimeParts[1];
       const endHour = endTimeParts[0];
       const endMin = endTimeParts[1];
-      
-      if (startHour === undefined || startMin === undefined || endHour === undefined || endMin === undefined) {
+
+      if (
+        startHour === undefined || startMin === undefined ||
+        endHour === undefined || endMin === undefined
+      ) {
         return false;
       }
-      
+
       const startMinutes = startHour * 60 + startMin;
       const endMinutes = endHour * 60 + endMin;
 
@@ -86,7 +95,7 @@ export class AppointmentRepository extends BaseRepository<Appointment, string>
   }
 
   public override async create(appointment: Appointment): Promise<boolean> {
-    await logger.debug('DATABASE', 'Attempting to create appointment', {
+    await logger.debug("DATABASE", "Attempting to create appointment", {
       appointmentId: appointment.id,
       patientName: appointment.patientName,
       psychologistEmail: appointment.psychologistEmail,
@@ -95,20 +104,32 @@ export class AppointmentRepository extends BaseRepository<Appointment, string>
     });
 
     if (!this.validate(appointment)) {
-      await logger.error('DATABASE', 'Invalid appointment data provided to create', { appointment });
+      await logger.error(
+        "DATABASE",
+        "Invalid appointment data provided to create",
+        { appointment },
+      );
       return false;
     }
 
     try {
       const kv = await this.getKv();
 
-      await logger.debug('DATABASE', 'Starting atomic transaction for appointment creation', {
-        appointmentId: appointment.id,
-        keys: [
-          ["appointments", appointment.id],
-          ["appointments_by_psychologist", appointment.psychologistEmail, appointment.id]
-        ]
-      });
+      await logger.debug(
+        "DATABASE",
+        "Starting atomic transaction for appointment creation",
+        {
+          appointmentId: appointment.id,
+          keys: [
+            ["appointments", appointment.id],
+            [
+              "appointments_by_psychologist",
+              appointment.psychologistEmail,
+              appointment.id,
+            ],
+          ],
+        },
+      );
 
       // Usar transacciones atómicas para mantener consistencia
       const result = await kv
@@ -122,7 +143,7 @@ export class AppointmentRepository extends BaseRepository<Appointment, string>
         .commit();
 
       const resultDetails = getKvResultDetails(result);
-      await logger.info('DATABASE', 'Appointment creation transaction result', {
+      await logger.info("DATABASE", "Appointment creation transaction result", {
         appointmentId: appointment.id,
         success: resultDetails.ok,
         versionstamp: resultDetails.versionstamp,
@@ -131,7 +152,7 @@ export class AppointmentRepository extends BaseRepository<Appointment, string>
       return result.ok;
     } catch (error) {
       const errorDetails = getErrorDetails(error);
-      await logger.error('DATABASE', 'Error creating appointment', {
+      await logger.error("DATABASE", "Error creating appointment", {
         appointmentId: appointment.id,
         error: errorDetails.message,
         stack: errorDetails.stack,

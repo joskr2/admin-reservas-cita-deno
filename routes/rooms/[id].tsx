@@ -224,7 +224,7 @@ export default function RoomDetailsPage({
                               year: "numeric",
                               month: "long",
                               day: "numeric",
-                            }
+                            },
                           )}
                         </span>
                       </div>
@@ -240,7 +240,7 @@ export default function RoomDetailsPage({
                                 year: "numeric",
                                 month: "long",
                                 day: "numeric",
-                              }
+                              },
                             )}
                           </span>
                         </div>

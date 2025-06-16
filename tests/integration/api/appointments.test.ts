@@ -1,5 +1,5 @@
 // tests/integration/api/appointments.test.ts - Tests de integración para APIs de citas
-import { assertEquals, assert } from "$std/assert/mod.ts";
+import { assert, assertEquals } from "$std/assert/mod.ts";
 import { describe, it } from "$std/testing/bdd.ts";
 import type { AppointmentStatus } from "../../../types/index.ts";
 

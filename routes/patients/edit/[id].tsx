@@ -254,7 +254,10 @@ export default function EditPatientPage({ data }: PageProps<EditPatientData>) {
 
                       <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          <Icon name="file-digit" className="w-4 h-4 inline mr-2" />
+                          <Icon
+                            name="file-digit"
+                            className="w-4 h-4 inline mr-2"
+                          />
                           DNI
                         </label>
                         <Input

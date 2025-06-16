@@ -45,7 +45,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
           room.name.toLowerCase().includes(searchLower) ||
           room.id.toLowerCase().includes(searchLower) ||
           (room.description &&
-            room.description.toLowerCase().includes(searchLower))
+            room.description.toLowerCase().includes(searchLower)),
       );
     }
 
@@ -94,7 +94,7 @@ export default function RoomsPage({
   const buildUrl = (params: Record<string, string | number | undefined>) => {
     const url = new URL(
       "/rooms",
-      globalThis.location?.origin || "http://localhost:8000"
+      globalThis.location?.origin || "http://localhost:8000",
     );
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== "") {
@@ -159,7 +159,7 @@ export default function RoomsPage({
     };
     return type
       ? typeColors[type] ||
-          "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+        "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
       : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
   };
 
@@ -269,9 +269,11 @@ export default function RoomsPage({
                               Tipo
                             </h4>
                             <span
-                              class={`inline-flex px-2 py-1 text-xs font-medium rounded ${getRoomTypeColor(
-                                room.roomType
-                              )}`}
+                              class={`inline-flex px-2 py-1 text-xs font-medium rounded ${
+                                getRoomTypeColor(
+                                  room.roomType,
+                                )
+                              }`}
                             >
                               {getRoomTypeLabel(room.roomType)}
                             </span>
@@ -343,7 +345,7 @@ export default function RoomsPage({
                               year: "numeric",
                               month: "short",
                               day: "numeric",
-                            }
+                            },
                           )}
                         </p>
                       </div>
@@ -370,22 +372,24 @@ export default function RoomsPage({
                             </a>
                           )}
                         </div>
-                        {data.userRole === "superadmin" ? (
-                          <RoomToggleButton
-                            roomId={room.id}
-                            isAvailable={room.isAvailable}
-                          />
-                        ) : (
-                          <span
-                            class={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                              room.isAvailable
-                                ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
-                                : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
-                            }`}
-                          >
-                            {room.isAvailable ? "Disponible" : "Ocupada"}
-                          </span>
-                        )}
+                        {data.userRole === "superadmin"
+                          ? (
+                            <RoomToggleButton
+                              roomId={room.id}
+                              isAvailable={room.isAvailable}
+                            />
+                          )
+                          : (
+                            <span
+                              class={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                                room.isAvailable
+                                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300"
+                                  : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                              }`}
+                            >
+                              {room.isAvailable ? "Disponible" : "Ocupada"}
+                            </span>
+                          )}
                       </div>
                     </div>
                   </div>
@@ -438,11 +442,9 @@ export default function RoomsPage({
               {/* Paginación móvil - Solo botones anterior/siguiente y página actual */}
               <div class="sm:hidden flex items-center justify-between">
                 <a
-                  href={
-                    currentPage > 1
-                      ? buildUrl({ ...filters, page: currentPage - 1 })
-                      : "#"
-                  }
+                  href={currentPage > 1
+                    ? buildUrl({ ...filters, page: currentPage - 1 })
+                    : "#"}
                   class={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     currentPage > 1
                       ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
@@ -485,11 +487,9 @@ export default function RoomsPage({
                 </div>
 
                 <a
-                  href={
-                    currentPage < totalPages
-                      ? buildUrl({ ...filters, page: currentPage + 1 })
-                      : "#"
-                  }
+                  href={currentPage < totalPages
+                    ? buildUrl({ ...filters, page: currentPage + 1 })
+                    : "#"}
                   class={`flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                     currentPage < totalPages
                       ? "text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
@@ -518,11 +518,9 @@ export default function RoomsPage({
                 <div class="flex items-center space-x-1">
                   {/* Botón anterior */}
                   <a
-                    href={
-                      currentPage > 1
-                        ? buildUrl({ ...filters, page: currentPage - 1 })
-                        : "#"
-                    }
+                    href={currentPage > 1
+                      ? buildUrl({ ...filters, page: currentPage - 1 })
+                      : "#"}
                     class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                       currentPage > 1
                         ? "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -535,32 +533,32 @@ export default function RoomsPage({
                   {/* Números de página */}
                   {getPaginationPages().map((page, index) => (
                     <span key={index}>
-                      {page === "..." ? (
-                        <span class="px-3 py-2 text-gray-400 dark:text-gray-600">
-                          ...
-                        </span>
-                      ) : (
-                        <a
-                          href={buildUrl({ ...filters, page })}
-                          class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            currentPage === page
-                              ? "bg-blue-600 text-white"
-                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                          }`}
-                        >
-                          {page}
-                        </a>
-                      )}
+                      {page === "..."
+                        ? (
+                          <span class="px-3 py-2 text-gray-400 dark:text-gray-600">
+                            ...
+                          </span>
+                        )
+                        : (
+                          <a
+                            href={buildUrl({ ...filters, page })}
+                            class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                              currentPage === page
+                                ? "bg-blue-600 text-white"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                            }`}
+                          >
+                            {page}
+                          </a>
+                        )}
                     </span>
                   ))}
 
                   {/* Botón siguiente */}
                   <a
-                    href={
-                      currentPage < totalPages
-                        ? buildUrl({ ...filters, page: currentPage + 1 })
-                        : "#"
-                    }
+                    href={currentPage < totalPages
+                      ? buildUrl({ ...filters, page: currentPage + 1 })
+                      : "#"}
                     class={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                       currentPage < totalPages
                         ? "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"

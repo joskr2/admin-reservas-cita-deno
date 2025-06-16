@@ -1,6 +1,6 @@
 // tests/unit/repositories/user.test.ts - Tests para UserRepository
-import { assertEquals, assert } from "$std/testing/asserts.ts";
-import { describe, it, beforeEach } from "$std/testing/bdd.ts";
+import { assert, assertEquals } from "$std/testing/asserts.ts";
+import { beforeEach, describe, it } from "$std/testing/bdd.ts";
 import { UserRepository } from "../../../lib/database/repositories/user.ts";
 import { DatabaseConnection } from "../../../lib/database/connection.ts";
 import type { User } from "../../../types/index.ts";
@@ -30,7 +30,8 @@ describe("UserRepository", () => {
         phone: "+9876543210",
         education: "Universidad Nacional, Maestría en Psicología Infantil",
         experienceYears: 3,
-        bio: "Especialista en psicología infantil con enfoque en terapia de juego.",
+        bio:
+          "Especialista en psicología infantil con enfoque en terapia de juego.",
       });
 
       const result = await userRepository.create(user);
@@ -149,7 +150,7 @@ describe("UserRepository", () => {
 
     it("should return null when email does not exist", async () => {
       const foundUser = await userRepository.getUserByEmail(
-        "nonexistent@example.com"
+        "nonexistent@example.com",
       );
       assertEquals(foundUser, null);
     });
@@ -240,7 +241,7 @@ describe("UserRepository", () => {
 
       // Verificar que no se encuentra por el rol anterior
       const foundByOldRole = await userRepository.getUsersByRole(
-        "psychologist"
+        "psychologist",
       );
       assertEquals(foundByOldRole.length, 0);
     });
@@ -371,7 +372,9 @@ describe("UserRepository", () => {
       const result = await userRepository.create(userWithCustomSpecialty);
       assertEquals(result, true);
 
-      const createdUser = await userRepository.getUserByEmail(userWithCustomSpecialty.email);
+      const createdUser = await userRepository.getUserByEmail(
+        userWithCustomSpecialty.email,
+      );
       assertEquals(createdUser?.specialty, "Otra");
       assertEquals(createdUser?.customSpecialty, "Neuropsicología Clínica");
     });

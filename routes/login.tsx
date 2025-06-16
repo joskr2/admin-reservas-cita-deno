@@ -9,8 +9,8 @@ import { Head } from "$fresh/runtime.ts";
 import { Card } from "../components/ui/Card.tsx";
 import { setCookie } from "$std/http/cookie.ts";
 import { compare } from "https://deno.land/x/bcrypt@v0.4.1/mod.ts";
-import type { User, AppState } from "../types/index.ts";
-import { logger, extractUserContext } from "../lib/logger.ts";
+import type { AppState, User } from "../types/index.ts";
+import { extractUserContext, logger } from "../lib/logger.ts";
 
 interface LoginData {
   email?: string | undefined;
@@ -20,44 +20,49 @@ interface LoginData {
 
 export const handler: Handlers<LoginData, AppState> = {
   async GET(req, ctx) {
-    const requestId = ctx.state.requestId || 'unknown';
+    const requestId = ctx.state.requestId || "unknown";
     const userContext = extractUserContext(ctx.state.user);
-    
-    await logger.debug('LOGIN', 'GET request for login page', {
+
+    await logger.debug("LOGIN", "GET request for login page", {
       url: req.url,
-      userAgent: req.headers.get('user-agent'),
+      userAgent: req.headers.get("user-agent"),
     }, { requestId, ...userContext });
-    
+
     // Simplemente renderizar la página de login
     // El middleware ya maneja las redirecciones si el usuario está autenticado
     return ctx.render({});
   },
 
   async POST(req, ctx) {
-    const requestId = ctx.state.requestId || 'unknown';
+    const requestId = ctx.state.requestId || "unknown";
     const userContext = extractUserContext(ctx.state.user);
-    
-    await logger.info('LOGIN', 'Processing login attempt', {
+
+    await logger.info("LOGIN", "Processing login attempt", {
       url: req.url,
-      userAgent: req.headers.get('user-agent'),
+      userAgent: req.headers.get("user-agent"),
     }, { requestId, ...userContext });
-    
+
     const form = await req.formData();
     const email = form.get("email")?.toString();
     const password = form.get("password")?.toString();
 
-    await logger.debug('LOGIN', 'Login form data extracted', {
+    await logger.debug("LOGIN", "Login form data extracted", {
       hasEmail: !!email,
       hasPassword: !!password,
-      email: email || 'missing',
+      email: email || "missing",
     }, { requestId });
 
     if (!email || !password) {
-      await logger.warn('LOGIN', 'Login validation failed: missing credentials', {
-        hasEmail: !!email,
-        hasPassword: !!password,
-      }, { requestId });
-      
+      await logger.warn(
+        "LOGIN",
+        "Login validation failed: missing credentials",
+        {
+          hasEmail: !!email,
+          hasPassword: !!password,
+        },
+        { requestId },
+      );
+
       return ctx.render({
         email,
         error: "Email y contraseña son requeridos",
@@ -67,18 +72,18 @@ export const handler: Handlers<LoginData, AppState> = {
     try {
       // Buscar usuario en la base de datos
       const kv = await getKv();
-      
-      await logger.debug('LOGIN', 'Looking up user in database', {
+
+      await logger.debug("LOGIN", "Looking up user in database", {
         email,
       }, { requestId });
-      
+
       const userResult = await kv.get(["users", email]);
 
       if (!userResult.value) {
-        await logger.warn('LOGIN', 'Login failed: user not found', {
+        await logger.warn("LOGIN", "Login failed: user not found", {
           email,
         }, { requestId });
-        
+
         return ctx.render({
           email,
           error: "Credenciales inválidas",
@@ -86,8 +91,8 @@ export const handler: Handlers<LoginData, AppState> = {
       }
 
       const user = userResult.value as User;
-      
-      await logger.debug('LOGIN', 'User found, verifying password', {
+
+      await logger.debug("LOGIN", "User found, verifying password", {
         email,
         userId: user.id,
         userRole: user.role,
@@ -97,11 +102,11 @@ export const handler: Handlers<LoginData, AppState> = {
       const isValidPassword = await compare(password, user.passwordHash);
 
       if (!isValidPassword) {
-        await logger.warn('LOGIN', 'Login failed: invalid password', {
+        await logger.warn("LOGIN", "Login failed: invalid password", {
           email,
           userId: user.id,
         }, { requestId });
-        
+
         return ctx.render({
           email,
           error: "Credenciales inválidas",
@@ -110,13 +115,13 @@ export const handler: Handlers<LoginData, AppState> = {
 
       // Crear sesión simple (en producción usar JWT)
       const sessionId = crypto.randomUUID();
-      
-      await logger.debug('LOGIN', 'Creating user session', {
+
+      await logger.debug("LOGIN", "Creating user session", {
         email,
         userId: user.id,
-        sessionId: sessionId.substring(0, 8) + '...',
+        sessionId: sessionId.substring(0, 8) + "...",
       }, { requestId });
-      
+
       await kv.set(
         ["sessions", sessionId],
         { userEmail: email },
@@ -139,21 +144,21 @@ export const handler: Handlers<LoginData, AppState> = {
         path: "/",
       });
 
-      await logger.info('LOGIN', 'Login successful, redirecting to dashboard', {
+      await logger.info("LOGIN", "Login successful, redirecting to dashboard", {
         email,
         userId: user.id,
         userRole: user.role,
-        sessionId: sessionId.substring(0, 8) + '...',
+        sessionId: sessionId.substring(0, 8) + "...",
       }, { requestId, userId: user.id, userRole: user.role });
 
       return response;
     } catch (error) {
-      await logger.error('LOGIN', 'Login error occurred', {
+      await logger.error("LOGIN", "Login error occurred", {
         email,
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
       }, { requestId });
-      
+
       return ctx.render({
         email,
         error: "Error interno del servidor",

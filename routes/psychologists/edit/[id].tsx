@@ -120,7 +120,10 @@ export const handler: Handlers<EditPsychologistData, AppState> = {
     let experienceYearsNum: number | undefined = undefined;
     if (experienceYears.trim()) {
       experienceYearsNum = parseInt(experienceYears);
-      if (isNaN(experienceYearsNum) || experienceYearsNum < 0 || experienceYearsNum > 50) {
+      if (
+        isNaN(experienceYearsNum) || experienceYearsNum < 0 ||
+        experienceYearsNum > 50
+      ) {
         const psychologist = await userRepository.getUserById(id);
         return ctx.render({
           psychologist: psychologist as UserProfile,
@@ -148,7 +151,9 @@ export const handler: Handlers<EditPsychologistData, AppState> = {
         phone: phone || undefined,
         education: education || undefined,
         dni: dni || undefined,
-        customSpecialty: (specialty === "Otra" && customSpecialty) ? customSpecialty : undefined,
+        customSpecialty: (specialty === "Otra" && customSpecialty)
+          ? customSpecialty
+          : undefined,
         experienceYears: experienceYearsNum,
         bio: bio || undefined,
       };
@@ -313,7 +318,10 @@ export default function EditPsychologistPage({
 
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        <Icon name="file-text" className="w-4 h-4 inline mr-2" />
+                        <Icon
+                          name="file-text"
+                          className="w-4 h-4 inline mr-2"
+                        />
                         DNI/Pasaporte
                       </label>
                       <Input
@@ -357,7 +365,10 @@ export default function EditPsychologistPage({
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          <Icon name="briefcase" className="w-4 h-4 inline mr-2" />
+                          <Icon
+                            name="briefcase"
+                            className="w-4 h-4 inline mr-2"
+                          />
                           Especialidad
                         </label>
                         <SpecialtySelector
@@ -370,7 +381,10 @@ export default function EditPsychologistPage({
 
                       <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          <Icon name="file-text" className="w-4 h-4 inline mr-2" />
+                          <Icon
+                            name="file-text"
+                            className="w-4 h-4 inline mr-2"
+                          />
                           Número de Licencia
                         </label>
                         <Input
@@ -398,7 +412,10 @@ export default function EditPsychologistPage({
 
                       <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          <Icon name="calendar" className="w-4 h-4 inline mr-2" />
+                          <Icon
+                            name="calendar"
+                            className="w-4 h-4 inline mr-2"
+                          />
                           Años de Experiencia
                         </label>
                         <Input
@@ -425,7 +442,10 @@ export default function EditPsychologistPage({
                     <div class="space-y-6">
                       <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          <Icon name="graduation-cap" className="w-4 h-4 inline mr-2" />
+                          <Icon
+                            name="graduation-cap"
+                            className="w-4 h-4 inline mr-2"
+                          />
                           Formación Académica
                         </label>
                         <Textarea
