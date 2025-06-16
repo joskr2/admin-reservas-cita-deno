@@ -136,13 +136,34 @@ Este script:
 
 ### Variables de Entorno
 
+Crea un archivo `.env` basado en `.env.example`:
+
 ```bash
-# Opcional: Puerto del servidor (default: 8000)
+# Base de datos (opcional para desarrollo local)
+DENO_KV_URL=https://api.deno.com/databases/YOUR_DATABASE_ID/connect
+
+# Puerto del servidor (default: 8000)
 PORT=8000
 
-# Opcional: Entorno de ejecución
-DENO_ENV=development
+# Entorno de ejecución
+DENO_ENV=production
 ```
+
+#### Configuración de Base de Datos:
+
+**Desarrollo Local:**
+- Sin `DENO_KV_URL`: Usa base de datos local SQLite
+- Ideal para desarrollo y testing
+
+**Producción/Remoto:**
+- Requiere dos variables:
+  - `DENO_KV_URL`: URL de conexión a tu base de datos
+  - `DENO_KV_ACCESS_TOKEN`: Token de acceso de tu cuenta Deno Deploy
+
+Para obtener el access token:
+1. Ve a [https://dash.deno.com/account](https://dash.deno.com/account)
+2. Genera un nuevo access token
+3. Agrégalo a tu archivo `.env`
 
 ### Datos Iniciales
 

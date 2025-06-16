@@ -1,4 +1,11 @@
 import { hash } from "../lib/crypto.ts";
+import { load } from "$std/dotenv/mod.ts";
+
+// Cargar variables de entorno desde .env
+await load({
+  export: true,
+  allowEmptyValues: true,
+});
 import {
   type Appointment,
   type AppointmentStatus,

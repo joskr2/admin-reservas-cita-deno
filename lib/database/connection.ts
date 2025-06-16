@@ -40,7 +40,15 @@ export class DatabaseConnection implements IDatabaseConnection {
 
     this.isConnecting = true;
     try {
-      this.kv = await Deno.openKv();
+      // Usar base de datos remota en producción o local en desarrollo
+      const kvUrl = Deno.env.get("DENO_KV_URL");
+      if (kvUrl) {
+        console.log("🔗 Conectando a Deno KV remoto...");
+        this.kv = await Deno.openKv(kvUrl);
+      } else {
+        console.log("💾 Usando Deno KV local...");
+        this.kv = await Deno.openKv();
+      }
       return this.kv;
     } catch (error) {
       console.error("Error connecting to Deno KV:", error);

@@ -19,7 +19,8 @@
       "Bash(deno fmt:*)",
       "Bash(rg:*)",
       "Bash(AUTO_CONFIRM_CLEANUP=true deno task cleanup-data)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(pkill:*)"
     ]
   },
   "enableAllProjectMcpServers": false

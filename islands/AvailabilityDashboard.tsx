@@ -425,7 +425,7 @@ export default function AvailabilityDashboard({
 
           {/* Desktop Week View */}
           <div class="hidden md:block overflow-x-auto max-h-80 overflow-y-auto">
-            <div class="grid grid-cols-7 gap-2 min-w-[700px]">
+            <div class="grid grid-cols-8 gap-2 min-w-[800px]">
               {/* Header */}
               <div class="text-sm font-medium text-gray-600 dark:text-gray-400 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                 Hora

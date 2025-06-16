@@ -90,7 +90,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         formData: prefilledData,
       });
     } finally {
-      await kv.close();
+      kv.close();
     }
   }
 
@@ -398,7 +398,7 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
         });
       }
     } finally {
-      await kv.close();
+      kv.close();
     }
   }
 

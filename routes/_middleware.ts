@@ -5,6 +5,7 @@ import { getCookies } from "$std/http/cookie.ts";
 import type { AppState, SessionUser } from "../types/index.ts";
 import { loggingMiddleware } from "../lib/middleware/logging.ts";
 import { extractUserContext, getErrorDetails, logger } from "../lib/logger.ts";
+import { getKv } from "../lib/kv.ts";
 
 // Lista de rutas que requieren autenticación
 const PROTECTED_ROUTES = ["/dashboard", "/psychologists", "/appointments"];
@@ -60,7 +61,7 @@ async function authenticationMiddleware(
       sessionId: sessionId.substring(0, 8) + "...",
     }, { requestId });
 
-    const kv = await Deno.openKv();
+    const kv = await getKv();
     try {
       const sessionEntry = await kv.get(["sessions", sessionId]);
 
@@ -116,7 +117,7 @@ async function authenticationMiddleware(
         stack: errorDetails.stack,
       }, { requestId });
     } finally {
-      await kv.close();
+      // No cerramos la conexión ya que getKv() maneja el singleton
     }
   } else {
     logger.debug("AUTH_MIDDLEWARE", "No session ID found", {}, {

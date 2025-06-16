@@ -15,6 +15,14 @@
  * o: deno run --allow-read --allow-write --unstable-kv scripts/inspect-database.ts
  */
 
+import { load } from "$std/dotenv/mod.ts";
+
+// Cargar variables de entorno desde .env
+await load({
+  export: true,
+  allowEmptyValues: true,
+});
+
 import {
   getAppointmentRepository,
   getPatientRepository,
