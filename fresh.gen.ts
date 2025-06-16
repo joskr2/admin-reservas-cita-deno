@@ -10,6 +10,7 @@ import * as $api_appointments_id_delete from "./routes/api/appointments/[id]/del
 import * as $api_appointments_id_update from "./routes/api/appointments/[id]/update.ts";
 import * as $api_appointments_create from "./routes/api/appointments/create.ts";
 import * as $api_appointments_index from "./routes/api/appointments/index.ts";
+import * as $api_appointments_quick_book from "./routes/api/appointments/quick-book.ts";
 import * as $api_auth_check from "./routes/api/auth/check.ts";
 import * as $api_auth_clear_cookies from "./routes/api/auth/clear-cookies.ts";
 import * as $api_auth_login from "./routes/api/auth/login.ts";
@@ -61,6 +62,7 @@ import * as $InteractiveCalendar from "./islands/InteractiveCalendar.tsx";
 import * as $PatientSearchSelect from "./islands/PatientSearchSelect.tsx";
 import * as $PatientSelect from "./islands/PatientSelect.tsx";
 import * as $PsychologistFilters from "./islands/PsychologistFilters.tsx";
+import * as $QuickBookingModal from "./islands/QuickBookingModal.tsx";
 import * as $RoomFilters from "./islands/RoomFilters.tsx";
 import * as $RoomToggleButton from "./islands/RoomToggleButton.tsx";
 import * as $SpecialtySelector from "./islands/SpecialtySelector.tsx";
@@ -77,6 +79,7 @@ const manifest = {
     "./routes/api/appointments/[id]/update.ts": $api_appointments_id_update,
     "./routes/api/appointments/create.ts": $api_appointments_create,
     "./routes/api/appointments/index.ts": $api_appointments_index,
+    "./routes/api/appointments/quick-book.ts": $api_appointments_quick_book,
     "./routes/api/auth/check.ts": $api_auth_check,
     "./routes/api/auth/clear-cookies.ts": $api_auth_clear_cookies,
     "./routes/api/auth/login.ts": $api_auth_login,
@@ -132,6 +135,7 @@ const manifest = {
     "./islands/PatientSearchSelect.tsx": $PatientSearchSelect,
     "./islands/PatientSelect.tsx": $PatientSelect,
     "./islands/PsychologistFilters.tsx": $PsychologistFilters,
+    "./islands/QuickBookingModal.tsx": $QuickBookingModal,
     "./islands/RoomFilters.tsx": $RoomFilters,
     "./islands/RoomToggleButton.tsx": $RoomToggleButton,
     "./islands/SpecialtySelector.tsx": $SpecialtySelector,

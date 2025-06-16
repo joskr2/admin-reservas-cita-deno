@@ -1,10 +1,12 @@
 import { useState } from "preact/hooks";
 import { Icon } from "../components/ui/Icon.tsx";
-import type { Appointment, Room } from "../types/index.ts";
+import QuickBookingModal from "./QuickBookingModal.tsx";
+import type { Appointment, Room, PatientProfile } from "../types/index.ts";
 
 interface AvailabilityDashboardProps {
   appointments: Appointment[];
   rooms: Room[];
+  patients: PatientProfile[];
   psychologistEmail?: string;
   userRole: string;
 }
@@ -26,11 +28,18 @@ interface DaySchedule {
 export default function AvailabilityDashboard({
   appointments,
   rooms,
+  patients,
   psychologistEmail,
   userRole,
 }: AvailabilityDashboardProps) {
   const [viewMode, setViewMode] = useState<"day" | "week" | "month">("week");
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookingData, setBookingData] = useState<{
+    date: string;
+    time: string;
+    roomId: string;
+  } | null>(null);
 
   // Horario laboral: 8:00 AM - 6:00 PM
   const workingHours = [
@@ -162,6 +171,18 @@ export default function AvailabilityDashboard({
     setSelectedDate(new Date());
   };
 
+  const handleQuickBook = (date: string, time: string, roomId: string) => {
+    setBookingData({ date, time, roomId });
+    setShowBookingModal(true);
+  };
+
+  const getAppointmentsInRoom = (roomId: string, date?: string) => {
+    return filteredAppointments.filter(apt => 
+      apt.roomId === roomId && 
+      (!date || apt.appointmentDate === date)
+    );
+  };
+
   const getDateRangeText = (): string => {
     if (viewMode === "day") {
       return selectedDate.toLocaleDateString("es-ES", {
@@ -262,12 +283,13 @@ export default function AvailabilityDashboard({
                       Disponible
                     </span>
                     <div class="mt-2">
-                      <a
-                        href={`/appointments/new?date=${daySchedule.date}&time=${slot.hour}`}
+                      <button
+                        type="button"
+                        onClick={() => handleQuickBook(daySchedule.date, slot.hour, availableRooms[0]?.id || "1")}
                         class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded transition-colors"
                       >
                         Agendar
-                      </a>
+                      </button>
                     </div>
                   </div>
                 ) : (
@@ -374,13 +396,14 @@ export default function AvailabilityDashboard({
                     return (
                       <div key={`${day.date}-${hour}`} class="p-1">
                         {slot?.isAvailable ? (
-                          <a
-                            href={`/appointments/new?date=${day.date}&time=${hour}`}
+                          <button
+                            type="button"
+                            onClick={() => handleQuickBook(day.date, hour, availableRooms[0]?.id || "1")}
                             class="block w-full h-8 bg-green-100 dark:bg-green-900/30 hover:bg-green-200 dark:hover:bg-green-900/50 rounded border border-green-300 dark:border-green-700 transition-colors cursor-pointer"
                             title={`Crear cita para ${day.dayName} ${formatTime(hour)}`}
                           >
                             <span class="sr-only">Disponible</span>
-                          </a>
+                          </button>
                         ) : (
                           <div
                             class="w-full h-8 bg-red-100 dark:bg-red-900/30 rounded border border-red-300 dark:border-red-700 flex items-center justify-center"
@@ -566,61 +589,142 @@ export default function AvailabilityDashboard({
         {viewMode === "month" && renderMonthView()}
       </div>
 
-      {/* Salas Disponibles */}
+      {/* Estado de Salas */}
       <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
         <div class="flex items-center justify-between mb-6">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-            Salas Disponibles
+            Estado de Salas
           </h3>
           <span class="text-sm text-gray-500 dark:text-gray-400">
-            {availableRooms.length} de {rooms.length} salas
+            {availableRooms.length} disponibles de {rooms.length} salas
           </span>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {availableRooms.map((room) => (
-            <div
-              key={room.id}
-              class="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4 border border-blue-200 dark:border-blue-700"
-            >
-              <div class="flex items-center justify-between mb-2">
-                <h4 class="font-medium text-gray-900 dark:text-white">
-                  {room.name}
-                </h4>
-                <div class="w-3 h-3 bg-green-400 rounded-full" title="Disponible"></div>
-              </div>
-              
-              {room.description && (
-                <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  {room.description}
-                </p>
-              )}
+          {rooms.map((room) => {
+            const todayDate = new Date().toISOString().split('T')[0] || "";
+            const roomAppointments = getAppointmentsInRoom(room.id || "", todayDate);
+            const isAvailable = room.isAvailable && roomAppointments.length === 0;
+            
+            return (
+              <div
+                key={room.id}
+                class={`rounded-lg p-4 border transition-colors ${
+                  isAvailable
+                    ? "bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700"
+                    : "bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-red-200 dark:border-red-700"
+                }`}
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="font-medium text-gray-900 dark:text-white">
+                    {room.name}
+                  </h4>
+                  <div 
+                    class={`w-3 h-3 rounded-full ${
+                      isAvailable ? "bg-green-400" : "bg-red-400"
+                    }`}
+                    title={isAvailable ? "Disponible" : "Ocupada"}
+                  ></div>
+                </div>
+                
+                {room.description && (
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    {room.description}
+                  </p>
+                )}
 
-              <div class="flex items-center justify-between">
-                <span class="text-xs text-blue-600 dark:text-blue-400 font-medium">
-                  Sala #{room.id}
-                </span>
-                <a
-                  href={`/appointments/new?roomId=${room.id}`}
-                  class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded transition-colors"
-                  title={`Agendar cita en ${room.name}`}
-                >
-                  Agendar
-                </a>
+                {/* Mostrar sesiones ocupadas */}
+                {roomAppointments.length > 0 && (
+                  <div class="mb-3">
+                    <h5 class="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Sesiones Hoy:
+                    </h5>
+                    <div class="space-y-1">
+                      {roomAppointments.slice(0, 3).map((apt) => (
+                        <div 
+                          key={apt.id}
+                          class="text-xs p-2 bg-white dark:bg-gray-700 rounded border"
+                        >
+                          <div class="font-medium text-gray-900 dark:text-white truncate">
+                            {apt.patientName}
+                          </div>
+                          <div class="text-gray-500 dark:text-gray-400">
+                            {apt.startTime && apt.endTime 
+                              ? `${formatTime(apt.startTime)} - ${formatTime(apt.endTime)}`
+                              : formatTime(apt.appointmentTime)
+                            }
+                          </div>
+                          <a 
+                            href={`/appointments/${apt.id}`}
+                            class="text-blue-600 dark:text-blue-400 hover:underline"
+                          >
+                            Ver detalle →
+                          </a>
+                        </div>
+                      ))}
+                      
+                      {roomAppointments.length > 3 && (
+                        <div class="text-xs text-gray-500 dark:text-gray-400 text-center">
+                          +{roomAppointments.length - 3} más...
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div class="flex items-center justify-between">
+                  <span class={`text-xs font-medium ${
+                    isAvailable 
+                      ? "text-green-600 dark:text-green-400" 
+                      : "text-red-600 dark:text-red-400"
+                  }`}>
+                    Sala #{room.id}
+                  </span>
+                  
+                  {isAvailable ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleQuickBook(todayDate, "09:00", room.id || "1");
+                      }}
+                      class="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded transition-colors"
+                      title={`Agendar cita en ${room.name}`}
+                    >
+                      Agendar
+                    </button>
+                  ) : (
+                    <span class="text-xs text-red-600 dark:text-red-400 font-medium">
+                      {!room.isAvailable ? "Inactiva" : "Ocupada"}
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {availableRooms.length === 0 && (
+        {rooms.length === 0 && (
           <div class="text-center py-8">
             <Icon name="briefcase" className="h-12 w-12 text-gray-400 mx-auto mb-4" />
             <p class="text-gray-500 dark:text-gray-400">
-              No hay salas disponibles en este momento
+              No hay salas configuradas
             </p>
           </div>
         )}
       </div>
+
+      {/* Modal de Agendado Rápido */}
+      {showBookingModal && bookingData && (
+        <QuickBookingModal
+          isOpen={showBookingModal}
+          onClose={() => setShowBookingModal(false)}
+          date={bookingData.date}
+          time={bookingData.time}
+          roomId={bookingData.roomId}
+          patients={patients}
+          psychologistEmail={psychologistEmail || ""}
+        />
+      )}
     </div>
   );
 }

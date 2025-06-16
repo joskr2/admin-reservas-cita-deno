@@ -440,6 +440,7 @@ export default function Dashboard({
             <AvailabilityDashboard
               appointments={allAppointments}
               rooms={allRooms}
+              patients={recentPatients}
               psychologistEmail={currentUser.email}
               userRole={currentUser.role}
             />
