@@ -53,7 +53,7 @@ async function checkDatabaseStatus(title: string = "Estado de la base de datos")
     console.log(`   ${prefix.join('_')}: ${count} registros`);
   }
   
-  await kv.close();
+  kv.close();
 }
 
 async function cleanupTestAppointments(options: CleanupOptions): Promise<number> {
@@ -168,7 +168,7 @@ async function cleanupSessions(): Promise<number> {
     deletedCount++;
   }
   
-  await kv.close();
+  kv.close();
   
   console.log(`   🔐 ${deletedCount} sesiones eliminadas`);
   return deletedCount;
@@ -296,10 +296,10 @@ async function main(): Promise<void> {
     
     // Mostrar estado final
     console.log("\n");
-    await checkDatabaseStatus("Estado final de la base de datos");
+    checkDatabaseStatus("Estado final de la base de datos");
     
     // Generar reporte
-    await generateCleanupReport(
+    generateCleanupReport(
       appointmentsDeleted,
       patientsDeleted,
       usersResult,

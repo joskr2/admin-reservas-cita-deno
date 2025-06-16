@@ -27,16 +27,22 @@ export class Logger {
 
   private constructor() {
     // Configurar nivel de log desde variable de entorno
-    const envLogLevel = Deno.env.get("LOG_LEVEL");
-    if (envLogLevel) {
-      this.logLevel = LogLevel[envLogLevel as keyof typeof LogLevel] ??
-        LogLevel.INFO;
-    }
+    try {
+      const envLogLevel = Deno.env.get("LOG_LEVEL");
+      if (envLogLevel) {
+        this.logLevel = LogLevel[envLogLevel as keyof typeof LogLevel] ??
+          LogLevel.INFO;
+      }
 
-    // Habilitar logging a archivo en producción
-    const envEnableFile = Deno.env.get("LOG_TO_FILE");
-    if (envEnableFile === "true") {
-      this.enableFile = true;
+      // Habilitar logging a archivo en producción
+      const envEnableFile = Deno.env.get("LOG_TO_FILE");
+      if (envEnableFile === "true") {
+        this.enableFile = true;
+      }
+    } catch {
+      // Si no se puede acceder a variables de entorno, usar valores por defecto
+      this.logLevel = LogLevel.INFO;
+      this.enableFile = false;
     }
   }
 
