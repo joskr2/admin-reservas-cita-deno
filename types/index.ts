@@ -231,6 +231,11 @@ export interface DashboardData {
   totalPatients: number;
   totalRooms: number;
   availableRooms: number;
+  // Nuevas métricas específicas para salas y horarios
+  roomUtilization: number; // Porcentaje de uso de salas
+  availableTimeSlots: number; // Franjas horarias disponibles hoy
+  todayAppointments: number; // Citas programadas para hoy
+  upcomingAppointments: number; // Citas próximas (próximos 7 días)
 }
 
 // === TIPOS DE CLAVES KV ===

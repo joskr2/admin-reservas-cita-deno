@@ -25,6 +25,12 @@ interface DashboardPageData {
   recentPatients: PatientProfile[];
   recentUsers: UserProfile[];
   recentRooms: Room[];
+  currentUser: {
+    role: string;
+    email: string;
+    id?: string;
+    name?: string;
+  };
   filters: {
     search?: string;
     type?: string;
@@ -68,15 +74,23 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
     const userRepository = getUserRepository();
     const roomRepository = getRoomRepository();
 
-    const dashboardData = await dashboardService.getStats();
+    // Usar el método correcto según el rol del usuario
+    const dashboardData = currentUser.role === "superadmin" 
+      ? await dashboardService.getStats()
+      : await dashboardService.getPsychologistStats(currentUser.email);
     
     await logger.debug('DASHBOARD', 'Dashboard stats retrieved', {
+      userRole: currentUser.role,
       totalUsers: dashboardData.totalUsers,
       totalPsychologists: dashboardData.totalPsychologists,
       totalAppointments: dashboardData.totalAppointments,
       totalPatients: dashboardData.totalPatients,
       totalRooms: dashboardData.totalRooms,
       availableRooms: dashboardData.availableRooms,
+      roomUtilization: dashboardData.roomUtilization,
+      availableTimeSlots: dashboardData.availableTimeSlots,
+      todayAppointments: dashboardData.todayAppointments,
+      upcomingAppointments: dashboardData.upcomingAppointments,
     }, { requestId, ...userContext });
 
     // Obtener datos recientes según el rol del usuario
@@ -269,6 +283,12 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       recentPatients,
       recentUsers,
       recentRooms,
+      currentUser: {
+        role: currentUser.role,
+        email: currentUser.email,
+        id: currentUser.id,
+        name: currentUser.name,
+      },
       filters: { search, type, period },
     });
   } catch (error) {
@@ -287,6 +307,10 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       totalPatients: 0,
       totalRooms: 0,
       availableRooms: 0,
+      roomUtilization: 0,
+      availableTimeSlots: 0,
+      todayAppointments: 0,
+      upcomingAppointments: 0,
     };
     return ctx.render({
       dashboardData,
@@ -294,6 +318,12 @@ export async function handler(req: Request, ctx: FreshContext<AppState>) {
       recentPatients: [],
       recentUsers: [],
       recentRooms: [],
+      currentUser: {
+        role: currentUser?.role || "psychologist",
+        email: currentUser?.email || "",
+        id: currentUser?.id,
+        name: currentUser?.name,
+      },
       filters: {},
     });
   }
@@ -308,10 +338,22 @@ export default function Dashboard({
     recentPatients,
     recentUsers,
     recentRooms,
+    currentUser,
     filters,
   } = data;
 
   // Configuración de filtros para el dashboard
+  const typeOptions = [
+    { value: "appointments", label: "Citas", emoji: "📅" },
+    { value: "patients", label: "Pacientes", emoji: "👤" },
+    { value: "rooms", label: "Salas", emoji: "🏢" },
+  ];
+
+  // Solo agregar "users" para superadmin
+  if (currentUser.role === "superadmin") {
+    typeOptions.splice(2, 0, { value: "users", label: "Usuarios", emoji: "👥" });
+  }
+
   const filterFields = [
     {
       key: "search",
@@ -325,12 +367,7 @@ export default function Dashboard({
       label: "Tipo",
       icon: "hash",
       type: "select" as const,
-      options: [
-        { value: "appointments", label: "Citas", emoji: "📅" },
-        { value: "patients", label: "Pacientes", emoji: "👤" },
-        { value: "users", label: "Usuarios", emoji: "👥" },
-        { value: "rooms", label: "Salas", emoji: "🏢" },
-      ],
+      options: typeOptions,
     },
     {
       key: "period",
@@ -376,7 +413,7 @@ export default function Dashboard({
               <Icon name="bar-chart-3" className="h-5 w-5 text-blue-500 mr-2" />
               Estadísticas del Sistema
             </h2>
-            <DashboardStats {...dashboardData} />
+            <DashboardStats {...dashboardData} userRole={currentUser.role} />
           </div>
 
           {/* 3. Acciones Rápidas - TERCERO */}
@@ -499,6 +536,7 @@ export default function Dashboard({
                 (!filters.type || filters.type === "patients") &&
                   recentPatients.length > 0,
                 (!filters.type || filters.type === "users") &&
+                  currentUser.role === "superadmin" &&
                   recentUsers.length > 0,
                 (!filters.type || filters.type === "rooms") &&
                   recentRooms.length > 0,
@@ -656,8 +694,8 @@ export default function Dashboard({
                     </div>
                   )}
 
-                  {/* Usuarios Recientes */}
-                  {(!filters.type || filters.type === "users") && (
+                  {/* Usuarios Recientes - Solo para superadmin */}
+                  {currentUser.role === "superadmin" && (!filters.type || filters.type === "users") && (
                     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
                       <div class="p-6">
                         <div class="flex items-center justify-between mb-4">

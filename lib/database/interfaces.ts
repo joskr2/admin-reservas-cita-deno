@@ -72,5 +72,21 @@ export interface IDashboardService {
     totalPatients: number;
     totalRooms: number;
     availableRooms: number;
+    roomUtilization: number;
+    availableTimeSlots: number;
+    todayAppointments: number;
+    upcomingAppointments: number;
+  }>;
+  getPsychologistStats(psychologistEmail: string): Promise<{
+    totalUsers: number;
+    totalPsychologists: number;
+    totalAppointments: number;
+    totalPatients: number;
+    totalRooms: number;
+    availableRooms: number;
+    roomUtilization: number;
+    availableTimeSlots: number;
+    todayAppointments: number;
+    upcomingAppointments: number;
   }>;
 }

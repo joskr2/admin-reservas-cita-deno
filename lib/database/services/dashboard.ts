@@ -25,6 +25,10 @@ export class DashboardService implements IDashboardService {
     totalPatients: number;
     totalRooms: number;
     availableRooms: number;
+    roomUtilization: number;
+    availableTimeSlots: number;
+    todayAppointments: number;
+    upcomingAppointments: number;
   }> {
     try {
       // Ejecutar consultas en paralelo para mejor rendimiento
@@ -35,6 +39,24 @@ export class DashboardService implements IDashboardService {
         this.roomRepository.getAll(),
       ]);
 
+      // Calcular métricas adicionales
+      const today = new Date().toISOString().split('T')[0];
+      const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      
+      const todayAppointments = appointments.filter(apt => apt.appointmentDate === today).length;
+      const upcomingAppointments = appointments.filter(apt => 
+        apt.appointmentDate && today && nextWeek && 
+        apt.appointmentDate >= today && apt.appointmentDate <= nextWeek
+      ).length;
+
+      // Calcular utilización de salas (citas hoy / total de salas disponibles)
+      const availableRoomsCount = rooms.filter((r) => r.isAvailable).length;
+      const roomUtilization = availableRoomsCount > 0 ? Math.round((todayAppointments / availableRoomsCount) * 100) : 0;
+      
+      // Estimar franjas horarias disponibles (8am-6pm = 10 horas, cada cita 1 hora)
+      const totalSlotsPerDay = availableRoomsCount * 10; // 10 horas por sala
+      const availableTimeSlots = totalSlotsPerDay - todayAppointments;
+
       return {
         totalUsers: users.length,
         totalPsychologists: users.filter((u) =>
@@ -43,7 +65,11 @@ export class DashboardService implements IDashboardService {
         totalAppointments: appointments.length,
         totalPatients: patients.length,
         totalRooms: rooms.length,
-        availableRooms: rooms.filter((r) => r.isAvailable).length,
+        availableRooms: availableRoomsCount,
+        roomUtilization,
+        availableTimeSlots: Math.max(0, availableTimeSlots),
+        todayAppointments,
+        upcomingAppointments,
       };
     } catch (error) {
       console.error("Error getting dashboard stats:", error);
@@ -56,6 +82,10 @@ export class DashboardService implements IDashboardService {
         totalPatients: 0,
         totalRooms: 0,
         availableRooms: 0,
+        roomUtilization: 0,
+        availableTimeSlots: 0,
+        todayAppointments: 0,
+        upcomingAppointments: 0,
       };
     }
   }
@@ -138,6 +168,84 @@ export class DashboardService implements IDashboardService {
     } catch (error) {
       console.error("Error getting monthly appointment trend:", error);
       return [];
+    }
+  }
+
+  public async getPsychologistStats(psychologistEmail: string): Promise<{
+    totalUsers: number;
+    totalPsychologists: number;
+    totalAppointments: number;
+    totalPatients: number;
+    totalRooms: number;
+    availableRooms: number;
+    roomUtilization: number;
+    availableTimeSlots: number;
+    todayAppointments: number;
+    upcomingAppointments: number;
+  }> {
+    try {
+      // Obtener solo los datos específicos del psicólogo
+      const [psychologistAppointments, allPatients, rooms] = await Promise.all([
+        this.appointmentRepository.getAppointmentsByPsychologist(psychologistEmail),
+        this.patientRepository.getAllPatientsAsProfiles(),
+        this.roomRepository.getAll(),
+      ]);
+
+      // Filtrar pacientes que tienen citas con este psicólogo
+      const patientNamesWithAppointments = new Set(
+        psychologistAppointments.map((apt) => apt.patientName)
+      );
+      const psychologistPatients = allPatients.filter((patient) =>
+        patientNamesWithAppointments.has(patient.name)
+      );
+
+      // Calcular métricas de tiempo
+      const today = new Date().toISOString().split('T')[0];
+      const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+      
+      const todayAppointments = psychologistAppointments.filter(apt => apt.appointmentDate === today).length;
+      const upcomingAppointments = psychologistAppointments.filter(apt => 
+        apt.appointmentDate && today && nextWeek && 
+        apt.appointmentDate >= today && apt.appointmentDate <= nextWeek
+      ).length;
+
+      // Métricas de salas (globales pero útiles para el psicólogo)
+      const availableRoomsCount = rooms.filter((r) => r.isAvailable).length;
+      const roomUtilization = availableRoomsCount > 0 ? Math.round((todayAppointments / availableRoomsCount) * 100) : 0;
+      
+      // Franjas horarias disponibles específicas para este psicólogo
+      // Asumiendo jornada de 8 horas (8am-4pm) para cálculo más realista por psicólogo
+      const psychologistWorkHours = 8;
+      const availableTimeSlots = psychologistWorkHours - todayAppointments;
+
+      return {
+        totalUsers: 1, // Solo el psicólogo mismo
+        totalPsychologists: 1, // Solo él mismo
+        totalAppointments: psychologistAppointments.length,
+        totalPatients: psychologistPatients.length,
+        totalRooms: rooms.length,
+        availableRooms: availableRoomsCount,
+        roomUtilization,
+        availableTimeSlots: Math.max(0, availableTimeSlots),
+        todayAppointments,
+        upcomingAppointments,
+      };
+    } catch (error) {
+      console.error(`Error getting psychologist stats for ${psychologistEmail}:`, error);
+
+      // Retornar estadísticas vacías en caso de error
+      return {
+        totalUsers: 0,
+        totalPsychologists: 0,
+        totalAppointments: 0,
+        totalPatients: 0,
+        totalRooms: 0,
+        availableRooms: 0,
+        roomUtilization: 0,
+        availableTimeSlots: 0,
+        todayAppointments: 0,
+        upcomingAppointments: 0,
+      };
     }
   }
 }

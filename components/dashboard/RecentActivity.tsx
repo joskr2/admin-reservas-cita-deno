@@ -10,6 +10,7 @@ interface RecentActivityProps {
 
 interface ActivityItem {
   id: string;
+  appointmentId: string; // ID de la cita para navegación
   type: "appointment_created" | "appointment_updated" | "appointment_completed";
   title: string;
   description: string;
@@ -46,6 +47,7 @@ export default function RecentActivity({
       // Actividad de creación
       items.push({
         id: `created-${apt.id}`,
+        appointmentId: apt.id,
         type: "appointment_created",
         title: "Nueva cita programada",
         description: `Cita con ${apt.patientName} para el ${
@@ -66,6 +68,7 @@ export default function RecentActivity({
         if (lastStatusChange) {
           items.push({
             id: `updated-${apt.id}-${lastStatusChange.changedAt}`,
+            appointmentId: apt.id,
             type: "appointment_updated",
             title: "Estado de cita actualizado",
             description: `Cita con ${apt.patientName} cambió a ${
@@ -85,6 +88,7 @@ export default function RecentActivity({
       if (apt.status === "completed") {
         items.push({
           id: `completed-${apt.id}`,
+          appointmentId: apt.id,
           type: "appointment_completed",
           title: "Cita completada",
           description: `Sesión con ${apt.patientName} finalizada exitosamente`,
@@ -216,9 +220,10 @@ export default function RecentActivity({
 
       <div class="space-y-4">
         {activityItems.map((item) => (
-          <div
+          <a
             key={item.id}
-            class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+            href={`/appointments/${item.appointmentId}`}
+            class="group flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer block"
           >
             {/* Icono */}
             <div class="flex-shrink-0">
@@ -248,7 +253,16 @@ export default function RecentActivity({
                 </div>
               )}
             </div>
-          </div>
+
+            {/* Indicador de enlace */}
+            <div class="flex-shrink-0">
+              <Icon 
+                name="eye" 
+                size={14} 
+                className="text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" 
+              />
+            </div>
+          </a>
         ))}
       </div>
 
